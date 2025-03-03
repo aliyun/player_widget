@@ -1,0 +1,3 @@
+dependency_overrides:
+  flutter_aliplayer:
+    path: ../../flutter_sdk/flutter_aliplayer
