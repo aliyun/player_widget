@@ -7,7 +7,6 @@
 import 'dart:math';
 
 import 'package:aliplayer_widget/aliplayer_widget_lib.dart';
-import 'package:aliplayer_widget_example/constants/demo_constants.dart';
 import 'package:aliplayer_widget_example/model/video_info.dart';
 
 import 'package:flutter/material.dart';
@@ -17,9 +16,13 @@ class ShortVideoItem extends StatefulWidget {
   /// 视频数据源
   final VideoInfo videoInfo;
 
+  /// 是否自动播放
+  final bool autoPlay;
+
   const ShortVideoItem({
     super.key,
     required this.videoInfo,
+    this.autoPlay = false,
   });
 
   @override
@@ -41,13 +44,11 @@ class ShortVideoItemState extends State<ShortVideoItem> {
     // 初始化播放器组件控制器
     _controller = AliPlayerWidgetController(context);
 
-    // 如果开启了封面地址策略，则使用视频封面地址作为封面图片地址，否则使用不传入
-    final coverUrl =
-        (DemoConstants.enableCoverStrategy ? widget.videoInfo.coverUrl : "");
     final data = AliPlayerWidgetData(
       sceneType: SceneType.listPlayer,
       videoUrl: widget.videoInfo.videoUrl,
-      coverUrl: coverUrl,
+      coverUrl: widget.videoInfo.coverUrl,
+      autoPlay: widget.autoPlay,
     );
     _controller.configure(data);
   }
@@ -113,19 +114,46 @@ class ShortVideoItemState extends State<ShortVideoItem> {
           _buildActionButton(
             Icons.favorite_outline,
             random.nextInt(maxValue),
-            null,
+            () {
+              // TODO: favorite feature need to be implemented.
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(
+                  content: Text('favorite feature need to be implemented.'),
+                  backgroundColor: Colors.orange,
+                  duration: Duration(seconds: 2),
+                ),
+              );
+            },
           ),
           const SizedBox(height: 20),
           _buildActionButton(
             Icons.comment_rounded,
             random.nextInt(maxValue),
-            null,
+            () {
+              // TODO: comment feature need to be implemented.
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(
+                  content: Text('comment feature need to be implemented.'),
+                  backgroundColor: Colors.orange,
+                  duration: Duration(seconds: 2),
+                ),
+              );
+            },
           ),
           const SizedBox(height: 20),
           _buildActionButton(
             Icons.share,
             random.nextInt(maxValue),
-            null,
+            () {
+              // TODO: share feature need to be implemented.
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(
+                  content: Text('share feature need to be implemented.'),
+                  backgroundColor: Colors.orange,
+                  duration: Duration(seconds: 2),
+                ),
+              );
+            },
           ),
         ],
       ),

@@ -104,4 +104,12 @@ class AliPlayerWidgetData {
     this.seekMode = FlutterAvpdef.ACCURATE,
   })  : assert(videoUrl.isNotEmpty, "Video URL must not be empty"),
         assert(startTime >= 0, "Start time must be non-negative");
+
+  /// 将 [AliPlayerWidgetData] 实例转换为字符串。
+  ///
+  /// Convert [AliPlayerWidgetData] instance to string.
+  @override
+  String toString() {
+    return 'AliPlayerWidgetData{sceneType: $sceneType, videoUrl: $videoUrl, coverUrl: $coverUrl, videoTitle: $videoTitle, thumbnailUrl: $thumbnailUrl, autoPlay: $autoPlay, startTime: $startTime, seekMode: $seekMode}';
+  }
 }

@@ -51,6 +51,9 @@ dependencies:
   # File uploading/downloading, Timeout, Custom adapters, Transformers, etc.
   dio: ^5.8.0+1
 
+  # The widget to support Pre-load function for PageView widget.
+  preload_page_view: ^0.2.0
+
 dev_dependencies:
   flutter_test:
     sdk: flutter

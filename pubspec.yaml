@@ -1,20 +1,18 @@
 name: aliplayer_widget
-description: >-
-  A powerful and flexible vod component for Flutter applications.
-  It integrates with flutter_aliplayer to provide high-quality video playback,
-  seamless streaming, and a rich set of features for both live and on-demand video content.
-  Whether you are building a video playback solution for education, entertainment,
-  or any other application, it makes it easy to deliver an engaging video experience.
+description: A high-performance video playback component specifically designed for Flutter applications, built on top of the AliCloud Player SDK `flutter_aliplayer`.
 
 # NOTE: Please synchronize and modify the version number here:
 # static const String _kWidgetVersion = 'x.y.z';
-version: 7.0.0
+version: 7.0.1
+repository: https://github.com/aliyun/player_widget
+issue_tracker: https://github.com/aliyun/player_widget/issues
 homepage: https://www.aliyun.com/product/vod
 topics:
   - player
   - video
   - video-player
   - aliyun
+  - short-drama
 
 environment:
   sdk: '>=3.4.0 <4.0.0'

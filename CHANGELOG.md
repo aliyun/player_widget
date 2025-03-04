@@ -1,6 +1,21 @@
 # **AliPlayerWidget Changelog**
 
-## **[1.0.0] - Initial Release**
+## **[7.0.1] - Documentation Improvements**
+
+### **Documentation Updates**
+
+- README Enhancements
+  - Improved clarity and structure of the README documentation for better readability.
+  - Included additional guidance on integrating `AliPlayerWidget` in multi-scenario applications (e.g., VOD, live streaming, short videos).
+
+### **No Functional Changes**
+
+This release focuses solely on improving documentation and does not include any functional changes or bug fixes. All features and APIs remain consistent with version `7.0.0`.
+
+---
+
+## **[7.0.0] - Initial Release**
+
 ### **Features**
 - **Core Player Functionality**
   - Implemented basic video playback capabilities including play, pause, stop and seek operations.

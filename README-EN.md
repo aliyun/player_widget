@@ -5,8 +5,9 @@ Language: [Simplified Chinese](README.md) | English
 [![pub package](https://img.shields.io/pub/v/aliplayer_widget.svg)](https://pub.dev/packages/aliplayer_widget)
 
 ## **1. Overview**
-**AliPlayerWidget** is a high-performance video playback component specifically designed for Flutter applications, built on top of the AliCloud Player SDK `flutter_aliplayer`. It supports multiple scenarios such as Video-on-Demand (VOD), live streaming, playlist playback, and more. Additionally, it provides a rich set of features and flexible UI customization capabilities to meet video playback needs across various fields like education, entertainment, and e-commerce.
-With simple API calls, developers can quickly integrate high-quality video playback functionality, significantly reducing development costs. Whether it's basic playback control or complex interactive scenarios (such as gesture adjustments and overlay stacking), AliPlayerWidget handles them effortlessly, helping developers build smooth and efficient user experiences.
+**AliPlayerWidget** is a high-performance video playback component specifically designed for Flutter applications, built on top of the AliCloud Player SDK `flutter_aliplayer`. It supports multi-scenario adaptation such as Video-on-Demand (VOD), live streaming, playlist playback, and short drama scenes. Additionally, it offers a rich set of features and highly flexible UI customization capabilities, meeting video playback needs across various fields like education, entertainment, e-commerce, and short drama applications.
+
+With a minimalist API design, AliPlayerWidget achieves low-code integration, allowing developers to quickly implement complex video playback functionalities with just a few lines of code, significantly reducing development costs. Whether it's basic playback control or complex interactive scenarios (such as gesture adjustments and overlay stacking), AliPlayerWidget can handle them effortlessly, helping developers build smooth and efficient user experiences.
 
 ---
 
@@ -66,16 +67,34 @@ Before using **AliPlayerWidget**, ensure your development environment meets the 
 
 ## **4. Quick Start**
 In just a few steps, you can easily implement video playback functionality! **AliPlayerWidget** offers a minimalist API design to help you rapidly integrate video playback features with minimal coding.
-### **4.1 Add Dependency**
-Add the following dependency to your `pubspec.yaml` file:
+### **4.1. Add Dependency**
+You can integrate `AliPlayerWidget` into your Flutter project using one of the following two methods:
+
+* **Method 1: Manually Add Dependency**
+
+In your `pubspec.yaml` file, add the following dependency:
+
 ```yaml
 dependencies:
   aliplayer_widget: ^x.y.z
 ```
-Then run the following command to install dependencies:
-```bash
+> **Note**: `x.y.z` represents the version number of `aliplayer_widget`. You can check the latest stable version on the [Pub.dev official page](https://pub.dev/packages/aliplayer_widget) and replace it with the actual value (e.g., `^7.0.0`).
+
+* **Method 2: Use Command-Line Tool**
+
+If you prefer using the command line, you can run the following command to add the dependency:
+
+```shell
+flutter pub add aliplayer_widget
+```
+This command will automatically update your `pubspec.yaml` file.
+
+Regardless of the method you choose, after completing the dependency addition, run the following command in your terminal to install the dependencies:
+```shell
 flutter pub get
 ```
+
+After completing the above steps, `AliPlayerWidget` will be successfully integrated into your project, and you can start using it!
 
 ### **4.2 Implement Video Playback**
 Below is a complete example demonstrating how to embed a video player into a page. With just a few lines of code, you can achieve video playback functionality.
@@ -341,6 +360,55 @@ ValueListenableBuilder<Map<int?, String?>?>(
 3. **Thumbnail Support**: If using thumbnail functionality, ensure valid thumbnail URLs are provided.
 4. **Debugging and Optimization**: Enable logging during development to facilitate troubleshooting. Also, optimize overlay component performance to avoid affecting playback smoothness.
 
+----
+
+## **8. Example Project and Demo Package**
+To help developers quickly get started and deeply understand how to integrate and use **AliPlayerWidget** in real-world projects, we provide two resources: the **example project** and a **demo package** built based on this project. Below, we will introduce the purpose and access methods of each.
+
+### **1. Example Project**
+`aliplayer_widget_example` is a complete example project designed to help developers quickly understand and integrate the core functionalities of **AliPlayerWidget**.
+
+You can access the full documentation of the example project through the following links:
+- **Chinese Documentation**: [aliplayer_widget_example README](./example/README.md)
+- **English Documentation**: [aliplayer_widget_example README-EN](./example/README-EN.md)
+
+Through the example project, you can intuitively learn the following:
+
+- How to embed a video player component.
+- How to configure playback functionality for different scenarios (e.g., VOD, live streaming, playlist playback).
+- How to leverage custom options to achieve personalized user experiences.
+
+### **2. Demo Package**
+To help developers quickly experience the functionalities of **AliPlayerWidget**, we have built a demo package based on the `aliplayer_widget_example` project. This demo package can be directly installed and run on a device without additional development environment setup.
+
+#### **Access Method**
+Scan the QR code below with your mobile phone to quickly download and install the demo package:
+
+![Demo QR Code](https://alivc-demo-cms.alicdn.com/versionProduct/installPackage/aliplayer_widget/demo-qr-code.png)  
+
+> **Note**: The QR code links to the latest version of the demo package. Ensure that your device allows the installation of third-party applications.
+
 ---
 
-If you encounter any issues or have suggestions while using `AliPlayerWidget`, feel free to join the AliCloud Player SDK developer group by searching DingTalk group number 31882553.
+## **9. Open Source and Source Code Access**
+**aliplayer_widget** has been published to the following Pub sources. Developers are recommended to integrate it via the package management tool:
+
+- **Pub Official Source**: [pub.dev](https://pub.dev/packages/aliplayer_widget)
+- **Domestic Mirror Source**: [pub.flutter-io.cn](https://pub.flutter-io.cn/packages/aliplayer_widget)
+
+If you need to customize the component, you can use the source code dependency method to directly obtain and modify the source code. The complete source code can be accessed through the following methods:
+- **GitHub Repository**: [aliplayer_widget](https://github.com/aliyun/player_widget)
+  
+
+If GitHub is inaccessible, you can download the source code package directly via the link below:
+
+- **Source Code Package Download**: [aliplayer_widget.zip](https://alivc-demo-cms.alicdn.com/versionProduct/sourceCode/aliplayer_widget/aliplayer_widget.zip)
+
+The open-source content includes:
+- **Core components**: Complete implementation of `AliPlayerWidget` and `AliPlayerWidgetController`.
+- **Example project**: `aliplayer_widget_example` provides code examples for scenarios such as video-on-demand, live streaming, and playlist playback, helping developers quickly integrate and get started.
+- **Documentation and comments**: The source code includes detailed comments and development guidelines for easier secondary development and customization.
+
+---
+
+For more common issues and resolution suggestions related to the use of Alibaba Cloud Player SDK, please refer to [FAQ about ApsaraVideo Player](https://www.alibabacloud.com/help/en/vod/support/faq-about-apsaravideo-player/).

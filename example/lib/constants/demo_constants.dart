@@ -33,9 +33,4 @@ class DemoConstants {
   /// Convert to video info list
   static const String defaultVideoInfoListUrl =
       "https://alivc-demo-cms.alicdn.com/versionProduct/resources/shortdrama/video-info-list-default.json";
-
-  /// Whether to enable the cover image URL strategy
-  ///
-  /// 是否启用封面图 URL 策略
-  static const bool enableCoverStrategy = false;
 }

@@ -6,9 +6,9 @@ Language: 中文简体 | [English](README-EN.md)
 
 ## **一、概述**
 
-**AliPlayerWidget** 是一款专为 Flutter 应用程序设计的高性能视频播放组件，基于阿里云播放器 SDK `flutter_aliplayer` 构建。它不仅支持点播（VOD）、直播、列表播放等多场景适配，还提供了丰富的功能集和灵活的 UI 定制能力，满足教育、娱乐、电商等多种领域的视频播放需求。
+**AliPlayerWidget** 是一款专为 Flutter 应用程序打造的高性能视频播放组件，基于阿里云播放器 SDK `flutter_aliplayer` 构建。它不仅支持点播（VOD）、直播、列表播放以及短剧场景等多场景适配，还提供了丰富的功能集和高度灵活的 UI 定制能力，能够满足教育、娱乐、电商以及短剧应用等多种领域的视频播放需求。
 
-通过简单的 API 调用，开发者可以快速集成高质量的视频播放功能，显著降低开发成本。无论是基础的播放控制，还是复杂的交互场景（如手势调节、浮层叠加），AliPlayerWidget 都能轻松应对，帮助开发者构建流畅且高效的用户体验。
+通过极简的 API 设计，AliPlayerWidget 实现了低代码集成，开发者只需几行代码即可快速实现复杂的视频播放功能，显著降低开发成本。无论是基础的播放控制，还是复杂的交互场景（如手势调节、浮层叠加），AliPlayerWidget 都能轻松应对，帮助开发者构建流畅且高效的用户体验。
 
 ---
 
@@ -91,18 +91,32 @@ Language: 中文简体 | [English](README-EN.md)
 
 ### **1. 添加依赖**
 
-在您的 `pubspec.yaml` 文件中添加以下依赖：
+您可以通过以下两种方式之一将 `AliPlayerWidget` 集成到您的 Flutter 项目中。
 
+* **方法一：手动添加依赖**
+
+在您的 `pubspec.yaml` 文件中，添加以下依赖项：
 ```yaml
 dependencies:
   aliplayer_widget: ^x.y.z
 ```
 
-然后运行以下命令安装依赖：
+> **注意**：`x.y.z` 表示 `aliplayer_widget` 的版本号。您可以在 [Pub.dev 官方页面](https://pub.dev/packages/aliplayer_widget) 中查看最新稳定版本号，并将其替换为实际值（例如 `^7.0.0`）。
 
-```bash
+* **方法二：使用命令行工具**
+
+如果您更倾向于使用命令行，可以直接运行以下命令来添加依赖：
+```shell
+flutter pub add aliplayer_widget
+```
+该命令会自动更新您的 `pubspec.yaml` 文件。
+
+无论您选择哪种方式，完成依赖添加后，请在终端中运行以下命令以安装依赖：
+```shell
 flutter pub get
 ```
+
+通过上述步骤，`AliPlayerWidget` 就已成功集成到您的项目中，您可以开始使用它了！
 
 ### **2. 实现视频播放**
 
@@ -408,5 +422,58 @@ ValueListenableBuilder<Map<int?, String?>?>(
 
 ---
 
-如果您在使用 `AliPlayerWidget` 过程中有任何问题或建议，欢迎通过钉钉搜索群号 31882553 加入阿里云播放器 SDK 开发者群。
+## **八、示例工程与演示包**
+
+为了让开发者更快速地上手并深入理解如何在实际项目中集成和使用 **AliPlayerWidget**，我们提供了两种资源：**示例工程** 和基于该工程构建的 **演示包**。以下分别介绍两者的用途和获取方式。
+
+### **1. 示例工程**
+`aliplayer_widget_example` 是一个完整的示例工程，旨在帮助开发者快速理解和集成 **AliPlayerWidget** 的核心功能。
+
+您可以访问以下链接查看示例工程的完整文档：
+
+- **中文文档**: [aliplayer_widget_example README](./example/README.md)
+- **English Documentation**: [aliplayer_widget_example README-EN](./example/README-EN.md)
+
+通过示例工程，您可以直观地了解以下内容：
+
+- 如何嵌入视频播放器组件。
+- 如何配置不同场景下的播放功能（如点播、直播、列表播放）。
+- 如何利用自定义选项实现个性化的用户体验。
+
+### **2. 演示包**
+为了帮助开发者快速体验 **AliPlayerWidget** 的功能，我们基于 `aliplayer_widget_example` 示例工程构建了一个演示包。该演示包可以直接安装到设备上运行，无需额外配置开发环境。
+
+#### **获取方式**
+使用手机扫描以下二维码，即可快速下载并安装演示包：
+
+![Demo QR Code](https://alivc-demo-cms.alicdn.com/versionProduct/installPackage/aliplayer_widget/demo-qr-code.png)  
+> **注意**：二维码链接指向最新版本的演示包，请确保您的设备已开启允许安装第三方应用的权限。
+
+---
+
+## **九、开源与源码获取**
+
+**aliplayer_widget** 已发布至以下 Pub 源，推荐开发者通过包管理工具集成：
+
+- **Pub 官方源**: [pub.dev](https://pub.dev/packages/aliplayer_widget)
+- **国内镜像源**: [pub.flutter-io.cn](https://pub.flutter-io.cn/packages/aliplayer_widget)
+
+如果需要对组件进行自定义修改，您可以使用源码依赖的方式，直接获取并修改源码。完整源码可通过以下方式获取：
+
+- **GitHub 仓库**: [aliplayer_widget](https://github.com/aliyun/player_widget)
+  
+
+如果无法访问 GitHub，可通过以下链接直接下载源码包：
+
+- **源码包下载地址**: [aliplayer_widget.zip](https://alivc-demo-cms.alicdn.com/versionProduct/sourceCode/aliplayer_widget/aliplayer_widget.zip)
+
+开源内容包括：
+
+- **核心组件**：`AliPlayerWidget` 和 `AliPlayerWidgetController` 的完整实现。
+- **示例工程**：`aliplayer_widget_example` 提供点播、直播、列表播放等场景的代码示例，帮助开发者快速集成和使用。
+- **文档与注释**：源码包含详细注释和开发指南，便于二次开发与定制。
+
+---
+
+更多关于使用阿里云播放器 SDK 的常见问题及修复建议，请参见[播放器常见问题](https://help.aliyun.com/zh/vod/support/faq-about-apsaravideo-player/)。
 

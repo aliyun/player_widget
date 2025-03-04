@@ -5,10 +5,9 @@
 // Brief: 长视频播放页面
 
 import 'package:aliplayer_widget/aliplayer_widget_lib.dart';
+import 'package:aliplayer_widget_example/constants/demo_constants.dart';
 import 'package:aliplayer_widget_example/pages/link/link_constants.dart';
-import 'package:aliplayer_widget_example/constants/page_routes.dart';
 import 'package:aliplayer_widget_example/manager/sp_manager.dart';
-import 'package:aliplayer_widget_example/pages/link/link_page.dart';
 import 'package:flutter/material.dart';
 
 /// 长视频播放页面
@@ -56,51 +55,20 @@ class _LongVideoPageState extends State<LongVideoPage> {
     _controller = AliPlayerWidgetController(context);
 
     // 获取保存的链接
-    final savedLink = SPManager.instance.getString(LinkConstants.vod);
-
-    // 如果 URL 为空，提示用户并跳转到 LinkPage
+    var savedLink = SPManager.instance.getString(LinkConstants.vod);
+    // 如果没有保存的链接，则使用默认链接
     if (savedLink == null || savedLink.isEmpty) {
-      final linkItem = LinkItem(
-        name: LinkConstants.vod,
-        route: PageRoutes.longVideo,
-      );
-      final thumbnailItem = LinkItem(
-        name: LinkConstants.thumbnail,
-        route: PageRoutes.longVideo,
-      );
-      // 显示提示消息
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: const Text('请先设置VOD链接'),
-            backgroundColor: Colors.red,
-            action: SnackBarAction(
-              label: '去设置',
-              onPressed: () {
-                Navigator.pushReplacement(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => LinkPage(
-                      linkItems: [
-                        linkItem,
-                        thumbnailItem,
-                      ],
-                    ),
-                  ),
-                );
-              },
-            ),
-          ),
-        );
-      });
-      return;
+      savedLink = DemoConstants.sampleVideoUrl;
     }
 
-    // 设置播放器组件数据
+    // 获取保存的缩略图链接
     final thumbnailUrl = SPManager.instance.getString(LinkConstants.thumbnail);
+
+    // 设置播放器组件数据
     AliPlayerWidgetData data = AliPlayerWidgetData(
       videoUrl: savedLink,
       thumbnailUrl: thumbnailUrl ?? "",
+      videoTitle: "Long Video Title",
     );
     _controller.configure(data);
   }

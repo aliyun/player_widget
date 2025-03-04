@@ -9,10 +9,23 @@ import 'package:aliplayer_widget_example/model/video_info.dart';
 import 'package:aliplayer_widget_example/preload/ali_player_preload.dart';
 import 'package:aliplayer_widget_example/utils/http_util.dart';
 import 'package:flutter/material.dart';
+import 'package:preload_page_view/preload_page_view.dart';
 
 import 'short_video_item.dart';
 
 /// 沉浸式列表播放页面
+///
+/// 使用 PreloadPageView 代替 PageView 来实现列表播放，
+/// 因为 PreloadPageView 支持 item 的预加载，而 PageView 不能。
+///
+/// Use PreloadPageView instead of PageView to implement list playback,
+/// because PreloadPageView supports preloading of items, while PageView cannot.
+///
+/// 如果你想尽可能多地使用Flutter原生解决方案而不是第三方库，
+/// 你可以用PageView替换PreloadPageView，因为两者之间的接口差异相对较小。
+///
+/// If you want to use Flutter native solutions as much as possible instead of third-party libraries,
+/// you can replace PreloadPageView with PageView, as the interface difference between the two is relatively small.
 class ShortVideoPage extends StatelessWidget {
   const ShortVideoPage({super.key});
 
@@ -41,7 +54,7 @@ class _ShortVideoListPageState extends State<ShortVideoListPage> {
   late AliPlayerPreload _aliPlayerPreload;
 
   /// PageController 用于监听当前页面和预加载下一个页面
-  final PageController _pageController = PageController();
+  final PreloadPageController _pageController = PreloadPageController();
 
   /// 当前页面索引
   int _currentIndex = 0;
@@ -59,7 +72,7 @@ class _ShortVideoListPageState extends State<ShortVideoListPage> {
     // 初始化预加载器
     _aliPlayerPreload = AliPlayerPreload(
       context: context,
-      enableCoverUrlStrategy: DemoConstants.enableCoverStrategy,
+      enableCoverUrlStrategy: true,
     );
 
     // 监听页面变化
@@ -143,9 +156,6 @@ class _ShortVideoListPageState extends State<ShortVideoListPage> {
 
     // 暂停所有后台 item
     _pauseAllExceptCurrent(newPageIndex);
-
-    // 预加载下一个页面
-    _preloadNextItem(newPageIndex);
   }
 
   /// 暂停所有后台 item
@@ -161,22 +171,6 @@ class _ShortVideoListPageState extends State<ShortVideoListPage> {
     }
   }
 
-  /// 预加载下一个页面
-  void _preloadNextItem(int currentIndex) {
-    final nextIndex = currentIndex + 1;
-    if (nextIndex < videoInfoList.length) {
-      final nextVideoUrl = videoInfoList[nextIndex].videoUrl;
-
-      // TODO: 执行预加载逻辑
-      _preloadVideo(nextVideoUrl);
-    }
-  }
-
-  /// 预加载视频逻辑
-  void _preloadVideo(String videoUrl) {
-    // TODO: 预加载 API
-  }
-
   @override
   Widget build(BuildContext context) {
     if (_isLoading) {
@@ -186,7 +180,7 @@ class _ShortVideoListPageState extends State<ShortVideoListPage> {
       );
     }
 
-    return PageView.builder(
+    return PreloadPageView.builder(
       controller: _pageController,
       scrollDirection: Axis.vertical,
       itemCount: videoInfoList.length,
@@ -196,8 +190,10 @@ class _ShortVideoListPageState extends State<ShortVideoListPage> {
         return ShortVideoItem(
           key: _itemKeys[index],
           videoInfo: videoItem,
+          autoPlay: index == _currentIndex,
         );
       },
+      preloadPagesCount: 1,
     );
   }
 }

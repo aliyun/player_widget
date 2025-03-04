@@ -71,18 +71,16 @@ class _DebugPageState extends State<DebugPage> with WidgetsBindingObserver {
     return Expanded(
       child: Container(
         color: Colors.blue,
-        child: const Center(
-          child: Padding(
-            padding: EdgeInsets.symmetric(
-              vertical: 10.0,
-              horizontal: 20.0,
-            ),
-            child: Text(
-              DemoConstants.vodComponentDescription,
-              style: TextStyle(
-                color: Colors.white,
-                fontSize: 18,
-              ),
+        child: const Padding(
+          padding: EdgeInsets.symmetric(
+            vertical: 30,
+            horizontal: 20,
+          ),
+          child: Text(
+            DemoConstants.vodComponentDescription,
+            style: TextStyle(
+              color: Colors.white,
+              fontSize: 18,
             ),
           ),
         ),

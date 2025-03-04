@@ -65,9 +65,11 @@ class AliPlayerTopBarWidget extends AliPlayerSharedAnimationWidget {
           Expanded(
             child: title == null || title!.isEmpty
                 ? const SizedBox.shrink()
-                : Center(
+                : Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 8),
                     child: Text(
                       title!,
+                      textAlign: TextAlign.left,
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                       style: const TextStyle(

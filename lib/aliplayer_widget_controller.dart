@@ -19,6 +19,9 @@ class AliPlayerWidgetController {
   /// 播放器实例
   late FlutterAliplayer _aliPlayer;
 
+  /// 播放器唯一标识符
+  late String _playerUniqueId;
+
   /// 是否已准备播放
   bool _isPrepared = false;
 
@@ -183,7 +186,8 @@ class AliPlayerWidgetController {
 
     /// 1、创建播放器
     _aliPlayer = FlutterAliPlayerFactory.createAliPlayer();
-    logi("[player][api][create]: ${_aliPlayer.hashCode}");
+    _playerUniqueId = _aliPlayer.playerId;
+    _playerLog("[api][create]");
 
     /// 2、设置播放器事件回调
     // 设置播放器事件回调，准备完成事件
@@ -191,7 +195,7 @@ class AliPlayerWidgetController {
       _isPrepared = true;
 
       int cost = DateTime.now().millisecondsSinceEpoch - _prepareStartTime;
-      logi("[player][cbk][onPrepared], costTime: $cost");
+      _playerLog("[cbk][onPrepared]: costTime: $cost");
 
       // 创建清晰度信息
       _createTrackInfoWhenPrepared();
@@ -203,7 +207,7 @@ class AliPlayerWidgetController {
     // 设置播放器事件回调，首帧显示事件
     _aliPlayer.setOnRenderingStart((String playerId) async {
       int cost = DateTime.now().millisecondsSinceEpoch - _prepareStartTime;
-      logi("[player][cbk][renderingStart], costTime: $cost");
+      _playerLog("[cbk][renderingStart]: costTime: $cost");
 
       // 更新渲染状态
       isRenderedNotifier.value = true;
@@ -229,7 +233,7 @@ class AliPlayerWidgetController {
       int? rotation,
       String playerId,
     ) async {
-      logi("[player][cbk][videoSizeChanged]: $width, $height, $rotation");
+      _playerLog("[cbk][videoSizeChanged]: $width, $height, $rotation");
       // 更新视频尺寸
       _updateVideoSize();
     });
@@ -251,13 +255,13 @@ class AliPlayerWidgetController {
     _aliPlayer.setOnInfo(
         (int? infoCode, int? extraValue, String? extraMsg, String playerId) {
       if (infoCode == 1) {
-        // logi("[player][cbk][bufferedPosition], $extraValue, $extraMsg");
+        // _playerLog("[cbk][bufferedPosition]: $extraValue, $extraMsg");
 
         final bufferedPosition = extraValue ?? 0;
         bufferedPositionNotifier.value =
             Duration(milliseconds: bufferedPosition);
       } else if (infoCode == 2) {
-        // logi("[player][cbk][currentPosition], $extraValue, $extraMsg");
+        // _playerLog("[cbk][currentPosition]: $extraValue, $extraMsg");
 
         final currentPosition = extraValue ?? 0;
         currentPositionNotifier.value = Duration(milliseconds: currentPosition);
@@ -266,7 +270,7 @@ class AliPlayerWidgetController {
 
     // 设置获取 track 信息回调
     _aliPlayer.setOnTrackReady((String playerId) async {
-      logi("[player][cbk][setOnTrackReady]");
+      _playerLog("[cbk][setOnTrackReady]");
 
       // 更新视频尺寸
       _updateVideoSize();
@@ -309,7 +313,7 @@ class AliPlayerWidgetController {
       String? errorMsg,
       String playerId,
     ) {
-      logi("[player][cbk][error], errorCode: $errorCode, errorMsg: $errorMsg");
+      _playerLog("[cbk][error]: errorCode: $errorCode, errorMsg: $errorMsg");
 
       playErrorNotifier.value = {errorCode: errorMsg};
     });
@@ -317,7 +321,7 @@ class AliPlayerWidgetController {
     // 设置播放器状态改变回调
     _aliPlayer.setOnStateChanged((int newState, String playerId) {
       final oldState = playStateNotifier.value;
-      logi("[player][cbk][stateChanged], state: $oldState->$newState");
+      _playerLog("[cbk][stateChanged]: state: $oldState->$newState");
 
       // Update play state
       playStateNotifier.value = newState;
@@ -326,11 +330,11 @@ class AliPlayerWidgetController {
     // 设置缩略图代理回调
     _aliPlayer.setOnThumbnailPreparedListener(
       preparedSuccess: (playerId) {
-        logi("[player][cbk][thumbnailPrepared]: preparedSuccess, $playerId");
+        _playerLog("[cbk][thumbnailPrepared]: preparedSuccess, $playerId");
         _thumbnailSuccess = true;
       },
       preparedFail: (playerId) {
-        logi("[player][cbk][thumbnailPrepared]: preparedFail, $playerId");
+        _playerLog("[cbk][thumbnailPrepared]: preparedFail, $playerId");
         _thumbnailSuccess = false;
       },
     );
@@ -363,7 +367,7 @@ class AliPlayerWidgetController {
     stop();
 
     // 异步释放播放器
-    logi("[player][api][releaseAsync]: ${_aliPlayer.hashCode}");
+    _playerLog("[api][releaseAsync]");
     _aliPlayer.releaseAsync();
 
     // 重置播放状态
@@ -442,8 +446,13 @@ class AliPlayerWidgetController {
   ///
   /// [playerViewId] The ID of the player view to be set.
   void _setPlayerView(int playerViewId) {
-    logi("[player][api][setPlayerView]: ${_aliPlayer.hashCode}, $playerViewId");
+    _playerLog("[api][setPlayerView]: $playerViewId");
     _aliPlayer.setPlayerView(playerViewId);
+
+    // 列表播放模式下，允许预渲染
+    if (_widgetData?.sceneType == SceneType.listPlayer) {
+      _aliPlayer.setOption(FlutterAvpdef.ALLOW_PRE_RENDER, 1);
+    }
   }
 
   /// 配置播放控制器
@@ -456,6 +465,8 @@ class AliPlayerWidgetController {
       throw ArgumentError("Invalid video URL");
     }
 
+    logi("[api][configure]: $data");
+
     _widgetData = data;
 
     // 列表播放模式下，允许预渲染
@@ -465,6 +476,7 @@ class AliPlayerWidgetController {
 
     _aliPlayer.setUrl(data.videoUrl);
     _aliPlayer.setStartTime(data.startTime, data.seekMode);
+
     _aliPlayer.setAutoPlay(data.autoPlay);
 
     // 准备播放
@@ -475,7 +487,7 @@ class AliPlayerWidgetController {
   ///
   /// Prepare the player for playback.
   void prepare() {
-    logi("[player][api][prepare]: ${_aliPlayer.hashCode}");
+    _playerLog("[api][prepare]");
     _aliPlayer.prepare();
 
     // 记录准备开始时间
@@ -486,7 +498,7 @@ class AliPlayerWidgetController {
   ///
   /// Start or resume playback of the player.
   void play() {
-    logi("[player][api][play]: ${_aliPlayer.hashCode}");
+    _playerLog("[api][play]");
     _aliPlayer.play();
   }
 
@@ -494,7 +506,7 @@ class AliPlayerWidgetController {
   ///
   /// Pause the player's playback.
   void pause() {
-    logi("[player][api][pause]: ${_aliPlayer.hashCode}");
+    _playerLog("[api][pause]");
     _aliPlayer.pause();
   }
 
@@ -502,7 +514,7 @@ class AliPlayerWidgetController {
   ///
   /// Stop the player's playback.
   void stop() {
-    logi("[player][api][stop]: ${_aliPlayer.hashCode}");
+    _playerLog("[api][stop]");
     _aliPlayer.stop();
   }
 
@@ -717,7 +729,6 @@ class AliPlayerWidgetController {
     // update track info list when player is prepared
     var mediaInfo = await _aliPlayer.getMediaInfo();
     var tracks = mediaInfo["tracks"];
-    logi("_createTrackInfoWhenPrepared: $tracks");
 
     // 过滤出视频清晰度信息
     final trackInfoList = TrackInfoUtil.filterVideoTrackInfoList(tracks);
@@ -791,8 +802,20 @@ class AliPlayerWidgetController {
     }
   }
 
+  /// Player log information with a consistent format.
+  ///
+  /// 使用统一格式记录播放器信息
+  void _playerLog(String message, {bool isError = false}) {
+    final logMessage = "[$_playerUniqueId][player]$message";
+    if (isError) {
+      loge(logMessage, tag: _logTag);
+    } else {
+      logi(logMessage, tag: _logTag);
+    }
+  }
+
   /// Flutter Widget 版本号
-  static const String _kWidgetVersion = '7.0.0';
+  static const String _kWidgetVersion = '7.0.1';
 
   /// 获取 Flutter Widget 版本号
   ///

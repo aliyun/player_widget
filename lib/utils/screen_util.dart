@@ -50,6 +50,7 @@ class ScreenUtil {
   /// 默认尺寸计算
   ///
   /// Calculate the default dimensions.
+  // ignore: unused_element
   static Size _calculateDefaultDimensions(BuildContext context) {
     final size = MediaQuery.of(context).size;
     final shortestSide = size.shortestSide;

@@ -8,7 +8,8 @@ Through this sample project, developers can intuitively understand the following
 - How to embed a video player component.
 - How to configure playback functionality for different scenarios (e.g., VOD, live streaming, playlist playback).
 - How to leverage custom options to achieve personalized user experiences.
-Whether in education, entertainment, or e-commerce, `AliPlayerWidget` significantly reduces development costs and helps build smooth and efficient video playback experiences.
+
+Whether in the fields of education, entertainment, and e-commerce, or in the rapidly emerging short drama application scenarios in recent years, `AliPlayerWidget` significantly reduces development costs and helps build a smooth and efficient video playback experience.
 
 ---
 
@@ -215,4 +216,4 @@ The `aliplayer_widget_example` project comprehensively demonstrates the core fun
 
 ---
 
-If you encounter any issues or have suggestions while using `AliPlayerWidget`, feel free to join the AliCloud Player SDK developer group by searching DingTalk group number 31882553.
+For more common issues and resolution suggestions related to the use of Alibaba Cloud Player SDK, please refer to [FAQ about ApsaraVideo Player](https://www.alibabacloud.com/help/en/vod/support/faq-about-apsaravideo-player/).

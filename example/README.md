@@ -12,7 +12,7 @@ Language: 中文简体 | [English](README-EN.md)
 - 如何配置不同场景下的播放功能（如点播、直播、列表播放）。
 - 如何利用自定义选项实现个性化的用户体验。
 
-无论是教育、娱乐还是电商领域，`AliPlayerWidget` 都能显著降低开发成本，帮助构建流畅且高效的视频播放体验。
+无论是教育、娱乐、电商领域，还是近年来兴起的短剧应用场景，`AliPlayerWidget` 都能显著降低开发成本，帮助构建流畅且高效的视频播放体验。
 
 ---
 
@@ -280,5 +280,5 @@ flutter run lib/main.dart
 
 ---
 
-如果您在使用 `AliPlayerWidget` 过程中有任何问题或建议，欢迎通过钉钉搜索群号 31882553 加入阿里云播放器 SDK 开发者群。
+更多关于使用阿里云播放器 SDK 的常见问题及修复建议，请参见[播放器常见问题](https://help.aliyun.com/zh/vod/support/faq-about-apsaravideo-player/)。
 
