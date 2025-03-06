@@ -21,6 +21,7 @@ export 'package:flutter_aliplayer/flutter_aliplayer_global_setting.dart';
 export 'package:flutter_aliplayer/flutter_aliplayer_factory.dart';
 
 // 导入必要的依赖
+import 'dart:developer';
 import 'dart:ui';
 
 import 'package:aliplayer_widget/constants/setting_constants.dart';
@@ -29,6 +30,7 @@ import 'package:aliplayer_widget/manager/shared_animation_manager.dart';
 import 'package:aliplayer_widget/utils/format_util.dart';
 import 'package:aliplayer_widget/utils/scene_util.dart';
 import 'package:aliplayer_widget/utils/screen_util.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_aliplayer/flutter_aliplayer.dart';

@@ -1,5 +1,21 @@
 # **AliPlayerWidget Changelog**
 
+## **[7.0.2] - UI Performance Optimization**
+
+### **Performance Improvements**
+
+* Enhanced PageView scrolling performance, significantly reducing lag during transitions.
+* Optimized UI rendering for smoother interactions and improved responsiveness.
+
+### **Bug Fixes**
+
+* Fixed video loading delays during PageView scrolling on certain devices.
+* Resolved UI layout issues during full-screen mode transitions.
+
+---
+
+**Note**: This release focuses on UI performance optimization. Upgrading is recommended for a smoother experience.
+
 ## **[7.0.1] - Documentation Improvements**
 
 ### **Documentation Updates**

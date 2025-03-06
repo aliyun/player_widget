@@ -23,6 +23,9 @@ class PageRoutes {
   /// 短视频页面
   static const String shortVideo = '/short_video';
 
+  /// 短视频页面（支持预加载）
+  static const String preloadShortVideo = '/preload_short_video';
+
   /// 直播播放页面（横屏）
   static const String liveLandscape = '/live/landscape';
 
@@ -61,6 +64,11 @@ class PageRoutes {
       name: '短视频',
       icon: Icons.shortcut_rounded,
       pageRoute: shortVideo,
+    ),
+    const HomePageItemConfig(
+      name: '短视频（支持预加载）',
+      icon: Icons.shortcut_rounded,
+      pageRoute: preloadShortVideo,
     ),
     const HomePageItemConfig(
       name: '设置页',

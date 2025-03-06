@@ -15,29 +15,57 @@ import 'short_video_item.dart';
 
 /// 沉浸式列表播放页面
 ///
-/// 使用 PreloadPageView 代替 PageView 来实现列表播放，
-/// 因为 PreloadPageView 支持 item 的预加载，而 PageView 不能。
+/// 使用 PreloadPageView 或 PageView 来实现沉浸式视频列表播放。
+/// 根据 `preload` 参数决定是否启用预加载功能。
 ///
-/// Use PreloadPageView instead of PageView to implement list playback,
-/// because PreloadPageView supports preloading of items, while PageView cannot.
+/// ### PreloadPageView 的优势和劣势
+/// - **优势**：
+///   1. **预加载支持**：`PreloadPageView` 支持页面的预加载功能，可以提前加载相邻页面的内容（如视频），从而减少用户滑动时的延迟，提升用户体验。
+///   2. **流畅性**：由于预加载的存在，滑动切换页面时更加流畅，尤其是在需要加载复杂内容（如视频）的场景下。
+///   3. **适合高要求场景**：对于需要快速响应和高性能的场景（如短视频应用），`PreloadPageView` 是一个更好的选择。
+/// - **劣势**：
+///   1. **内存占用较高**：预加载会增加内存消耗，因为需要同时加载多个页面的内容。
+///   2. **依赖第三方库**：`PreloadPageView` 并不是 Flutter 官方提供的组件，而是来自第三方库，可能会引入额外的维护成本或兼容性问题。
 ///
-/// 如果你想尽可能多地使用Flutter原生解决方案而不是第三方库，
-/// 你可以用PageView替换PreloadPageView，因为两者之间的接口差异相对较小。
+/// ### PageView 的优势和劣势
+/// - **优势**：
+///   1. **官方支持**：`PageView` 是 Flutter 官方提供的组件，稳定性高，文档和社区支持丰富。
+///   2. **轻量级**：不支持预加载，因此内存占用较低，适合对性能要求不高的场景。
+///   3. **简单易用**：接口设计简洁，易于集成和使用。
+/// - **劣势**：
+///   1. **缺乏预加载**：`PageView` 不支持预加载功能，可能导致用户滑动时出现卡顿或延迟，尤其是在需要加载复杂内容（如视频）的场景下。
+///   2. **体验较差**：在需要快速响应的场景中，`PageView` 的表现可能不如 `PreloadPageView` 流畅。
 ///
-/// If you want to use Flutter native solutions as much as possible instead of third-party libraries,
-/// you can replace PreloadPageView with PageView, as the interface difference between the two is relatively small.
+/// 如果你需要在性能和资源消耗之间权衡，可以根据具体需求选择合适的组件。
 class ShortVideoPage extends StatelessWidget {
-  const ShortVideoPage({super.key});
+  /// 是否启用预加载功能
+  ///
+  /// - `true`：使用 `PreloadPageView`，支持页面预加载。
+  /// - `false`：使用 `PageView`，不支持页面预加载。
+  final bool preload;
+
+  const ShortVideoPage({
+    super.key,
+    this.preload = true, // 默认启用预加载
+  });
 
   @override
   Widget build(BuildContext context) {
-    return const Scaffold(body: ShortVideoListPage());
+    return Scaffold(
+      body: ShortVideoListPage(preload: preload),
+    );
   }
 }
 
 /// 沉浸式列表组件
 class ShortVideoListPage extends StatefulWidget {
-  const ShortVideoListPage({super.key});
+  /// 是否启用预加载
+  final bool preload;
+
+  const ShortVideoListPage({
+    super.key,
+    required this.preload,
+  });
 
   @override
   State<ShortVideoListPage> createState() => _ShortVideoListPageState();
@@ -54,7 +82,10 @@ class _ShortVideoListPageState extends State<ShortVideoListPage> {
   late AliPlayerPreload _aliPlayerPreload;
 
   /// PageController 用于监听当前页面和预加载下一个页面
-  final PreloadPageController _pageController = PreloadPageController();
+  late PageController _pageController;
+
+  /// PreloadPageController 用于 PreloadPageView
+  late PreloadPageController _preloadPageController;
 
   /// 当前页面索引
   int _currentIndex = 0;
@@ -75,8 +106,14 @@ class _ShortVideoListPageState extends State<ShortVideoListPage> {
       enableCoverUrlStrategy: true,
     );
 
-    // 监听页面变化
-    _pageController.addListener(_onPageChanged);
+    // 根据 preload 参数初始化控制器
+    if (widget.preload) {
+      _preloadPageController = PreloadPageController();
+      _preloadPageController.addListener(_onPageChanged);
+    } else {
+      _pageController = PageController();
+      _pageController.addListener(_onPageChanged);
+    }
 
     // 加载视频数据
     _loadVideoInfoList();
@@ -87,8 +124,12 @@ class _ShortVideoListPageState extends State<ShortVideoListPage> {
     // 释放预加载器
     _aliPlayerPreload.destroy();
 
-    // 释放资源
-    _pageController.dispose();
+    // 根据 preload 参数释放控制器
+    if (widget.preload) {
+      _preloadPageController.dispose();
+    } else {
+      _pageController.dispose();
+    }
 
     super.dispose();
   }
@@ -101,7 +142,7 @@ class _ShortVideoListPageState extends State<ShortVideoListPage> {
     );
 
     if (response != null && response is List) {
-      print("[$_tag][response]: $response");
+      debugPrint("[$_tag][response]: $response");
       final List<dynamic> jsonData = response;
       setState(() {
         videoInfoList = jsonData
@@ -129,7 +170,7 @@ class _ShortVideoListPageState extends State<ShortVideoListPage> {
         _isLoading = false;
       });
     } else {
-      print("[$_tag][error]: Error loading video info list");
+      debugPrint("[$_tag][error]: Error loading video info list");
       setState(() {
         _isLoading = false;
       });
@@ -139,14 +180,16 @@ class _ShortVideoListPageState extends State<ShortVideoListPage> {
   /// 页面变化监听器
   void _onPageChanged() {
     // 获取当前页面索引
-    final newPageIndex = _pageController.page?.round() ?? 0;
+    final newPageIndex = widget.preload
+        ? _preloadPageController.page?.round() ?? 0
+        : _pageController.page?.round() ?? 0;
 
     // 如果当前页面索引和新页面索引相同，则不执行任何操作
     if (_currentIndex == newPageIndex) {
       return;
     }
 
-    print("[$_tag]${'-' * 30}[index][$_currentIndex->$newPageIndex]");
+    debugPrint("[$_tag]${'-' * 30}[index][$_currentIndex->$newPageIndex]");
 
     // 更新当前页面索引
     _currentIndex = newPageIndex;
@@ -171,29 +214,41 @@ class _ShortVideoListPageState extends State<ShortVideoListPage> {
     }
   }
 
+  // 提取公共的 itemBuilder 逻辑
+  Widget _buildItem(BuildContext context, int index) {
+    final videoItem = videoInfoList[index];
+    debugPrint("[$_tag][item][lifecycle][create][${videoItem.id}]");
+    return ShortVideoItem(
+      key: _itemKeys[index],
+      videoInfo: videoItem,
+      autoPlay: index == _currentIndex,
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     if (_isLoading) {
       return Container(
         color: Colors.black,
-        child: const Center(child: CircularProgressIndicator()),
+        alignment: Alignment.center,
+        child: const CircularProgressIndicator(),
       );
     }
 
-    return PreloadPageView.builder(
-      controller: _pageController,
-      scrollDirection: Axis.vertical,
-      itemCount: videoInfoList.length,
-      itemBuilder: (context, index) {
-        final videoItem = videoInfoList[index];
-        print("[$_tag][item][lifecycle][create][${videoItem.id}]");
-        return ShortVideoItem(
-          key: _itemKeys[index],
-          videoInfo: videoItem,
-          autoPlay: index == _currentIndex,
-        );
-      },
-      preloadPagesCount: 1,
-    );
+    // 根据 preload 参数选择使用 PreloadPageView 或 PageView
+    return widget.preload
+        ? PreloadPageView.builder(
+            controller: _preloadPageController,
+            scrollDirection: Axis.vertical,
+            itemCount: videoInfoList.length,
+            itemBuilder: _buildItem,
+            preloadPagesCount: 1,
+          )
+        : PageView.builder(
+            controller: _pageController,
+            scrollDirection: Axis.vertical,
+            itemCount: videoInfoList.length,
+            itemBuilder: _buildItem,
+          );
   }
 }

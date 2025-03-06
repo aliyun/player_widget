@@ -156,7 +156,7 @@ class AliPlayerWidgetController {
   }
 
   /// 初始化操作
-  void _init() async {
+  void _init() {
     // 初始化全局配置
     AliPlayerWidgetGlobalSetting.setupConfig();
 
@@ -170,12 +170,12 @@ class AliPlayerWidgetController {
   /// 销毁播放控制器
   ///
   /// Destroy the player controller
-  void destroy() async {
+  void destroy() {
     // 销毁播放器实例
-    _destroyPlayer();
+    Future.microtask(() => _destroyPlayer());
 
     // 销毁值监听器
-    _disposeValueNotifiers();
+    Future.microtask(() => _disposeValueNotifiers());
   }
 
   /// 初始化播放器实例
@@ -187,7 +187,7 @@ class AliPlayerWidgetController {
     /// 1、创建播放器
     _aliPlayer = FlutterAliPlayerFactory.createAliPlayer();
     _playerUniqueId = _aliPlayer.playerId;
-    _playerLog("[api][create]");
+    _playerLog("[api][lifecycle][create]");
 
     /// 2、设置播放器事件回调
     // 设置播放器事件回调，准备完成事件
@@ -198,10 +198,10 @@ class AliPlayerWidgetController {
       _playerLog("[cbk][onPrepared]: costTime: $cost");
 
       // 创建清晰度信息
-      _createTrackInfoWhenPrepared();
+      Future.microtask(() => _createTrackInfoWhenPrepared());
 
       // 创建缩略图（方式1）
-      _createThumbnailWhenPrepared();
+      Future.microtask(() => _createThumbnailWhenPrepared());
     });
 
     // 设置播放器事件回调，首帧显示事件
@@ -238,19 +238,6 @@ class AliPlayerWidgetController {
       _updateVideoSize();
     });
 
-    // 设置视频缓冲相关回调
-    _aliPlayer.setOnLoadingStatusListener(
-      // loadingBegin: 播放器事件回调，缓冲开始事件
-      loadingBegin: (String playerId) {},
-      // loadingProgress: 视频缓冲进度回调
-      loadingProgress: (int percent, double? netSpeed, String playerId) {},
-      // loadingEnd: 播放器事件回调，缓冲完成事件
-      loadingEnd: (String playerId) {},
-    );
-
-    // 设置播放器事件回调，跳转完成事件
-    _aliPlayer.setOnSeekComplete((String playerId) {});
-
     // 设置视频当前播放位置回调
     _aliPlayer.setOnInfo(
         (int? infoCode, int? extraValue, String? extraMsg, String playerId) {
@@ -276,10 +263,10 @@ class AliPlayerWidgetController {
       _updateVideoSize();
 
       // 创建清晰度信息
-      _createTrackInfoWhenPrepared();
+      Future.microtask(() => _createTrackInfoWhenPrepared());
 
       // 创建缩略图（方式2）
-      _createThumbnailWhenTrackReady();
+      Future.microtask(() => _createThumbnailWhenTrackReady());
     });
 
     // 设置track切换完成回调
@@ -303,9 +290,6 @@ class AliPlayerWidgetController {
       SnackBarUtil.success(_context, "selectTrack: $quality");
     });
 
-    // 设置获取截图回调
-    _aliPlayer.setOnSnapShot((String path, String playerId) {});
-
     // 设置错误代理回调
     _aliPlayer.setOnError((
       int errorCode,
@@ -316,6 +300,12 @@ class AliPlayerWidgetController {
       _playerLog("[cbk][error]: errorCode: $errorCode, errorMsg: $errorMsg");
 
       playErrorNotifier.value = {errorCode: errorMsg};
+
+      // If occurs error, update video size as default.
+      if (videoSizeNotifier.value == Size.zero) {
+        final videoSize = ScreenUtil.calculateDefaultDimensions(_context);
+        videoSizeNotifier.value = videoSize;
+      }
     });
 
     // 设置播放器状态改变回调
@@ -367,7 +357,7 @@ class AliPlayerWidgetController {
     stop();
 
     // 异步释放播放器
-    _playerLog("[api][releaseAsync]");
+    _playerLog("[api][lifecycle][releaseAsync]");
     _aliPlayer.releaseAsync();
 
     // 重置播放状态
@@ -527,6 +517,8 @@ class AliPlayerWidgetController {
 
     if (playState == FlutterAvpdef.started) {
       pause();
+    } else if (playState == FlutterAvpdef.completion) {
+      replay();
     } else if (_isPrepared) {
       play();
     }
@@ -725,7 +717,7 @@ class AliPlayerWidgetController {
   /// 获取播放清晰度信息
   ///
   /// Retrieve and update the track information when the player is prepared.
-  void _createTrackInfoWhenPrepared() async {
+  Future<void> _createTrackInfoWhenPrepared() async {
     // update track info list when player is prepared
     var mediaInfo = await _aliPlayer.getMediaInfo();
     var tracks = mediaInfo["tracks"];
@@ -815,7 +807,7 @@ class AliPlayerWidgetController {
   }
 
   /// Flutter Widget 版本号
-  static const String _kWidgetVersion = '7.0.1';
+  static const String _kWidgetVersion = '7.0.2';
 
   /// 获取 Flutter Widget 版本号
   ///

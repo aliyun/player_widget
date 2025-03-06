@@ -196,24 +196,20 @@ class AliPlayerPreload {
   }) {
     if (items.isEmpty) return;
 
-    final videoUrls = <String>[];
-    final coverUrls = <String>[];
+    final videoUrls = <String>{};
+    final coverUrls = <String>{};
 
     for (final item in items) {
-      if (_isValidUrl(item.videoUrl)) {
-        videoUrls.add(item.videoUrl);
-      }
-      if (_isValidUrl(item.coverUrl)) {
-        coverUrls.add(item.coverUrl);
-      }
+      if (_isValidUrl(item.videoUrl)) videoUrls.add(item.videoUrl);
+      if (_isValidUrl(item.coverUrl)) coverUrls.add(item.coverUrl);
     }
 
     if (overwrite) {
-      _videoPreloader.setItems(videoUrls);
-      _coverPreloader?.setItems(coverUrls);
+      _videoPreloader.setItems(videoUrls.toList());
+      _coverPreloader?.setItems(coverUrls.toList());
     } else {
-      _videoPreloader.addItems(videoUrls);
-      _coverPreloader?.addItems(coverUrls);
+      _videoPreloader.addItems(videoUrls.toList());
+      _coverPreloader?.addItems(coverUrls.toList());
     }
   }
 

@@ -7,15 +7,11 @@ import 'package:flutter/material.dart';
 
 /// 自定义居中展示控件
 class AliPlayerCenterDisplayWidget extends StatefulWidget {
-  /// 是否可见
-  final bool isVisible;
-
   /// 内容组件
   final Widget contentWidget;
 
   const AliPlayerCenterDisplayWidget({
     super.key,
-    required this.isVisible,
     required this.contentWidget,
   });
 
@@ -29,34 +25,32 @@ class _AliPlayerCenterDisplayWidgetState
   @override
   Widget build(BuildContext context) {
     return AnimatedOpacity(
-      opacity: widget.isVisible ? 1.0 : 0.0,
+      opacity: 1.0,
       duration: const Duration(milliseconds: 300),
-      child: widget.isVisible
-          ? Center(
-              child: IntrinsicWidth(
-                child: IntrinsicHeight(
-                  child: Container(
-                    alignment: Alignment.center,
-                    decoration: BoxDecoration(
-                      color: Colors.white.withOpacity(0.3),
-                      borderRadius: BorderRadius.circular(16),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.white.withOpacity(0.2),
-                          blurRadius: 8,
-                          offset: const Offset(0, 4),
-                        ),
-                      ],
-                    ),
-                    child: Padding(
-                      padding: const EdgeInsets.all(8),
-                      child: widget.contentWidget, // 动态传入的内容
-                    ),
+      child: Center(
+        child: IntrinsicWidth(
+          child: IntrinsicHeight(
+            child: Container(
+              alignment: Alignment.center,
+              decoration: BoxDecoration(
+                color: Colors.white.withOpacity(0.3),
+                borderRadius: BorderRadius.circular(16),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.white.withOpacity(0.2),
+                    blurRadius: 8,
+                    offset: const Offset(0, 4),
                   ),
-                ),
+                ],
               ),
-            )
-          : const SizedBox.shrink(),
+              child: Padding(
+                padding: const EdgeInsets.all(8),
+                child: widget.contentWidget, // 动态传入的内容
+              ),
+            ),
+          ),
+        ),
+      ),
     );
   }
 
@@ -67,8 +61,7 @@ class _AliPlayerCenterDisplayWidgetState
   @override
   void didUpdateWidget(covariant AliPlayerCenterDisplayWidget oldWidget) {
     super.didUpdateWidget(oldWidget);
-    if (oldWidget.isVisible != widget.isVisible ||
-        oldWidget.contentWidget != widget.contentWidget) {
+    if (oldWidget.contentWidget != widget.contentWidget) {
       setState(() {});
     }
   }

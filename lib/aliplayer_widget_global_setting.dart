@@ -50,15 +50,23 @@ class AliPlayerWidgetGlobalSetting {
   // 私有构造函数，防止实例化
   AliPlayerWidgetGlobalSetting._();
 
+  /// 标志变量，用于确保全局配置只执行一次
+  static bool _isInitialized = false;
+
   /// Setup global configuration.
   /// Internally set, no need to call externally again.
   ///
   /// 设置全局配置，内部已设置，无需外部再调用
   static Future<void> setupConfig() async {
-    await Future.microtask(() async {
-      // 设置业务标识
-      _setupExtraData();
-    });
+    if (_isInitialized) {
+      return; // 如果已经初始化过，直接返回
+    }
+
+    // 标记为已初始化
+    _isInitialized = true;
+
+    // 设置业务标识
+    _setupExtraData();
   }
 
   /// Setup extra data for global settings.

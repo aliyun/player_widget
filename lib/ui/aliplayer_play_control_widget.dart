@@ -11,10 +11,6 @@ import 'package:flutter/material.dart';
 ///
 /// Player Control Widget
 class AliPlayerPlayControlWidget extends StatefulWidget {
-  /// Width and height for the control view
-  final double width;
-  final double height;
-
   /// Whether to auto-hide the control
   final bool autoHide;
 
@@ -38,8 +34,6 @@ class AliPlayerPlayControlWidget extends StatefulWidget {
 
   const AliPlayerPlayControlWidget({
     super.key,
-    required this.width,
-    required this.height,
     this.autoHide = true,
     this.onVisibilityChanged,
     this.onSingleTap,
@@ -225,10 +219,7 @@ class _AliPlayerPlayControlWidgetState
               widget.onRightVerticalDragEnd != null)
           ? _onVerticalDragEnd
           : null,
-      child: SizedBox(
-        width: widget.width,
-        height: widget.height,
-      ),
+      child: Container(),
     );
   }
 

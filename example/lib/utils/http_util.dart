@@ -5,6 +5,7 @@
 // Brief: HTTP 请求工具类
 
 import 'package:dio/dio.dart';
+import 'package:flutter/cupertino.dart';
 
 /// HTTP 请求工具类
 ///
@@ -189,6 +190,6 @@ class HTTPUtil {
   ///
   /// Logs messages with a unified format.
   static void _log(String message) {
-    print('$_logTag $message');
+    debugPrint('$_logTag $message');
   }
 }

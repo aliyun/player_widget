@@ -37,23 +37,28 @@ class _AliPlayerSharedAnimationWidgetState
 
   /// 构建带有透明度动画的内容
   ///
-  /// Build content with opacity animation.
+  /// Build content with optimized fade-in/fade-out animation.
   Widget _buildAnimatedContent(BuildContext context) {
-    // Cache child content to avoid redundant calculations.
-    final content = widget.buildContent(context);
+    return AnimatedBuilder(
+      animation: widget.animationManager.opacityAnimation,
+      builder: (context, child) {
+        final opacity = widget.animationManager.opacityAnimation.value;
 
-    return ValueListenableBuilder<double>(
-      valueListenable: widget.animationManager.opacityAnimation,
-      builder: (context, opacity, child) {
-        return Opacity(
-          opacity: opacity,
+        // 如果完全隐藏，则不构建子组件
+        if (opacity == 0.0) {
+          return const SizedBox.shrink();
+        }
+
+        // 使用 FadeTransition 实现渐隐渐显效果
+        return FadeTransition(
+          opacity: AlwaysStoppedAnimation(opacity), // 使用固定的透明度值
           child: IgnorePointer(
             ignoring: !widget.animationManager.isVisible,
             child: child,
           ),
         );
       },
-      child: content,
+      child: widget.buildContent(context),
     );
   }
 }

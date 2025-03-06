@@ -110,21 +110,20 @@ class AliPlayerWidgetState extends State<AliPlayerWidget>
         final double width = playerViewSize.width;
         final double height = playerViewSize.height;
 
-        return SizedBox(
-          width: width,
-          height: height,
+        return ConstrainedBox(
+          constraints: BoxConstraints.tight(playerViewSize),
           child: Stack(
             children: [
               _buildPlaySurfaceView(width, height),
               if (_playController._widgetData?.coverUrl.isNotEmpty ?? false)
                 _buildPlayCoverView(width, height),
-              _buildPlayControlView(width, height),
+              _buildPlayControlView(),
               _buildTopBarWidget(),
               _buildBottomBarWidget(),
               if (isNotScene(_playController._widgetData, SceneType.live))
                 _buildSeekThumbnailWidget(),
               _buildCenterDisplayWidget(),
-              _buildPlayStateView(width, height),
+              _buildPlayStateView(),
               // 添加浮层
               ..._buildOverlays(),
               _buildSettingMenuPanel(),
@@ -156,9 +155,15 @@ class AliPlayerWidgetState extends State<AliPlayerWidget>
     return ValueListenableBuilder(
       valueListenable: _playController.isRenderedNotifier,
       builder: (context, isRendered, __) {
+        // 如果播放器已经渲染完成，则不显示封面图片
+        if (isRendered) {
+          return const SizedBox.shrink();
+        }
+
+        // 获取封面图片的 URL
+        var imageUrl = _playController._widgetData?.coverUrl ?? "";
         return AliPlayerCoverImageWidget(
-          imageUrl: _playController._widgetData?.coverUrl ?? "",
-          isVisible: !isRendered,
+          imageUrl: imageUrl,
           width: width,
           height: height,
           fit: BoxFit.cover,
@@ -168,7 +173,7 @@ class AliPlayerWidgetState extends State<AliPlayerWidget>
   }
 
   /// 构建播放控制视图
-  Widget _buildPlayControlView(double width, double height) {
+  Widget _buildPlayControlView() {
     // 长按控制
     bool enableLongPress = !_isSceneLive();
     // 拖动控制
@@ -194,8 +199,6 @@ class AliPlayerWidgetState extends State<AliPlayerWidget>
           enableVerticalGestures ? _onPlayerViewRightVerticalDragUpdate : null,
       onRightVerticalDragEnd:
           enableVerticalGestures ? _onPlayerViewRightVerticalDragEnd : null,
-      width: width,
-      height: height,
     );
   }
 
@@ -542,8 +545,12 @@ class AliPlayerWidgetState extends State<AliPlayerWidget>
     return ValueListenableBuilder(
       valueListenable: _contentViewTypeNotifier,
       builder: (context, contentViewType, __) {
+        // 如果不显示任何内容，则返回空组件
+        if (contentViewType == ContentViewType.none) {
+          return const SizedBox.shrink();
+        }
+
         return AliPlayerCenterDisplayWidget(
-          isVisible: contentViewType != ContentViewType.none,
           contentWidget: _buildCenterDisplayContentWidget(contentViewType),
         );
       },
@@ -683,7 +690,7 @@ class AliPlayerWidgetState extends State<AliPlayerWidget>
   }
 
   /// 构建播放状态视图
-  Widget _buildPlayStateView(double width, double height) {
+  Widget _buildPlayStateView() {
     // 监听播放状态、错误码、错误信息等变化
     Listenable listenable = Listenable.merge([
       _playController.playStateNotifier,
@@ -695,19 +702,19 @@ class AliPlayerWidgetState extends State<AliPlayerWidget>
         // 获取播放状态
         final playState = _playController.playStateNotifier.value;
 
+        // 如果不需要构建播放状态视图，则返回空组件
+        if (!playState.shouldBuildWidget) {
+          return const SizedBox.shrink();
+        }
+
         // 获取错误码和错误信息
         final playError = _playController.playErrorNotifier.value;
         final errorCode = playError?.keys.firstOrNull;
         final errorMsg = playError?.values.firstOrNull;
 
         return AliPlayerPlayStateWidget(
-          width: width,
-          height: height,
-          playState: playState,
           errorCode: errorCode,
           errorMsg: errorMsg,
-          onPauseCanceled: _onPlayerViewTap,
-          onRefresh: _playController.replay,
         );
       },
     );

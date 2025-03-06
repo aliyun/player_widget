@@ -85,10 +85,10 @@ class AliPlayerSettingMenuPanel extends StatefulWidget {
 
   @override
   State<AliPlayerSettingMenuPanel> createState() =>
-      AliPlayerSettingMenuPanelState();
+      _AliPlayerSettingMenuPanelState();
 }
 
-class AliPlayerSettingMenuPanelState extends State<AliPlayerSettingMenuPanel>
+class _AliPlayerSettingMenuPanelState extends State<AliPlayerSettingMenuPanel>
     with SingleTickerProviderStateMixin {
   /// 控制面板的动画
   late AnimationController _controller;
@@ -106,7 +106,7 @@ class AliPlayerSettingMenuPanelState extends State<AliPlayerSettingMenuPanel>
     );
     _animation = Tween<Offset>(
       begin: const Offset(1, 0),
-      end: const Offset(0, 0),
+      end: Offset.zero,
     ).animate(CurvedAnimation(
       parent: _controller,
       curve: Curves.easeInOut,
@@ -127,23 +127,15 @@ class AliPlayerSettingMenuPanelState extends State<AliPlayerSettingMenuPanel>
           GestureDetector(
             behavior: HitTestBehavior.opaque,
             onTap: _togglePanelVisibility,
-            child: AbsorbPointer(
-              child: Container(
-                color: Colors.black.withOpacity(0.5),
-              ),
+            child: Container(
+              color: Colors.black.withOpacity(0.5),
             ),
           ),
-        RepaintBoundary(
-          child: SlideTransition(
-            position: _animation,
-            child: Align(
-              alignment: Alignment.centerRight,
-              child: Visibility(
-                visible: _isSettingPanelVisible,
-                maintainState: false,
-                child: _buildSettingPanel(context),
-              ),
-            ),
+        SlideTransition(
+          position: _animation,
+          child: Align(
+            alignment: Alignment.centerRight,
+            child: _isSettingPanelVisible ? _buildSettingPanel(context) : null,
           ),
         ),
       ],
@@ -160,25 +152,28 @@ class AliPlayerSettingMenuPanelState extends State<AliPlayerSettingMenuPanel>
       color: Colors.white.withOpacity(0.3),
       child: SafeArea(
         child: SingleChildScrollView(
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 8.0),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: widget.settingItems.map((item) {
-                switch (item.type) {
-                  case SettingItemType.slider:
-                    return _buildSliderItem(item);
-                  case SettingItemType.selector:
-                    return _buildSelectorItem(item);
-                  case SettingItemType.switcher:
-                    return _buildSwitcherItem(item);
-                }
-              }).toList(),
-            ),
+          padding: const EdgeInsets.symmetric(horizontal: 8.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: widget.settingItems.map(_buildSettingItem).toList(),
           ),
         ),
       ),
     );
+  }
+
+  /// 构建设置项
+  ///
+  /// Build the setting item.
+  Widget _buildSettingItem(SettingItem item) {
+    switch (item.type) {
+      case SettingItemType.slider:
+        return _buildSliderItem(item);
+      case SettingItemType.selector:
+        return _buildSelectorItem(item);
+      case SettingItemType.switcher:
+        return _buildSwitcherItem(item);
+    }
   }
 
   /// 构建滑块类型的设置项

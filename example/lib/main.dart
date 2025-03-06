@@ -44,14 +44,15 @@ class MyApp extends StatelessWidget {
       ),
       initialRoute: PageRoutes.home,
       routes: {
-        PageRoutes.home: (context) => const HomePage(),
-        PageRoutes.longVideo: (context) => const LongVideoPage(),
-        PageRoutes.shortVideo: (context) => const ShortVideoPage(),
-        PageRoutes.liveLandscape: (context) => const LivePage(),
-        PageRoutes.livePortrait: (context) => const LivePage(isPortrait: true),
-        PageRoutes.debug: (context) => const DebugPage(),
-        PageRoutes.settings: (context) => const SettingsPage(),
-        PageRoutes.link: (context) => const LinkPage(),
+        PageRoutes.home: (_) => const HomePage(),
+        PageRoutes.longVideo: (_) => const LongVideoPage(),
+        PageRoutes.shortVideo: (_) => const ShortVideoPage(preload: false),
+        PageRoutes.preloadShortVideo: (_) => const ShortVideoPage(),
+        PageRoutes.liveLandscape: (_) => const LivePage(),
+        PageRoutes.livePortrait: (_) => const LivePage(isPortrait: true),
+        PageRoutes.debug: (_) => const DebugPage(),
+        PageRoutes.settings: (_) => const SettingsPage(),
+        PageRoutes.link: (_) => const LinkPage(),
       },
     );
   }
