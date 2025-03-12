@@ -5,9 +5,10 @@
 // Brief: 沉浸式列表播放页面
 
 import 'package:aliplayer_widget_example/constants/demo_constants.dart';
+import 'package:aliplayer_widget_example/manager/sp_manager.dart';
 import 'package:aliplayer_widget_example/model/video_info.dart';
+import 'package:aliplayer_widget_example/pages/short_video/short_video_util.dart';
 import 'package:aliplayer_widget_example/preload/ali_player_preload.dart';
-import 'package:aliplayer_widget_example/utils/http_util.dart';
 import 'package:flutter/material.dart';
 import 'package:preload_page_view/preload_page_view.dart';
 
@@ -116,7 +117,7 @@ class _ShortVideoListPageState extends State<ShortVideoListPage> {
     }
 
     // 加载视频数据
-    _loadVideoInfoList();
+    _loadData();
   }
 
   @override
@@ -135,46 +136,65 @@ class _ShortVideoListPageState extends State<ShortVideoListPage> {
   }
 
   /// 加载视频数据
-  Future<void> _loadVideoInfoList() async {
-    // 发起 HTTP 请求获取视频数据
-    final response = await HTTPUtil.instance.get(
-      DemoConstants.defaultVideoInfoListUrl,
-    );
+  Future<void> _loadData() async {
+    try {
+      // 从本地存储中获取视频数据列表的 URL
+      final savedLink = SPManager.instance.getString(
+        DemoConstants.keyDramaInfoListUrl,
+      );
 
-    if (response != null && response is List) {
-      debugPrint("[$_tag][response]: $response");
-      final List<dynamic> jsonData = response;
-      setState(() {
-        videoInfoList = jsonData
-            .map((json) => VideoInfo(
-                  id: json['id'],
-                  videoUrl: json['url'],
-                  coverUrl: json['coverUrl'],
-                  type: json['type'] ?? "video",
-                ))
-            .toList();
-
-        // 设置预加载器数据
-        _aliPlayerPreload.setItems(videoInfoList);
-        _aliPlayerPreload.moveTo(_currentIndex);
-
-        // 动态初始化 GlobalKey
-        _itemKeys.clear();
-        _itemKeys.addAll(
-          List.generate(
-            videoInfoList.length,
-            (_) => GlobalKey<ShortVideoItemState>(),
-          ),
+      if (savedLink != null) {
+        // 加载剧集信息列表数据
+        final dramaInfoList = await ShortVideoUtil.loadDramaInfoList(savedLink);
+        // 从剧集信息列表中提取视频列表
+        final videoList = ShortVideoUtil.getVideoInfoListFromDramaInfo(
+          dramaInfoList?.firstOrNull,
         );
 
-        _isLoading = false;
-      });
-    } else {
-      debugPrint("[$_tag][error]: Error loading video info list");
-      setState(() {
-        _isLoading = false;
-      });
+        setState(() {
+          videoInfoList = videoList;
+          _completeLoading();
+        });
+      } else {
+        // 加载普通视频列表数据
+        final videoList = await ShortVideoUtil.loadVideoInfoList(
+          DemoConstants.defaultVideoInfoListUrl,
+        );
+
+        setState(() {
+          videoInfoList = videoList;
+          _completeLoading();
+        });
+      }
+    } catch (e) {
+      _handleLoadingError("Exception: $e");
     }
+  }
+
+  /// 完成加载后的公共操作
+  void _completeLoading() {
+    // 设置预加载器数据
+    _aliPlayerPreload.setItems(videoInfoList);
+    _aliPlayerPreload.moveTo(_currentIndex);
+
+    // 动态初始化 GlobalKey
+    _itemKeys.clear();
+    _itemKeys.addAll(
+      List.generate(
+        videoInfoList.length,
+        (_) => GlobalKey<ShortVideoItemState>(),
+      ),
+    );
+
+    _isLoading = false;
+  }
+
+  /// 处理加载错误
+  void _handleLoadingError(String errorMessage) {
+    debugPrint("[$_tag][error]: $errorMessage");
+    setState(() {
+      _isLoading = false;
+    });
   }
 
   /// 页面变化监听器

@@ -806,14 +806,11 @@ class AliPlayerWidgetController {
     }
   }
 
-  /// Flutter Widget 版本号
-  static const String _kWidgetVersion = '7.0.2';
-
   /// 获取 Flutter Widget 版本号
   ///
   /// Get Flutter Widget version
-  static Future<String> getWidgetVersion() async {
-    return _kWidgetVersion;
+  static String getWidgetVersion() {
+    return AliPlayerWidgetGlobalSetting.kWidgetVersion;
   }
 
   /// 清除 Widget 缓存

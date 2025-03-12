@@ -10,10 +10,16 @@ part of 'aliplayer_widget_lib.dart';
 ///
 /// AliPlayer Widget 全局配置
 class AliPlayerWidgetGlobalSetting {
+  /// Flutter Widget version
+  ///
+  /// Flutter Widget 版本号
+  static const String kWidgetVersion = '7.0.3';
+
   /// extra data for global settings
   ///
   /// 业务场景信息的 JSON 字符串
-  static const String _extraData = "{\"scene\":\"flutter-widget\"}";
+  static const String _extraData =
+      "{\"scene\":\"flutter-widget\", \"version\":\"$kWidgetVersion\"}";
 
   /// cache directory name
   ///

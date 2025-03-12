@@ -73,7 +73,7 @@ class _LinkPageState extends State<LinkPage> {
   Future<void> _loadSavedLinks() async {
     for (int i = 0; i < items.length; i++) {
       var name = items[i].name;
-      final savedLink = await SPManager.instance.getString(name);
+      final savedLink = SPManager.instance.getString(name);
       if (savedLink != null) {
         setState(() {
           items[i].link = savedLink; // 更新数据模型

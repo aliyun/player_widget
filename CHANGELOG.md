@@ -1,5 +1,20 @@
 # **AliPlayerWidget Changelog**
 
+## **[7.0.3] - Bug Fixes and Feature Enhancements**
+### **Bug Fixes**
+- Resolved issues related to `pub.dev` compliance, ensuring smoother package publication and integration.
+  - Addressed metadata and dependency-related warnings.
+  - Improved package validation to meet `pub.dev` quality standards.
+
+### **New Features**
+- Introduced **business identifier** support, allowing developers to tag player instances with custom identifiers for better tracking and analytics.
+  - This feature enhances the ability to monitor and manage player usage in complex multi-scenario applications.
+
+- Added **video source switching functionality** to the example project, enabling seamless transitions between different video sources during playback.
+  - This update provides a practical demonstration of dynamic source management and enhances the flexibility of the example project for developers.
+
+---
+
 ## **[7.0.2] - UI Performance Optimization**
 
 ### **Performance Improvements**
@@ -12,9 +27,9 @@
 * Fixed video loading delays during PageView scrolling on certain devices.
 * Resolved UI layout issues during full-screen mode transitions.
 
----
-
 **Note**: This release focuses on UI performance optimization. Upgrading is recommended for a smoother experience.
+
+---
 
 ## **[7.0.1] - Documentation Improvements**
 

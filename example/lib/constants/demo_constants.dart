@@ -33,4 +33,11 @@ class DemoConstants {
   /// Convert to video info list
   static const String defaultVideoInfoListUrl =
       "https://alivc-demo-cms.alicdn.com/versionProduct/resources/shortdrama/video-info-list-default.json";
+
+  /// Optional list of Sample drama info list URL - network drama source (total)
+  static const String defaultDramaInfoListTotalUrl =
+      "https://alivc-demo-cms.alicdn.com/versionProduct/resources/shortdrama/drama-info-list-total.json";
+
+  /// Key of Sample drama info list URL
+  static const String keyDramaInfoListUrl = "dramaInfoListUrl";
 }
