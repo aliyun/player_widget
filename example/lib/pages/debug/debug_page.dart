@@ -111,9 +111,13 @@ class _DebugPageState extends State<DebugPage> with WidgetsBindingObserver {
     // 初始化播放器组件控制器
     _controller = AliPlayerWidgetController(context);
 
+    // 设置播放器视频源
+    final videoSource = VideoSourceFactory.createUrlSource(
+      DemoConstants.sampleVideoUrl,
+    );
     // 设置播放器组件数据
-    AliPlayerWidgetData data = AliPlayerWidgetData(
-      videoUrl: DemoConstants.sampleVideoUrl,
+    final data = AliPlayerWidgetData(
+      videoSource: videoSource,
     );
     _controller.configure(data);
   }

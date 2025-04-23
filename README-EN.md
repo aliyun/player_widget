@@ -1,8 +1,10 @@
 Language: [Simplified Chinese](README.md) | English
 
+![alibaba_cloud_logo](https://alivc-demo-cms.alicdn.com/versionProduct/installPackage/aliplayer_widget/AlibabaCloud.svg)
+
 # **aliplayer_widget**
 
-[![pub package](https://img.shields.io/pub/v/aliplayer_widget.svg)](https://pub.dev/packages/aliplayer_widget)
+[![pub package](https://img.shields.io/pub/v/aliplayer_widget.svg)](https://pub.dev/packages/aliplayer_widget) [![platform](https://img.shields.io/badge/-Flutter-02569B?logo=flutter&logoColor=white)](https://flutter.dev/) [![language](https://img.shields.io/badge/-Dart-0175C2?logo=dart&logoColor=white)](https://dart.dev/) [![website](https://img.shields.io/badge/Product-VOD-FF6A00)](https://www.aliyun.com/product/vod)
 
 ## **1. Overview**
 **AliPlayerWidget** is a high-performance video playback component specifically designed for Flutter applications, built on top of the AliCloud Player SDK `flutter_aliplayer`. It supports multi-scenario adaptation such as Video-on-Demand (VOD), live streaming, playlist playback, and short drama scenes. Additionally, it offers a rich set of features and highly flexible UI customization capabilities, meeting video playback needs across various fields like education, entertainment, e-commerce, and short drama applications.
@@ -17,6 +19,7 @@ With a minimalist API design, AliPlayerWidget achieves low-code integration, all
 - **Rich Feature Set**:
   - **Basic Functions**: Provides core functionalities such as playback control, settings panel, cover image display, and quality switching to meet standard video playback requirements.
   - **Gesture Control**: Supports intuitive brightness, volume, and playback progress adjustments via gestures, enhancing user experience.
+  - **Support for Multiple Playback Sources**: Compatible with various video source types, including direct URL playback, VID+STS token playback, and VID+Auth authentication playback, meeting the playback requirements of different scenarios.
 - **Flexible UI Customization**:
   - **Overlay Support**: Allows custom overlay components with strong extensibility, enabling developers to implement complex features like advertisements and bullet chats.
   - **Modular Design**: Includes reusable UI components such as top bars, bottom bars, and settings panels, making it easy for developers to customize according to their needs.
@@ -68,34 +71,13 @@ Before using **AliPlayerWidget**, ensure your development environment meets the 
 ## **4. Quick Start**
 In just a few steps, you can easily implement video playback functionality! **AliPlayerWidget** offers a minimalist API design to help you rapidly integrate video playback features with minimal coding.
 ### **4.1. Add Dependency**
-You can integrate `AliPlayerWidget` into your Flutter project using one of the following two methods:
-
-* **Method 1: Manually Add Dependency**
-
 In your `pubspec.yaml` file, add the following dependency:
 
 ```yaml
 dependencies:
-  aliplayer_widget: ^x.y.z
+  aliplayer_widget: <latest_version>
+  flutter_aliplayer: <latest_version>
 ```
-> **Note**: `x.y.z` represents the version number of `aliplayer_widget`. You can check the latest stable version on the [Pub.dev official page](https://pub.dev/packages/aliplayer_widget) and replace it with the actual value (e.g., `^7.0.0`).
-
-* **Method 2: Use Command-Line Tool**
-
-If you prefer using the command line, you can run the following command to add the dependency:
-
-```shell
-flutter pub add aliplayer_widget
-```
-This command will automatically update your `pubspec.yaml` file.
-
-Regardless of the method you choose, after completing the dependency addition, run the following command in your terminal to install the dependencies:
-```shell
-flutter pub get
-```
-
-After completing the above steps, `AliPlayerWidget` will be successfully integrated into your project, and you can start using it!
-
 ### **4.2 Implement Video Playback**
 Below is a complete example demonstrating how to embed a video player into a page. With just a few lines of code, you can achieve video playback functionality.
 ```dart
@@ -129,7 +111,7 @@ class _VideoPlayerPageState extends State<VideoPlayerPage> {
     // Initialize the player component controller
     _controller = AliPlayerWidgetController(context);
     // Configure the player component data
-    final data = AliPlayerWidgetData(
+    final data = AliPlayerWidgetData.fromUrl(
       videoUrl: "https://example.com/video.mp4", // Replace with actual video URL
       coverUrl: "https://example.com/cover.jpg", // Replace with actual cover image URL
       videoTitle: "Sample Video",
@@ -220,7 +202,7 @@ AliPlayerWidget(
 // Initialize the player component controller
 final controller = AliPlayerWidgetController(context);
 // Set player component data
-AliPlayerWidgetData data = AliPlayerWidgetData(
+AliPlayerWidgetData data = AliPlayerWidgetData.fromUrl(
   videoUrl: "https://example.com/video.mp4",
 );
 controller.configure(data);
@@ -240,7 +222,7 @@ controller.destroy();
 **Example**
 
 ```dart
-AliPlayerWidgetData(
+AliPlayerWidgetData.fromUrl(
   videoUrl: "https://example.com/video.mp4",
   coverUrl: "https://example.com/cover.jpg",
   videoTitle: "Sample Video",
@@ -251,7 +233,60 @@ AliPlayerWidgetData(
 ---
 
 ## **6. Custom Features**
-### **6.1 Overlay Components**
+### **6.1 Video Source Support**
+
+The player provides a flexible video source configuration method, supporting the following four main types of video sources:
+
+- **URL Mode**: Play videos by directly providing the video URL, suitable for publicly accessible video resources.
+
+  ```dart
+  // Method 1: Create playback data using a URL
+  final data = AliPlayerWidgetData.fromUrl(
+    videoUrl: "https://example.com/video.mp4",
+  );
+  
+  // Method 2: Create playback data using videoSource
+  final videoSource = VideoSourceFactory.createUrlSource(
+    "https://example.com/video.mp4",
+  );
+  final data = AliPlayerWidgetData(
+    videoSource: videoSource,
+  );
+  ```
+
+- **VidSts Mode**: Play videos using a Video ID (VID) and Alibaba Cloud STS (Security Token Service) token, providing enhanced security and access control.
+
+  ```dart
+  // Example: Create playback data using VidSts
+  final videoSource = VideoSourceFactory.createVidStsSource(
+    vid: "Video ID",
+    accessKeyId: "Access Key ID",
+    accessKeySecret: "Access Key Secret",
+    securityToken: "Security Token",
+    region: "Region Information",
+  );
+  final data = AliPlayerWidgetData(
+    videoSource: videoSource,
+  );
+  ```
+
+- **VidAuth Mode**: Authorize playback using a Video ID and playback credentials, suitable for scenarios requiring simpler authorization mechanisms.
+
+  ```dart
+  // Example: Create playback data using VidAuth
+  final videoSource = VideoSourceFactory.createVidAuthSource(
+    vid: "Video ID",
+    playAuth: "Playback Credentials",
+  );
+  final data = AliPlayerWidgetData(
+    videoSource: videoSource,
+  );
+  ```
+
+Developers can choose the most suitable video source type based on their specific requirements.
+
+### **6.2 Overlay Components**
+
 Using the `overlays` parameter, you can easily overlay custom UI components onto the player. For example, add like, comment, and share buttons.
 ```dart
 AliPlayerWidget(
@@ -272,7 +307,7 @@ AliPlayerWidget(
 );
 ```
 
-### **6.2 Common Interfaces**
+### **6.3 Common Interfaces**
 `AliPlayerWidget` provides a series of external interfaces that allow developers to directly control player behavior. These interfaces are exposed through `AliPlayerWidgetController`, supporting playback control, status queries, data updates, and more.
 Here are some commonly used external interfaces and their use cases:
 
@@ -301,7 +336,7 @@ Here are some commonly used external interfaces and their use cases:
 | **Other Functions**                | `clearCaches`            | Clears player caches (including video and image caches).     |
 |                                    | `getWidgetVersion`       | Retrieves the current Flutter Widget version number.         |
 
-### **6.3 Event Notifications**
+### **6.4 Event Notifications**
 `AliPlayerWidgetController` provides a series of `ValueNotifier`s for real-time notifications of player state changes and user operations. Below are some commonly used `notifier`s and their purposes:
 
 #### **Overview of Common Notifiers**

@@ -101,7 +101,7 @@ class LogUtil {
     if (levelShortcut == "[X]") {
       // 如果是未知级别，生成警告日志
       msg = "[$timestamp] [WARN] $logTag:-> Unknown log level encountered.";
-      print(msg);
+      debugPrint(msg);
 
       // 调用回调函数，使用 LogLevel.warn 级别
       for (final callback in _callbacks) {
@@ -112,7 +112,7 @@ class LogUtil {
 
     // 正常日志处理
     msg = "[$timestamp] $levelShortcut $logTag:-> $object";
-    print(msg);
+    debugPrint(msg);
 
     // 调用回调函数
     for (final callback in _callbacks) {

@@ -42,9 +42,14 @@ class ShortVideoItemState extends State<ShortVideoItem> {
     // 初始化播放器组件控制器
     _controller = AliPlayerWidgetController(context);
 
+    // 设置播放器视频源
+    final videoSource = VideoSourceFactory.createUrlSource(
+      widget.videoInfo.videoUrl,
+    );
+    // 设置播放器组件数据
     final data = AliPlayerWidgetData(
       sceneType: SceneType.listPlayer,
-      videoUrl: widget.videoInfo.videoUrl,
+      videoSource: videoSource,
       coverUrl: widget.videoInfo.coverUrl,
       autoPlay: widget.autoPlay,
     );

@@ -4,6 +4,8 @@
 // Date: 2025/2/20
 // Brief: 设置页面
 
+import 'dart:io';
+
 import 'package:aliplayer_widget/aliplayer_widget_lib.dart';
 import 'package:aliplayer_widget_example/constants/demo_constants.dart';
 import 'package:aliplayer_widget_example/constants/page_routes.dart';
@@ -88,6 +90,12 @@ class _SettingsPageState extends State<SettingsPage> {
         subtitleLoader: () async {
           final version = AliPlayerWidgetController.getWidgetVersion();
           return version;
+        },
+      ),
+      TextItem(
+        title: "Dart 版本号",
+        subtitleLoader: () async {
+          return Platform.version;
         },
       ),
     ];

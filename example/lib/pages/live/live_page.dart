@@ -424,10 +424,12 @@ class _LivePageState extends State<LivePage> with WidgetsBindingObserver {
     // 添加观察者
     WidgetsBinding.instance.addObserver(this);
 
+    // 设置播放器视频源
+    final videoSource = VideoSourceFactory.createUrlSource(savedLink);
     // 设置播放器组件数据
     final data = AliPlayerWidgetData(
       sceneType: SceneType.live,
-      videoUrl: savedLink,
+      videoSource: videoSource,
     );
     _controller.configure(data);
   }

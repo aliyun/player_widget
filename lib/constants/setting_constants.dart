@@ -76,29 +76,28 @@ class SettingConstants {
   ///
   /// Available rotate mode options.
   static final List<int> rotateModeOptions = [
-    FlutterAvpdef.AVP_ROTATE_0,
-    FlutterAvpdef.AVP_ROTATE_90,
-    FlutterAvpdef.AVP_ROTATE_180,
-    FlutterAvpdef.AVP_ROTATE_270,
+    RotateMode.ROTATE_0,
+    RotateMode.ROTATE_90,
+    RotateMode.ROTATE_180,
+    RotateMode.ROTATE_270,
   ];
 
   /// 默认的旋转角度
   ///
   /// Default rotate mode.
-  static const int defaultRotateMode = FlutterAvpdef.AVP_ROTATE_0;
+  static const int defaultRotateMode = RotateMode.ROTATE_0;
 
   /// 可选的渲染填充模式
   ///
   /// Available scale mode options.
   static final List<int> scaleModeOptions = [
-    FlutterAvpdef.AVP_SCALINGMODE_SCALETOFILL,
-    FlutterAvpdef.AVP_SCALINGMODE_SCALEASPECTFIT,
-    FlutterAvpdef.AVP_SCALINGMODE_SCALEASPECTFILL,
+    ScaleMode.SCALE_TO_FILL,
+    ScaleMode.SCALE_ASPECT_FIT,
+    ScaleMode.SCALE_ASPECT_FILL,
   ];
 
   /// 默认的渲染填充模式
   ///
   /// Default scale mode.
-  static const int defaultScaleMode =
-      FlutterAvpdef.AVP_SCALINGMODE_SCALEASPECTFILL;
+  static const int defaultScaleMode = ScaleMode.SCALE_ASPECT_FILL;
 }

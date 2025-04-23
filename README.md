@@ -1,8 +1,10 @@
 Language: 中文简体 | [English](README-EN.md)
 
+![alibaba_cloud_logo](https://alivc-demo-cms.alicdn.com/versionProduct/installPackage/aliplayer_widget/AlibabaCloud.svg)
+
 # **aliplayer_widget**
 
-[![pub package](https://img.shields.io/pub/v/aliplayer_widget.svg)](https://pub.dev/packages/aliplayer_widget)
+[![pub package](https://img.shields.io/pub/v/aliplayer_widget.svg)](https://pub.dev/packages/aliplayer_widget) [![platform](https://img.shields.io/badge/-Flutter-02569B?logo=flutter&logoColor=white)](https://flutter.dev/) [![language](https://img.shields.io/badge/-Dart-0175C2?logo=dart&logoColor=white)](https://dart.dev/) [![website](https://img.shields.io/badge/Product-VOD-FF6A00)](https://www.aliyun.com/product/vod)
 
 ## **一、概述**
 
@@ -20,7 +22,8 @@ Language: 中文简体 | [English](README-EN.md)
 - **丰富的功能集：**
   - **基础功能**：提供播放控制、设置面板、封面图显示、清晰度切换等核心功能，满足常规视频播放需求。
   - **手势控制**：支持亮度、音量和播放进度的手势调节，操作直观便捷，提升用户体验。
-
+  - **多种播放源支持**：兼容多种视频源类型，包括直接 URL 播放、VID+STS 令牌播放，以及 VID+Auth 认证播放，满足不同场景下的播放需求。
+  
 - **灵活的 UI 定制：**
   - **浮层支持**：支持自定义浮层组件，扩展性强，允许开发者实现如广告、弹幕等复杂功能。
   - **模块化设计**：内置顶部栏、底部栏、设置面板等可复用的 UI 组件，方便开发者按需定制。
@@ -91,32 +94,12 @@ Language: 中文简体 | [English](README-EN.md)
 
 ### **1. 添加依赖**
 
-您可以通过以下两种方式之一将 `AliPlayerWidget` 集成到您的 Flutter 项目中。
-
-* **方法一：手动添加依赖**
-
 在您的 `pubspec.yaml` 文件中，添加以下依赖项：
 ```yaml
 dependencies:
-  aliplayer_widget: ^x.y.z
+  aliplayer_widget: <latest_version>
+  flutter_aliplayer: <latest_version>
 ```
-
-> **注意**：`x.y.z` 表示 `aliplayer_widget` 的版本号。您可以在 [Pub.dev 官方页面](https://pub.dev/packages/aliplayer_widget) 中查看最新稳定版本号，并将其替换为实际值（例如 `^7.0.0`）。
-
-* **方法二：使用命令行工具**
-
-如果您更倾向于使用命令行，可以直接运行以下命令来添加依赖：
-```shell
-flutter pub add aliplayer_widget
-```
-该命令会自动更新您的 `pubspec.yaml` 文件。
-
-无论您选择哪种方式，完成依赖添加后，请在终端中运行以下命令以安装依赖：
-```shell
-flutter pub get
-```
-
-通过上述步骤，`AliPlayerWidget` 就已成功集成到您的项目中，您可以开始使用它了！
 
 ### **2. 实现视频播放**
 
@@ -153,7 +136,7 @@ class _VideoPlayerPageState extends State<VideoPlayerPage> {
     // 初始化播放器组件控制器
     _controller = AliPlayerWidgetController(context);
     // 配置播放器组件数据
-    final data = AliPlayerWidgetData(
+    final data = AliPlayerWidgetData.fromUrl(
       videoUrl: "https://example.com/video.mp4", // 替换为实际视频地址
       coverUrl: "https://example.com/cover.jpg", // 替换为实际封面图地址
       videoTitle: "Sample Video",
@@ -261,7 +244,7 @@ AliPlayerWidget(
 final controller = AliPlayerWidgetController(context);
 
 // 设置播放器组件数据
-AliPlayerWidgetData data = AliPlayerWidgetData(
+AliPlayerWidgetData data = AliPlayerWidgetData.fromUrl(
   videoUrl: "https://example.com/video.mp4",
 );
 controller.configure(data);
@@ -289,7 +272,7 @@ controller.destroy();
 **示例**
 
 ```dart
-AliPlayerWidgetData(
+AliPlayerWidgetData.fromUrl(
   videoUrl: "https://example.com/video.mp4",
   coverUrl: "https://example.com/cover.jpg",
   videoTitle: "Sample Video",
@@ -301,7 +284,59 @@ AliPlayerWidgetData(
 
 ## **六、自定义功能**
 
-### **1. 浮层组件**
+### **1. 视频源支持**
+
+播放器提供了灵活的视频源配置方式，支持以下四种主要的视频源类型：
+
+- **URL 模式**：通过直接提供视频 URL 进行播放，适用于公开访问的视频资源。
+
+  ```dart
+  // 方式1：使用 URL 创建播放数据
+  final data = AliPlayerWidgetData.fromUrl(
+    videoUrl: "https://example.com/video.mp4",
+  );
+  
+  // 方式2：使用 videoSource 创建播放数据
+  final videoSource = VideoSourceFactory.createUrlSource(
+    "https://example.com/video.mp4",
+  );
+  final data = AliPlayerWidgetData(
+    videoSource: videoSource,
+  );
+  ```
+
+- **VidSts 模式**：通过视频 ID(VID) 和阿里云 STS (Security Token Service) 令牌进行播放，提供更高的安全性和访问控制。
+
+  ```dart
+  // 示例：使用VidSts创建播放数据
+  final videoSource = VideoSourceFactory.createVidStsSource(
+    vid: "视频ID",
+    accessKeyId: "访问密钥ID",
+    accessKeySecret: "访问密钥密文",
+    securityToken: "安全令牌",
+    region: "区域信息",
+  );
+  final data = AliPlayerWidgetData(
+    videoSource: videoSource,
+  );
+  ```
+
+- **VidAuth 模式**：通过视频 ID 和播放凭证进行授权播放，适用于需要更简单授权机制的场景。
+
+  ```dart
+  // 示例：使用VidAuth创建播放数据
+  final videoSource = VideoSourceFactory.createVidAuthSource(
+    vid: "视频ID",
+    playAuth: "播放凭证",
+  );
+  final data = AliPlayerWidgetData(
+    videoSource: videoSource,
+  );
+  ```
+
+开发者可以根据实际需求选择最适合的视频源类型。
+
+### **2. 浮层组件**
 
 通过 `overlays` 参数，您可以轻松地在播放器上叠加自定义 UI 组件。例如，添加点赞、评论、分享按钮等。
 
@@ -324,7 +359,7 @@ AliPlayerWidget(
 );
 ```
 
-### **2. 常用接口**
+### **3. 常用接口**
 
 `AliPlayerWidget` 提供了一系列对外接口，方便开发者直接控制播放器的行为。这些接口通过 `AliPlayerWidgetController` 暴露，支持播放控制、状态查询、数据更新等功能。
 
@@ -355,7 +390,7 @@ AliPlayerWidget(
 | **其他功能**     | `clearCaches`            | 清除播放器缓存（包括视频缓存和图片缓存）   |
 |                  | `getWidgetVersion`       | 获取当前 Flutter Widget 的版本号           |
 
-### **3. 事件通知**
+### **4. 事件通知**
 
 `AliPlayerWidgetController` 提供了一系列 `ValueNotifier`，用于实时通知播放器的状态变化和用户操作。以下是一些常用的 `notifier` 及其用途：
 

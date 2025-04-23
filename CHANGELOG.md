@@ -1,6 +1,32 @@
 # **AliPlayerWidget Changelog**
 
+## **[7.2.0] - Enhanced Video Source Support**
+
+### **New Features**
+
+- **Multiple Video Source Support**: Added compatibility for various video source types, enabling playback through:
+  - Direct URL playback for publicly accessible videos.
+  - VID+STS token-based playback for secure access and enhanced control.
+  - VID+Auth authentication-based playback for simplified authorization scenarios.
+  
+  This enhancement ensures that developers can meet diverse playback requirements across different use cases, such as VOD (Video on Demand), live streaming, and secure media distribution.
+
+### **Improvements**
+
+- Streamlined video source configuration to make it easier for developers to switch between different playback modes dynamically.
+- Updated the example project to demonstrate the integration of all supported video source types, providing a comprehensive reference for implementation.
+
+### **Documentation Updates**
+
+- Expanded the README documentation to include detailed guidance on configuring and utilizing each video source type.
+- Added code examples for integrating URL, VID+STS, and VID+Auth playback modes, ensuring clarity for developers adopting these features.
+
+---
+
+**Note**: This release focuses on enhancing video source flexibility and improving developer experience. Upgrading is recommended for projects requiring multi-source playback support.
+
 ## **[7.0.3] - Bug Fixes and Feature Enhancements**
+
 ### **Bug Fixes**
 - Resolved issues related to `pub.dev` compliance, ensuring smoother package publication and integration.
   - Addressed metadata and dependency-related warnings.

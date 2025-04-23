@@ -44,11 +44,11 @@ class FormatUtil {
   /// [scaleMode] 渲染填充模式
   static String formatScaleMode(int scaleMode) {
     switch (scaleMode) {
-      case FlutterAvpdef.AVP_SCALINGMODE_SCALETOFILL:
+      case ScaleMode.SCALE_TO_FILL:
         return 'ScaleToFill';
-      case FlutterAvpdef.AVP_SCALINGMODE_SCALEASPECTFIT:
+      case ScaleMode.SCALE_ASPECT_FIT:
         return 'ScaleAspectFit';
-      case FlutterAvpdef.AVP_SCALINGMODE_SCALEASPECTFILL:
+      case ScaleMode.SCALE_ASPECT_FILL:
         return 'ScaleAspectFill';
       default:
         return 'Unknown';

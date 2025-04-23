@@ -451,10 +451,6 @@ class AliPlayerWidgetController {
   ///
   /// [data] The configuration data for the player, including video URL and other settings.
   void configure(AliPlayerWidgetData data) {
-    if (data.videoUrl.isEmpty) {
-      throw ArgumentError("Invalid video URL");
-    }
-
     logi("[api][configure]: $data");
 
     _widgetData = data;
@@ -464,13 +460,61 @@ class AliPlayerWidgetController {
       _aliPlayer.setOption(FlutterAvpdef.ALLOW_PRE_RENDER, 1);
     }
 
-    _aliPlayer.setUrl(data.videoUrl);
+    // 配置播放源
+    _configurePlayerSource(data);
+
     _aliPlayer.setStartTime(data.startTime, data.seekMode);
 
     _aliPlayer.setAutoPlay(data.autoPlay);
 
     // 准备播放
     prepare();
+  }
+
+  /// 根据视频源配置播放器
+  ///
+  /// Configure the player based on video source
+  void _configurePlayerSource(AliPlayerWidgetData data) {
+    if (data.videoSource == null || !data.videoSource!.validate()) {
+      throw ArgumentError("Invalid video source");
+    }
+
+    final videoSource = data.videoSource;
+
+    // 确保视频源不为空
+    if (videoSource == null) {
+      return;
+    }
+
+    // 根据视频源类型设置播放器
+    switch (videoSource.sourceType) {
+      case SourceType.url:
+        // 对于URL类型，直接使用videoUrl设置
+        final urlSource = videoSource as UrlVideoSource;
+        _aliPlayer.setUrl(urlSource.url);
+        break;
+
+      case SourceType.vidSts:
+        // 对于VidSts类型，提取所需参数
+        final stsSource = videoSource as VidStsVideoSource;
+        _aliPlayer.setVidSts(
+          vid: stsSource.vid,
+          region: stsSource.region,
+          accessKeyId: stsSource.accessKeyId,
+          accessKeySecret: stsSource.accessKeySecret,
+          securityToken: stsSource.securityToken,
+        );
+        break;
+
+      case SourceType.vidAuth:
+        // 对于VidAuth类型，提取所需参数
+        final authSource = videoSource as VidAuthVideoSource;
+        _aliPlayer.setVidAuth(
+          vid: authSource.vid,
+          playAuth: authSource.playAuth,
+        );
+        break;
+    }
   }
 
   /// 准备播放
@@ -557,7 +601,7 @@ class AliPlayerWidgetController {
       return;
     }
 
-    await _aliPlayer.setRate(speed);
+    await _aliPlayer.setSpeed(speed);
 
     speedNotifier.value = speed;
   }

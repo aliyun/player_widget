@@ -6,7 +6,6 @@
 
 import 'dart:async';
 import 'package:aliplayer_widget_example/constants/page_routes.dart';
-import 'package:aliplayer_widget_example/manager/sp_manager.dart';
 import 'package:aliplayer_widget_example/pages/debug/debug_page.dart';
 import 'package:aliplayer_widget_example/pages/home/home_page.dart';
 import 'package:aliplayer_widget_example/pages/link/link_page.dart';
@@ -19,12 +18,9 @@ import 'package:flutter/material.dart';
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
   runZonedGuarded(() {
-    // 初始化SharedPreferences
-    SPManager.initialize();
-
     runApp(const MyApp());
   }, (error, stackTrace) {
-    print('[AliPlayerWidget][fatal][error]: $error, $stackTrace');
+    debugPrint('[AliPlayerWidget][fatal][error]: $error, $stackTrace');
   });
 }
 

@@ -148,7 +148,7 @@ class _ShortVideoListPageState extends State<ShortVideoListPage> {
         final dramaInfoList = await ShortVideoUtil.loadDramaInfoList(savedLink);
         // 从剧集信息列表中提取视频列表
         final videoList = ShortVideoUtil.getVideoInfoListFromDramaInfo(
-          dramaInfoList?.firstOrNull,
+          dramaInfoList.firstOrNull,
         );
 
         setState(() {

@@ -30,11 +30,6 @@ class AliPlayerPreload {
   /// 预加载缓冲时长（毫秒）
   static const int _preloadBufferDuration = 3 * 1000;
 
-  /// Preload bandwidth in bits per second.
-  ///
-  /// 预加载带宽（比特每秒）
-  static const int _preloadBandwidth = 3 * 1024 * 1024;
-
   /// Media preload window configuration.
   ///
   /// 媒体预加载窗口配置
@@ -229,8 +224,7 @@ class AliPlayerPreload {
     Future.microtask(() async {
       try {
         _log("[preload][video][load], $url");
-        // FIXME keria: Why do int values need to be passed as strings??? Niubility..
-        _mediaLoader.load(url, "$_preloadBufferDuration");
+        _mediaLoader.load(url, _preloadBufferDuration);
       } catch (e) {
         _log("[preload][video][load][error], $e", isError: true);
       }

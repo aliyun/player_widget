@@ -64,9 +64,11 @@ class _LongVideoPageState extends State<LongVideoPage> {
     // 获取保存的缩略图链接
     final thumbnailUrl = SPManager.instance.getString(LinkConstants.thumbnail);
 
+    // 设置播放器视频源
+    final videoSource = VideoSourceFactory.createUrlSource(savedLink);
     // 设置播放器组件数据
-    AliPlayerWidgetData data = AliPlayerWidgetData(
-      videoUrl: savedLink,
+    final data = AliPlayerWidgetData(
+      videoSource: videoSource,
       thumbnailUrl: thumbnailUrl ?? "",
       videoTitle: "Long Video Title",
     );

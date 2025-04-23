@@ -184,8 +184,11 @@ flutter run lib/main.dart
   void initState() {
     super.initState();
     _controller = AliPlayerWidgetController(context);
+    final videoSource = VideoSourceFactory.createUrlSource(
+      "https://example.com/sample-video.mp4",
+    );
     final data = AliPlayerWidgetData(
-      videoUrl: "https://example.com/sample-video.mp4",
+      videoSource: videoSource,
       coverUrl: "https://example.com/sample-cover.jpg",
       videoTitle: "Sample Video Title",
     );
@@ -215,9 +218,12 @@ flutter run lib/main.dart
   void initState() {
     super.initState();
     _controller = AliPlayerWidgetController(context);
+    final videoSource = VideoSourceFactory.createUrlSource(
+      "https://example.com/live-stream.m3u8",
+    );
     final data = AliPlayerWidgetData(
-      videoUrl: "https://example.com/live-stream.m3u8",
       sceneType: SceneType.live,
+      videoSource: videoSource,
     );
     _controller.configure(data);
   }

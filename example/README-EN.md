@@ -125,8 +125,11 @@ The `aliplayer_widget_example` project covers multiple typical scenarios, showca
   void initState() {
     super.initState();
     _controller = AliPlayerWidgetController(context);
+    final videoSource = VideoSourceFactory.createUrlSource(
+      "https://example.com/sample-video.mp4",
+    );
     final data = AliPlayerWidgetData(
-      videoUrl: "https://example.com/sample-video.mp4",
+      videoSource: videoSource,
       coverUrl: "https://example.com/sample-cover.jpg",
       videoTitle: "Sample Video Title",
     );
@@ -154,9 +157,12 @@ The `aliplayer_widget_example` project covers multiple typical scenarios, showca
   void initState() {
     super.initState();
     _controller = AliPlayerWidgetController(context);
+    final videoSource = VideoSourceFactory.createUrlSource(
+      "https://example.com/live-stream.m3u8",
+    );
     final data = AliPlayerWidgetData(
-      videoUrl: "https://example.com/live-stream.m3u8",
       sceneType: SceneType.live,
+      videoSource: videoSource,
     );
     _controller.configure(data);
   }
