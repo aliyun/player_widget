@@ -10,6 +10,9 @@ import 'package:aliplayer_widget_example/pages/link/link_constants.dart';
 import 'package:aliplayer_widget_example/manager/sp_manager.dart';
 import 'package:flutter/material.dart';
 
+/// 当前选中的底部导航栏索引
+int _selectIndex = 0;
+
 /// 长视频播放页面
 ///
 /// A page for playing long videos using AliPlayerWidget.
@@ -33,14 +36,61 @@ class _LongVideoPageState extends State<LongVideoPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: _buildPlayWidget(),
+      appBar: AppBar(
+        title: Text("长视频播放"),
+        backgroundColor: Colors.orangeAccent,
+      ),
+      body: Container(
+        width: MediaQuery.of(context).size.width,
+        height: 300,
+        child: _buildPlayWidget(),
+      ),
       backgroundColor: Colors.white,
+      bottomNavigationBar: _buildBottomBar(), // 添加底部导航栏
     );
   }
 
   /// 构建播放器组件
   Widget _buildPlayWidget() {
     return AliPlayerWidget(_controller);
+  }
+
+  /// 构建底部导航栏
+  Widget _buildBottomBar() {
+    return BottomNavigationBar(
+      items: const [
+        BottomNavigationBarItem(
+          icon: Icon(Icons.home),
+          label: "首页",
+        ),
+        BottomNavigationBarItem(
+          icon: Icon(Icons.youtube_searched_for),
+          label: "搜索",
+        ),
+        BottomNavigationBarItem(
+          icon: Icon(Icons.personal_injury),
+          label: "个人中心",
+        ),
+      ],
+      currentIndex: _selectIndex, // 当前选中的索引
+      onTap: (index) {
+        setState(() {
+          _selectIndex = index;
+        });
+        // 根据选中的索引执行不同的操作
+        switch (index) {
+          case 0:
+            // 处理首页逻辑
+            break;
+          case 1:
+            // 处理搜索逻辑
+            break;
+          case 2:
+            // 处理个人中心逻辑
+            break;
+        }
+      },
+    );
   }
 
   /// 初始化状态

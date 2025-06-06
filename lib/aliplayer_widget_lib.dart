@@ -31,9 +31,11 @@ import 'package:aliplayer_widget/utils/scene_util.dart';
 import 'package:aliplayer_widget/utils/screen_util.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_aliplayer/flutter_aliplayer.dart';
 import 'package:flutter_aliplayer/flutter_aliplayer_factory.dart';
 import 'package:flutter_aliplayer/flutter_aliplayer_global_setting.dart';
+import 'package:wakelock_plus/wakelock_plus.dart';
 
 import 'ui/aliplayer_center_display_widget.dart';
 import 'ui/aliplayer_cover_image_widget.dart';
@@ -52,6 +54,8 @@ import 'utils/full_screen_util.dart';
 
 // 引入 AliPlayer Widget 的实现
 part 'aliplayer_widget.dart';
+
+part 'ui/aliplayer_full_screen_widget.dart';
 
 part 'aliplayer_widget_controller.dart';
 

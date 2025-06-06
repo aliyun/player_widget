@@ -105,8 +105,7 @@ class UrlVideoSource extends VideoSource {
 
   @override
   bool validate() {
-    return url.isNotEmpty &&
-        (url.startsWith('http://') || url.startsWith('https://'));
+    return url.isNotEmpty;
   }
 }
 
@@ -298,12 +297,12 @@ class AliPlayerWidgetData {
   /// This property is deprecated. Please use [videoSource] instead.
   /// For example: use `VideoSourceFactory.createUrlSource(url)` to create a video source.
   /// Kept for backward compatibility.
-  @deprecated
+  @Deprecated('Use videoSource or AliPlayerWidgetData.fromUrl() instead.')
   String get videoUrl => videoSource?.sourceType == SourceType.url
       ? (videoSource as UrlVideoSource).url
       : '';
 
-  @deprecated
+  @Deprecated('Use videoSource or AliPlayerWidgetData.fromUrl() instead.')
   set videoUrl(String value) {
     if (value.isNotEmpty) {
       videoSource = VideoSourceFactory.createUrlSource(value);
@@ -340,6 +339,16 @@ class AliPlayerWidgetData {
   /// Video seek mode, default is accurate mode [FlutterAvpdef.ACCURATE]
   int seekMode = FlutterAvpdef.ACCURATE;
 
+  /// 视频解码，默认为true
+  ///
+  /// Setting video decoding which is enable by default.
+  bool isHardWareDecode = true;
+
+  /// 是否允许屏幕休眠，默认为 false
+  ///
+  /// Whether to allow screen sleep, default is false
+  bool allowedScreenSleep = false;
+
   /// 构造函数，用于创建 [AliPlayerWidgetData] 实例。
   ///
   /// Constructor to create an instance of [AliPlayerWidgetData].
@@ -354,6 +363,8 @@ class AliPlayerWidgetData {
   /// - [autoPlay]：是否自动播放，默认为 true。
   /// - [startTime]：视频起始播放时间（秒），必须为非负数，默认为 0。
   /// - [seekMode]：视频跳转模式，默认为精确跳转。
+  /// - [allowedScreenSleep]：是否允许屏幕休眠，默认为 false。
+  /// - [isHardWareDecode]：是否开启硬解码，默认为true。
   ///
   /// Parameters:
   /// - [sceneType]: The type of video scene, defaulting to Video On Demand (VOD).
@@ -365,16 +376,21 @@ class AliPlayerWidgetData {
   /// - [autoPlay]: Whether to autoplay the video, defaulting to true.
   /// - [startTime]: The start time of video playback in seconds, must be non-negative, defaulting to 0.
   /// - [seekMode]: The seek mode for video playback, defaulting to accurate seeking.
+  /// - [allowedScreenSleep]: Whether to allow screen sleep, default is false.
+  /// - [isHardWareDecode]: Whether to enable hardwareDecoder , default is true.
   AliPlayerWidgetData({
     this.sceneType = SceneType.vod,
     VideoSource? videoSource,
-    @deprecated String videoUrl = "", // 标记参数为过时
+    @Deprecated('Use videoSource or AliPlayerWidgetData.fromUrl() instead.')
+    String videoUrl = "", // 标记参数为过时
     this.coverUrl = "",
     this.videoTitle = "",
     this.thumbnailUrl = "",
     this.autoPlay = true,
     this.startTime = 0,
     this.seekMode = FlutterAvpdef.ACCURATE,
+    this.allowedScreenSleep = false,
+    this.isHardWareDecode = true,
   }) : assert(startTime >= 0, "Start time must be non-negative") {
     // 初始化 videoSource：
     // 1. 如果提供了 videoSource，则直接使用
@@ -401,6 +417,8 @@ class AliPlayerWidgetData {
     bool autoPlay = true,
     int startTime = 0,
     int seekMode = FlutterAvpdef.ACCURATE,
+    bool allowedScreenSleep = false,
+    bool isHardWareDecode = true,
   }) {
     return AliPlayerWidgetData(
       videoSource: VideoSourceFactory.createUrlSource(videoUrl),
@@ -411,6 +429,8 @@ class AliPlayerWidgetData {
       autoPlay: autoPlay,
       startTime: startTime,
       seekMode: seekMode,
+      allowedScreenSleep: allowedScreenSleep,
+      isHardWareDecode: isHardWareDecode,
     );
   }
 
@@ -419,6 +439,6 @@ class AliPlayerWidgetData {
   /// Convert [AliPlayerWidgetData] instance to string.
   @override
   String toString() {
-    return 'AliPlayerWidgetData{sceneType: $sceneType, videoSource: $videoSource, coverUrl: $coverUrl, videoTitle: $videoTitle, thumbnailUrl: $thumbnailUrl, autoPlay: $autoPlay, startTime: $startTime, seekMode: $seekMode}';
+    return 'AliPlayerWidgetData{sceneType: $sceneType, videoSource: $videoSource, coverUrl: $coverUrl, videoTitle: $videoTitle, thumbnailUrl: $thumbnailUrl, autoPlay: $autoPlay, startTime: $startTime, seekMode: $seekMode, isHardWareDecode: $isHardWareDecode, allowedScreenSleep: $allowedScreenSleep}';
   }
 }

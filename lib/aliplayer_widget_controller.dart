@@ -171,6 +171,11 @@ class AliPlayerWidgetController {
   ///
   /// Destroy the player controller
   void destroy() {
+    // 释放屏幕常亮
+    if (_widgetData?.allowedScreenSleep == true) {
+      WakelockPlus.disable();
+    }
+
     // 销毁播放器实例
     Future.microtask(() => _destroyPlayer());
 
@@ -463,12 +468,19 @@ class AliPlayerWidgetController {
     // 配置播放源
     _configurePlayerSource(data);
 
+    _aliPlayer.setEnableHardwareDecoder(data.isHardWareDecode);
+
     _aliPlayer.setStartTime(data.startTime, data.seekMode);
 
     _aliPlayer.setAutoPlay(data.autoPlay);
 
     // 准备播放
     prepare();
+
+    // 允许屏幕常亮
+    if (_widgetData?.allowedScreenSleep == true) {
+      WakelockPlus.enable();
+    }
   }
 
   /// 根据视频源配置播放器
@@ -732,6 +744,14 @@ class AliPlayerWidgetController {
     logi("setScaleMode: $scaleMode, real: $newValue");
 
     scaleModeNotifier.value = newValue;
+  }
+
+  /// 获取当前播放位置
+  ///
+  /// Get the current video playback position
+  Future<int> getCurrentPosition() async {
+    int currentPosition = await _aliPlayer.getCurrentPosition() ?? 0;
+    return currentPosition;
   }
 
   /// 更新视频尺寸

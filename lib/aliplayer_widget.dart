@@ -9,6 +9,9 @@ part of 'aliplayer_widget_lib.dart';
 /// 一个用于播放视频的 Widget，支持自定义控制器和覆盖层。
 ///
 /// A widget for video playback that supports custom controllers and overlay layers.
+late AliPlayerWidgetController _fullController;
+bool isFullScreen = false;
+
 class AliPlayerWidget extends StatefulWidget {
   /// 视频播放控制器，用于控制视频的播放、暂停等操作。
   ///
@@ -78,7 +81,6 @@ class AliPlayerWidgetState extends State<AliPlayerWidget>
   @override
   Widget build(BuildContext context) {
     return PopScope(
-      canPop: !FullScreenUtil.isFullScreen(), // 如果是全屏模式，则阻止默认返回操作
       onPopInvoked: (bool didPop) {
         if (didPop) return; // 如果已经处理了返回操作，则直接返回
         _handleBackPress();
@@ -235,7 +237,8 @@ class AliPlayerWidgetState extends State<AliPlayerWidget>
   bool _handleBackPress() {
     if (FullScreenUtil.isFullScreen()) {
       // 如果当前是全屏模式，退出全屏
-      FullScreenUtil.exitFullScreen();
+      isFullScreen = false;
+      exitFullScreen();
       return false; // 阻止默认的返回操作
     } else {
       // 如果不是全屏模式，执行正常的返回操作
@@ -307,8 +310,74 @@ class AliPlayerWidgetState extends State<AliPlayerWidget>
   }
 
   /// 全屏状态切换
-  void _onFullScreenPressed() {
-    FullScreenUtil.toggleFullScreen();
+  Future<void> _onFullScreenPressed() async {
+    // 切换全屏
+    if (!isFullScreen) {
+      isFullScreen = true;
+      _playController.getCurrentPosition().then((position) {
+        enterFullScreen(position);
+      });
+    }
+    // 退出全屏
+    else {
+      isFullScreen = false;
+      await exitFullScreen();
+    }
+  }
+
+  /// 播放器切换全屏
+  Future<void> enterFullScreen(int currentPosition) async {
+    final data = _playController._widgetData;
+    if (data == null) return;
+    data.startTime = currentPosition;
+
+    // 进入全屏播放器
+    AliPlayerWidgetData result = await Navigator.of(context).push(
+      PageRouteBuilder(
+        transitionDuration: const Duration(milliseconds: 100), // 动画持续时间
+        pageBuilder: (context, animation, secondaryAnimation) {
+          return AliPlayerFullScreenWidget(_playController, data);
+        },
+        transitionsBuilder: (context, animation, secondaryAnimation, child) {
+          // 淡入淡出动画
+          return FadeTransition(
+            opacity: animation,
+            child: child,
+          );
+        },
+      ),
+    );
+    int fullScreenPosition = await result.startTime ?? 0;
+    await _playController._aliPlayer
+        .seekTo(fullScreenPosition, result.seekMode);
+    _playController.play();
+  }
+
+  /// 播放器退出全屏
+  Future<void> exitFullScreen() async {
+    // 恢复状态栏和导航栏
+    await SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
+
+    await SystemChrome.setPreferredOrientations([
+      DeviceOrientation.portraitUp, // 正常竖屏
+      DeviceOrientation.portraitDown, // 倒置竖屏
+    ]);
+
+    final data = _fullController._widgetData;
+
+    if (data == null) return;
+
+    _fullController.getCurrentPosition().then((position) {
+      data.startTime = position;
+      // 先暂停播放器
+      _fullController.stop();
+
+      // 销毁全屏播放器
+      _fullController.destroy();
+
+      // 返回竖屏播放器
+      Navigator.pop(context, data);
+    });
   }
 
   /// 拖拽进度更新回调

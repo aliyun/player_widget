@@ -1,10 +1,36 @@
 # **AliPlayerWidget Changelog**
 
+---
+
+## **[7.3.0] - Screen Keep-On & Streaming Protocol Fixes**
+
+### **New Features**
+
+- **Screen Keep-On Support**  
+  Added screen keep-on functionality to prevent the device screen from dimming or locking during video playback.  
+  This feature is especially useful for long-form content, live streaming, and educational video applications.
+
+### **Improvements**
+
+- The method for switching between portrait and landscape modes has been modified. Now, the navigation bar will not be included when switching orientations.
+- The functionality to select a decoder has been integrated, allowing you to choose between software decoding or hardware decoding for playback based on your needs.
+
+### **Bug Fixes**
+
+- **Fixed URL-based Video Source Playback for RTMP/ARTC Streams**  
+  Resolved an issue where URL-formatted video sources were unable to play RTMP/ARTC format streams correctly.  
+  This update ensures better compatibility with various streaming protocols across different playback scenarios.
+
+---
+
+**Note**: This release enhances playback reliability and improves user experience for streaming use cases. Upgrading is recommended for apps requiring support for RTMP/ARTC and screen keep-on behavior.
+
 ## **[7.2.0] - Enhanced Video Source Support**
 
 ### **New Features**
 
 - **Multiple Video Source Support**: Added compatibility for various video source types, enabling playback through:
+  
   - Direct URL playback for publicly accessible videos.
   - VID+STS token-based playback for secure access and enhanced control.
   - VID+Auth authentication-based playback for simplified authorization scenarios.

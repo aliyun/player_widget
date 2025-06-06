@@ -42,15 +42,6 @@ class FullScreenUtil {
     ]);
   }
 
-  /// 切换全屏模式（自动在全屏和非全屏之间切换）
-  static Future<void> toggleFullScreen() async {
-    if (isFullScreen()) {
-      await exitFullScreen();
-    } else {
-      await enterFullScreen();
-    }
-  }
-
   /// 获取当前屏幕方向
   static Orientation _getCurrentOrientation() {
     final view = WidgetsBinding.instance.platformDispatcher.views.first;
