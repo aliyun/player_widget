@@ -29,6 +29,12 @@ class TrackInfoUtil {
     "4320P": [4320, 7680],
   };
 
+  /// 定义多清晰度可支持的类型
+  static final _validTrackTypes = {
+    FlutterAvpdef.AVPTRACK_TYPE_VIDEO,
+    FlutterAvpdef.AVPTRACK_TYPE_SAAS_VOD,
+  };
+
   /// 自定义清晰度描述
   static Map<String, String> qualityDescriptions = {
     "AUTO": "自动", // Auto
@@ -51,7 +57,7 @@ class TrackInfoUtil {
         if ((width ?? 0) <= 0 || (height ?? 0) <= 0) {
           continue;
         }
-        if (trackInfo.trackType != FlutterAvpdef.AVPTRACK_TYPE_VIDEO) {
+        if (!_validTrackTypes.contains(trackInfo.trackType)) {
           continue;
         }
         videoTrackInfoList.add(trackInfo);
@@ -88,8 +94,7 @@ class TrackInfoUtil {
   /// 遍历最接近的清晰度
   static String findResolution(AVPTrackInfo? trackInfo) {
     String nearestResolution = qualityDescriptions["unknown"]!;
-    if (trackInfo == null ||
-        trackInfo.trackType != FlutterAvpdef.AVPTRACK_TYPE_VIDEO) {
+    if (trackInfo == null || !_validTrackTypes.contains(trackInfo.trackType)) {
       return nearestResolution;
     }
     final int? width = trackInfo.videoWidth;

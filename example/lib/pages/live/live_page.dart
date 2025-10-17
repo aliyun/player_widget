@@ -8,10 +8,10 @@ import 'package:aliplayer_widget/aliplayer_widget_lib.dart';
 import 'package:aliplayer_widget_example/pages/link/link_constants.dart';
 import 'package:aliplayer_widget_example/constants/page_routes.dart';
 import 'package:aliplayer_widget_example/manager/sp_manager.dart';
-import 'package:aliplayer_widget_example/pages/link/link_page.dart';
 import 'package:aliplayer_widget_example/utils/color_util.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:aliplayer_widget_example/utils/toast_utils.dart';
 
 /// 直播间页面（支持横竖屏切换）
 ///
@@ -386,30 +386,11 @@ class _LivePageState extends State<LivePage> with WidgetsBindingObserver {
           : PageRoutes.liveLandscape;
       final linkItem = LinkItem(name: linkItemName, route: pageRoute);
 
-      // 显示提示消息
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: const Text('请先设置直播链接'),
-            backgroundColor: Colors.red,
-            action: SnackBarAction(
-              label: '去设置',
-              onPressed: () {
-                Navigator.pushReplacement(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => LinkPage(
-                      linkItems: [
-                        linkItem,
-                      ],
-                    ),
-                  ),
-                );
-              },
-            ),
-          ),
-        );
-      });
+      ToastUtils.showSetUpLinkSnackBar(
+        context,
+        linkItem,
+        message: '请先设置直播链接',
+      );
       return;
     }
 

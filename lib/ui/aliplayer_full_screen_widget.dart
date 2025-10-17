@@ -1,23 +1,26 @@
-/**
- * Copyright © 2025 Alibaba Cloud. All rights reserved.
- * @author junhuiYe
- * @date 2025/6/4 17:59
- * @brief 全屏模式UI控件
- */
-part of '../aliplayer_widget_lib.dart';
+// Copyright © 2025 Alibaba Cloud. All rights reserved.
+
+// @author junHuiYe
+// @date 2025/6/4 17:59
+// @brief 全屏模式UI控件
+
+part of 'package:aliplayer_widget/aliplayer_widget_lib.dart';
 
 /// 播放器全屏视图
+late AliPlayerWidgetController _fullController;
+
 class AliPlayerFullScreenWidget extends StatefulWidget {
-  late AliPlayerWidgetData data;
+  final AliPlayerWidgetData data;
 
   final AliPlayerWidgetController controller;
 
-  AliPlayerFullScreenWidget(
+  const AliPlayerFullScreenWidget(
     this.controller,
     this.data, {
     super.key,
   });
 
+  @override
   State<AliPlayerFullScreenWidget> createState() =>
       AliPlayerScreenFullWidgetState();
 }
@@ -25,9 +28,12 @@ class AliPlayerFullScreenWidget extends StatefulWidget {
 class AliPlayerScreenFullWidgetState extends State<AliPlayerFullScreenWidget> {
   @override
   Widget build(BuildContext context) {
-    return WillPopScope(
-      onWillPop: () async {
-        return false;
+    return PopScope(
+      canPop: false,
+      onPopInvoked: (bool didPip) {
+        if (didPip) {
+          return; // 如果已经处理了返回操作，则直接返回
+        }
       },
       child: Scaffold(
         body: Container(
@@ -55,8 +61,10 @@ class AliPlayerScreenFullWidgetState extends State<AliPlayerFullScreenWidget> {
     _fullController.configure(widget.data);
 
     // 以指定位置起播
-    _fullController._aliPlayer
-        .setStartTime(widget.data.startTime, widget.data.seekMode);
+    _fullController._aliPlayer.setStartTime(
+      widget.data.startTime,
+      widget.data.seekMode,
+    );
     _fullController.play();
     // 暂停竖屏页面视频
     widget.controller.pause();

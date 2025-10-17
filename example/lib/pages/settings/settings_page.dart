@@ -38,7 +38,8 @@ class _SettingsPageState extends State<SettingsPage> {
       ButtonItem(
         title: "清除缓存",
         onPressed: () {
-          AliPlayerWidgetController.clearCaches();
+          // 清除缓存
+          AliPlayerWidgetGlobalSetting.clearCaches();
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(
               content: Text("清除缓存成功"),
@@ -87,10 +88,7 @@ class _SettingsPageState extends State<SettingsPage> {
       ),
       TextItem(
         title: "Widget 版本号",
-        subtitleLoader: () async {
-          final version = AliPlayerWidgetController.getWidgetVersion();
-          return version;
-        },
+        subtitleLoader: () async => AliPlayerWidgetGlobalSetting.kWidgetVersion,
       ),
       TextItem(
         title: "Dart 版本号",

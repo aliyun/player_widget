@@ -2,7 +2,7 @@
 //
 // Author: keria
 // Date: 2025/2/18
-// Brief: 长视频播放页面
+// Brief: 中长视频播放URL页面
 
 import 'package:aliplayer_widget/aliplayer_widget_lib.dart';
 import 'package:aliplayer_widget_example/constants/demo_constants.dart';
@@ -37,14 +37,10 @@ class _LongVideoPageState extends State<LongVideoPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text("长视频播放"),
+        title: const Text('中长视频播放（Direct URL）'),
         backgroundColor: Colors.orangeAccent,
       ),
-      body: Container(
-        width: MediaQuery.of(context).size.width,
-        height: 300,
-        child: _buildPlayWidget(),
-      ),
+      body: _buildPlayWidget(),
       backgroundColor: Colors.white,
       bottomNavigationBar: _buildBottomBar(), // 添加底部导航栏
     );
@@ -105,7 +101,7 @@ class _LongVideoPageState extends State<LongVideoPage> {
     _controller = AliPlayerWidgetController(context);
 
     // 获取保存的链接
-    var savedLink = SPManager.instance.getString(LinkConstants.vod);
+    var savedLink = SPManager.instance.getString(LinkConstants.url);
     // 如果没有保存的链接，则使用默认链接
     if (savedLink == null || savedLink.isEmpty) {
       savedLink = DemoConstants.sampleVideoUrl;

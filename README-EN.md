@@ -79,6 +79,9 @@ dependencies:
   flutter_aliplayer: <latest_version>
 ```
 ### **4.2 Implement Video Playback**
+
+![Integration_en](./Integration_en.png)
+
 Below is a complete example demonstrating how to embed a video player into a page. With just a few lines of code, you can achieve video playback functionality.
 ```dart
 import 'package:flutter/material.dart';
@@ -108,20 +111,26 @@ class _VideoPlayerPageState extends State<VideoPlayerPage> {
   @override
   void initState() {
     super.initState();
-    // Initialize the player component controller
-    _controller = AliPlayerWidgetController(context);
-    // Configure the player component data
-    final data = AliPlayerWidgetData.fromUrl(
-      videoUrl: "https://example.com/video.mp4", // Replace with actual video URL
-      coverUrl: "https://example.com/cover.jpg", // Replace with actual cover image URL
+
+    // 1. Configure the video source for the player
+    final videoSource = VideoSourceFactory.createUrlSource(
+      "https://example.com/video.mp4", // Substitute with the actual video URL
+    );
+    // 2. Configure the data for the player component
+    final data = AliPlayerWidgetData(
+      videoSource: videoSource,
+      coverUrl: "https://example.com/cover.jpg", // Substitute with the actual cover URL
       videoTitle: "Sample Video",
     );
-    _controller.configure(data); // Set autoplay
+
+    // 3. Initialize the controller for the player component
+    _controller = AliPlayerWidgetController(context);
+    _controller.configure(data);
   }
 
   @override
   void dispose() {
-    // Destroy the player instance to release resources
+    // 4. Destroy the player component controller and release resources
     _controller.destroy();
     super.dispose();
   }
@@ -193,22 +202,7 @@ AliPlayerWidget(
 - **`play()`**: Starts video playback.
 - **`pause()`**: Pauses playback.
 - **`seek(Duration position)`**: Jumps to the specified playback position.
-- **`setUrl(String url)`**: Sets the video playback URL.
 - **`destroy()`**: Destroys the player instance to release resources.
-
-**Example**
-
-```dart
-// Initialize the player component controller
-final controller = AliPlayerWidgetController(context);
-// Set player component data
-AliPlayerWidgetData data = AliPlayerWidgetData.fromUrl(
-  videoUrl: "https://example.com/video.mp4",
-);
-controller.configure(data);
-// Destroy the player
-controller.destroy();
-```
 
 ### **5.3 AliPlayerWidgetData**
 `AliPlayerWidgetData` is the data model required by the player component, containing video URL, cover image, title, and other information.
@@ -218,17 +212,6 @@ controller.destroy();
 - **`videoTitle`**: Video title (optional).
 - **`thumbnailUrl`**: Thumbnail URL (optional).
 - **`sceneType`**: Playback scenario type, defaulting to VOD (`SceneType.vod`).
-
-**Example**
-
-```dart
-AliPlayerWidgetData.fromUrl(
-  videoUrl: "https://example.com/video.mp4",
-  coverUrl: "https://example.com/cover.jpg",
-  videoTitle: "Sample Video",
-  sceneType: SceneType.vod,
-);
-```
 
 ---
 
@@ -254,6 +237,19 @@ The player provides a flexible video source configuration method, supporting the
   );
   ```
 
+- **VidAuth Mode(Recommend)**: Authorize playback using a Video ID and playback credentials, suitable for scenarios requiring simpler authorization mechanisms.
+
+  ```dart
+  // Example: Create playback data using VidAuth
+  final videoSource = VideoSourceFactory.createVidAuthSource(
+    vid: "Video ID",
+    playAuth: "Playback Credentials",
+  );
+  final data = AliPlayerWidgetData(
+    videoSource: videoSource,
+  );
+  ```
+
 - **VidSts Mode**: Play videos using a Video ID (VID) and Alibaba Cloud STS (Security Token Service) token, providing enhanced security and access control.
 
   ```dart
@@ -264,19 +260,6 @@ The player provides a flexible video source configuration method, supporting the
     accessKeySecret: "Access Key Secret",
     securityToken: "Security Token",
     region: "Region Information",
-  );
-  final data = AliPlayerWidgetData(
-    videoSource: videoSource,
-  );
-  ```
-
-- **VidAuth Mode**: Authorize playback using a Video ID and playback credentials, suitable for scenarios requiring simpler authorization mechanisms.
-
-  ```dart
-  // Example: Create playback data using VidAuth
-  final videoSource = VideoSourceFactory.createVidAuthSource(
-    vid: "Video ID",
-    playAuth: "Playback Credentials",
   );
   final data = AliPlayerWidgetData(
     videoSource: videoSource,

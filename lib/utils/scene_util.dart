@@ -7,69 +7,78 @@
 import 'package:aliplayer_widget/aliplayer_widget_lib.dart';
 import 'package:flutter/foundation.dart';
 
-/// 在指定场景中执行逻辑
+/// 直接通过 SceneType 判断是否属于指定场景
 ///
-/// Execute logic in specified scene or scene list
-void executeIfScene(
+/// Check if the scene type matches the specified scene or scene list
+bool isSceneType(
+  SceneType? currentScene,
+  dynamic targetScenes, // 支持 SceneType 或 List<SceneType>
+) {
+  final scenes = _normalizeScenes(targetScenes);
+  return currentScene != null && scenes.contains(currentScene);
+}
+
+/// 直接通过 SceneType 判断是否不属于指定场景
+///
+/// Check if the scene type does not match the specified scene or scene list
+bool isNotSceneType(
+  SceneType? currentScene,
+  dynamic targetScenes, // 支持 SceneType 或 List<SceneType>
+) {
+  final scenes = _normalizeScenes(targetScenes);
+  return currentScene == null || !scenes.contains(currentScene);
+}
+
+/// 直接通过 SceneType 在指定场景中执行逻辑
+///
+/// Execute logic in specified scene using SceneType directly
+void executeIfSceneType(
   VoidCallback? action,
-  AliPlayerWidgetData? widgetData, [
+  SceneType? currentScene, [
   dynamic targetScenes, // 支持 SceneType 或 List<SceneType>
 ]) {
-  final scenes = _normalizeScenes(targetScenes);
-  if (_shouldExecute(widgetData, scenes, true)) {
+  if (isSceneType(currentScene, targetScenes)) {
     action?.call();
   }
 }
 
-/// 在非指定场景中执行逻辑
+/// 直接通过 SceneType 在非指定场景中执行逻辑
 ///
-/// Execute logic in non-specified scene or scene list
-void executeIfNotScene(
+/// Execute logic in non-specified scene using SceneType directly
+void executeIfNotSceneType(
   VoidCallback? action,
-  AliPlayerWidgetData? widgetData, [
+  SceneType? currentScene, [
   dynamic targetScenes, // 支持 SceneType 或 List<SceneType>
 ]) {
-  final scenes = _normalizeScenes(targetScenes);
-  if (_shouldExecute(widgetData, scenes, false)) {
+  if (isNotSceneType(currentScene, targetScenes)) {
     action?.call();
   }
 }
 
-/// 判断当前场景是否属于指定场景
+/// 判断多个场景是否有任意一个匹配
 ///
-/// Check if the current scene matches the specified scene or scene list
-bool isScene(
-  AliPlayerWidgetData? widgetData,
-  dynamic targetScenes, // 支持 SceneType 或 List<SceneType>
+/// Check if any of the current scenes matches any of the target scenes
+bool isAnyScene(
+  List<SceneType>? currentScenes,
+  dynamic targetScenes,
 ) {
+  if (currentScenes == null || currentScenes.isEmpty) return false;
+
   final scenes = _normalizeScenes(targetScenes);
-  return widgetData != null && scenes.contains(widgetData.sceneType);
+  return currentScenes.any((scene) => scenes.contains(scene));
 }
 
-/// 判断当前场景是否不属于指定场景
+/// 判断多个场景是否全部匹配
 ///
-/// Check if the current scene does not match the specified scene or scene list
-bool isNotScene(
-  AliPlayerWidgetData? widgetData,
-  dynamic targetScenes, // 支持 SceneType 或 List<SceneType>
+/// Check if all current scenes match the target scenes
+bool isAllScenes(
+  List<SceneType>? currentScenes,
+  dynamic targetScenes,
 ) {
+  if (currentScenes == null || currentScenes.isEmpty) return false;
+
   final scenes = _normalizeScenes(targetScenes);
-  return widgetData == null || !scenes.contains(widgetData.sceneType);
-}
-
-// 检查是否需要执行逻辑
-bool _shouldExecute(
-  AliPlayerWidgetData? widgetData,
-  Set<SceneType>? targetScenes,
-  bool isMatched,
-) {
-  // 如果 targetScenes 为空或 null，则默认执行逻辑
-  if (targetScenes == null || targetScenes.isEmpty) {
-    return true;
-  }
-
-  return widgetData != null &&
-      targetScenes.contains(widgetData.sceneType) == isMatched;
+  return currentScenes.every((scene) => scenes.contains(scene));
 }
 
 // 将场景参数标准化为集合

@@ -13,18 +13,13 @@ class AliPlayerWidgetGlobalSetting {
   /// Flutter Widget version
   ///
   /// Flutter Widget 版本号
-  static const String kWidgetVersion = '7.3.0';
+  static const String kWidgetVersion = '7.8.0';
 
   /// extra data for global settings
   ///
   /// 业务场景信息的 JSON 字符串
   static const String _extraData =
       "{\"scene\":\"flutter-widget\", \"version\":\"$kWidgetVersion\"}";
-
-  /// cache directory name
-  ///
-  /// 缓存相对目录
-  static const String _cacheDirectoryName = 'aliplayer_widget';
 
   /// whether to enable local cache
   ///
@@ -86,18 +81,62 @@ class AliPlayerWidgetGlobalSetting {
     );
   }
 
+  /// Set storage paths
+  ///
+  /// 设置存储路径
+  ///
+  /// [cachePath] 缓存路径（可选）
+  /// [filesPath] 文件路径（可选）
+  static void setStoragePaths({
+    String? cachePath,
+    String? filesPath,
+  }) {
+    StorageManager.setStoragePaths(
+      cachePath: cachePath,
+      filesPath: filesPath,
+    );
+
+    // 初始化所有文件夹
+    FileManager.initializeAllFolders();
+
+    // 自动配置媒体加载器
+    _setupMediaLoaderConfig();
+  }
+
   /// Setup media loader config.
   ///
   /// 设置播放器预加载配置
-  static void setupMediaLoaderConfig(String fullPath) {
-    String localCacheDir = "$fullPath/$_cacheDirectoryName";
+  ///
+  /// [localCacheDir] 本地缓存目录，如果为null则使用默认路径
+  ///
+  /// @deprecated 此方法已废弃，请使用 [setStoragePaths] 方法，它会自动配置媒体加载器
+  @Deprecated(
+      'Use setStoragePaths() instead, which automatically configures the media loader')
+  static void setupMediaLoaderConfig([String? localCacheDir]) {
+    _setupMediaLoaderConfig(localCacheDir);
+  }
+
+  /// Internal method to setup media loader config.
+  ///
+  /// 内部方法：设置播放器预加载配置
+  ///
+  /// [localCacheDir] 本地缓存目录，如果为null则使用默认路径
+  static void _setupMediaLoaderConfig([String? localCacheDir]) {
+    // 如果没有传入路径，使用默认路径（优先使用缓存路径）
+    final cacheDir = localCacheDir ?? FileManager.preloadPath;
+
+    if (cacheDir == null) {
+      logw(
+          'Warning: No cache directory available, media loader config not set');
+      return;
+    }
 
     // FIXME keria: Why do int values need to be passed as strings??? Niubility..
     // 设置本地缓存配置
     FlutterAliplayer.enableLocalCache(
       _enableLocalCache,
       "$_localCacheMaxBufferMemoryKB",
-      localCacheDir,
+      cacheDir,
       DocTypeForIOS.documents,
     );
 
@@ -108,5 +147,20 @@ class AliPlayerWidgetGlobalSetting {
       "$_localCacheMaxCapacityMb",
       "$_localCacheFreeStorageMb",
     );
+  }
+
+  /// 清除 Widget 缓存
+  ///
+  /// Clear widget cache
+  static Future<void> clearCaches() async {
+    // 清除视频缓存
+    await FlutterAliplayer.clearCaches();
+
+    // 清除文件缓存
+    FileManager.clearCache();
+
+    // 清除图片缓存
+    PaintingBinding.instance.imageCache.clear();
+    PaintingBinding.instance.imageCache.clearLiveImages();
   }
 }

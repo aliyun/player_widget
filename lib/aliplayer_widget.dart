@@ -9,9 +9,6 @@ part of 'aliplayer_widget_lib.dart';
 /// 一个用于播放视频的 Widget，支持自定义控制器和覆盖层。
 ///
 /// A widget for video playback that supports custom controllers and overlay layers.
-late AliPlayerWidgetController _fullController;
-bool isFullScreen = false;
-
 class AliPlayerWidget extends StatefulWidget {
   /// 视频播放控制器，用于控制视频的播放、暂停等操作。
   ///
@@ -71,6 +68,13 @@ class AliPlayerWidgetState extends State<AliPlayerWidget>
   /// 是否正在拖动进度条
   final SafeValueNotifier<bool> _isDraggingNotifier = SafeValueNotifier(false);
 
+  /// 是否显示外挂字幕
+  final SafeValueNotifier<bool> _isShowExternalSubtitle =
+      SafeValueNotifier(true);
+
+  /// 拖拽开始的位置
+  Duration? _dragStartPosition;
+
   /// 当前拖动进度条的时间
   final SafeValueNotifier<Duration> _currentSeekTimeNotifier =
       SafeValueNotifier(Duration.zero);
@@ -117,18 +121,17 @@ class AliPlayerWidgetState extends State<AliPlayerWidget>
           child: Stack(
             children: [
               _buildPlaySurfaceView(width, height),
-              if (_playController._widgetData?.coverUrl.isNotEmpty ?? false)
-                _buildPlayCoverView(width, height),
+              _buildPlayCoverView(width, height),
               _buildPlayControlView(),
               _buildTopBarWidget(),
               _buildBottomBarWidget(),
-              if (isNotScene(_playController._widgetData, SceneType.live))
-                _buildSeekThumbnailWidget(),
+              _buildSeekThumbnailWidget(),
               _buildCenterDisplayWidget(),
               _buildPlayStateView(),
               // 添加浮层
               ..._buildOverlays(),
               _buildSettingMenuPanel(),
+              if (_isShowExternalSubtitle.value) _buildSubtitleWidget(),
             ],
           ),
         );
@@ -146,6 +149,7 @@ class AliPlayerWidgetState extends State<AliPlayerWidget>
       y: 0,
       width: width,
       height: height,
+      aliPlayerViewType: AliPlayerViewTypeForAndroid.textureview,
     );
   }
 
@@ -153,6 +157,22 @@ class AliPlayerWidgetState extends State<AliPlayerWidget>
   ///
   /// build cover view
   Widget _buildPlayCoverView(double width, double height) {
+    // 受限场景下不显示封面图片
+    if (isSceneType(_sceneType, [
+      SceneType.live,
+      SceneType.restricted,
+      SceneType.minimal,
+    ])) {
+      return const SizedBox.shrink();
+    }
+
+    // 获取封面图片的 URL
+    final coverUrl = _playController._widgetData?.coverUrl;
+    // 如果没有封面图片，则不显示
+    if (coverUrl == null || coverUrl.isEmpty) {
+      return const SizedBox.shrink();
+    }
+
     // 监听播放器是否渲染完成，如果没有渲染完成，则显示封面图片
     return ValueListenableBuilder(
       valueListenable: _playController.isRenderedNotifier,
@@ -162,10 +182,8 @@ class AliPlayerWidgetState extends State<AliPlayerWidget>
           return const SizedBox.shrink();
         }
 
-        // 获取封面图片的 URL
-        var imageUrl = _playController._widgetData?.coverUrl ?? "";
         return AliPlayerCoverImageWidget(
-          imageUrl: imageUrl,
+          imageUrl: coverUrl,
           width: width,
           height: height,
           fit: BoxFit.cover,
@@ -176,12 +194,27 @@ class AliPlayerWidgetState extends State<AliPlayerWidget>
 
   /// 构建播放控制视图
   Widget _buildPlayControlView() {
+    // 受限场景下禁用所有手势控制
+    if (isSceneType(_sceneType, [
+      SceneType.minimal,
+    ])) {
+      return const SizedBox.shrink();
+    }
+
     // 长按控制
-    bool enableLongPress = !_isSceneLive();
+    bool enableLongPress = isNotSceneType(_sceneType, [
+      SceneType.live,
+      SceneType.restricted,
+    ]);
     // 拖动控制
-    bool enableDrag = !_isSceneLive();
+    bool enableDrag = isNotSceneType(_sceneType, [
+      SceneType.live,
+      SceneType.restricted,
+    ]);
     // 竖向手势控制
-    bool enableVerticalGestures = !_isSceneListPlayer();
+    bool enableVerticalGestures = isNotSceneType(_sceneType, [
+      SceneType.listPlayer,
+    ]);
     return AliPlayerPlayControlWidget(
       autoHide: true,
       onVisibilityChanged: (bool isVisible) {
@@ -206,39 +239,76 @@ class AliPlayerWidgetState extends State<AliPlayerWidget>
 
   /// 切换播放控制视图的可见性
   void _togglePlayControlVisibility({bool forceHide = false}) {
-    if (forceHide || _animationManager.isVisible) {
-      _animationManager.hide(); // 隐藏
+    if (forceHide) {
+      // 强制隐藏时，如果正在拖拽则不执行
+      if (_isDraggingNotifier.value) {
+        return;
+      }
+      _animationManager.hide();
     } else {
-      _animationManager.show(); // 显示
+      // 切换显示/隐藏
+      if (_animationManager.isVisible) {
+        _animationManager.hide();
+      } else {
+        _animationManager.show();
+      }
     }
   }
 
   /// 构建顶部栏控件
   Widget _buildTopBarWidget() {
-    return Positioned(
-      top: 0,
-      left: 0,
-      right: 0,
-      child: AliPlayerTopBarWidget(
-        animationManager: _animationManager,
-        title: _playController._widgetData?.videoTitle ?? "",
-        onBackPressed: _handleBackPress,
-        onSettingsPressed: _toggleSettingMenuPanel,
-        // TODO keria; download feature to be implemented
-        isDownload: false,
-        onDownloadPressed: _isSceneLive() ? null : _onDownloadPressed,
-        onSnapshotPressed: _isSceneLive() ? null : _onSnapshotPressed,
-        onPIPPressed: _isSceneLive() ? null : _onPIPPressed,
-      ),
-    );
+    // 受限场景下不显示顶部栏
+    if (isSceneType(_sceneType, [
+      SceneType.minimal,
+    ])) {
+      return const SizedBox.shrink();
+    }
+
+    // 启用下载功能
+    bool enableDownloadPress = isNotSceneType(_sceneType, [
+          SceneType.live,
+        ]) &&
+        _isDownloadable();
+    // 启用截图功能
+    bool enableSnapshotPress = isNotSceneType(_sceneType, [
+      SceneType.live,
+    ]);
+
+
+    Listenable listenable = Listenable.merge([
+      _playController.downloadStateNotifier,
+      _playController.currentTrackInfoNotifier,
+    ]);
+
+    return ListenableBuilder(
+        listenable: listenable,
+        builder: (context, _) {
+          final downloadState = _playController.downloadStateNotifier.value;
+          return Positioned(
+            top: 0,
+            left: 0,
+            right: 0,
+            child: AliPlayerTopBarWidget(
+              animationManager: _animationManager,
+              title: _playController._widgetData?.videoTitle ?? "",
+              onBackPressed: _handleBackPress,
+              onSettingsPressed: _toggleSettingMenuPanel,
+              isDownload: downloadState is DownloadCompletedState,
+              onDownloadPressed:
+                  enableDownloadPress ? _onDownloadPressed : null,
+              onSnapshotPressed:
+                  enableSnapshotPress ? _onSnapshotPressed : null,
+              onPIPPressed: null,
+            ),
+          );
+        });
   }
 
   /// 返回事件处理
   bool _handleBackPress() {
     if (FullScreenUtil.isFullScreen()) {
       // 如果当前是全屏模式，退出全屏
-      isFullScreen = false;
-      exitFullScreen();
+      _playController.exitFullScreen();
       return false; // 阻止默认的返回操作
     } else {
       // 如果不是全屏模式，执行正常的返回操作
@@ -249,14 +319,17 @@ class AliPlayerWidgetState extends State<AliPlayerWidget>
 
   /// 下载按钮点击回调
   void _onDownloadPressed(bool value) {
-    // TODO keria; download feature to be implemented
-    SnackBarUtil.warning(context, "download feature to be implemented");
+    _playController.startVideoDownload();
   }
 
   /// 截图按钮点击回调
   void _onSnapshotPressed() {
-    // TODO keria; snapshot feature to be implemented
-    SnackBarUtil.warning(context, "snapshot feature to be implemented");
+    if (Platform.isIOS) {
+      _playController.snapshot("${DateTime.now().millisecondsSinceEpoch}.png");
+    } else {
+      _playController.snapshot(
+          "${FileManager.getDownloadFilePath("snapshot_${DateTime.now().millisecondsSinceEpoch}.png")}");
+    }
   }
 
   /// PIP 按钮点击回调
@@ -267,11 +340,23 @@ class AliPlayerWidgetState extends State<AliPlayerWidget>
 
   /// 构建底部栏控件
   Widget _buildBottomBarWidget() {
-    // 拖动控制
-    bool enableDrag = !_isSceneLive();
-    // seek 控制
-    bool enableSeek = !_isSceneLive();
+    // 受限场景下不显示底部栏
+    if (isSceneType(_sceneType, [
+      SceneType.minimal,
+    ])) {
+      return const SizedBox.shrink();
+    }
 
+    // 拖动控制
+    bool enableDrag = isNotSceneType(_sceneType, [
+      SceneType.live,
+      SceneType.restricted,
+    ]);
+    // seek 控制
+    bool enableSeek = isNotSceneType(_sceneType, [
+      SceneType.live,
+      SceneType.restricted,
+    ]);
     // 监听播放状态、当前播放位置、缓冲位置、总时长等
     Listenable listenable = Listenable.merge([
       _playController.playStateNotifier,
@@ -294,95 +379,50 @@ class AliPlayerWidgetState extends State<AliPlayerWidget>
           right: 0,
           child: AliPlayerBottomBarWidget(
             animationManager: _animationManager,
+            sceneType: _sceneType,
             isPlaying: playState == FlutterAvpdef.started,
             currentPosition: currentPosition,
             bufferedPosition: bufferedPosition,
             totalDuration: totalDuration,
             onPlayIconPressed: _onPlayerViewTap,
+            onReplayIconPressed: _onReplayIconTap,
             onFullScreenPressed: _onFullScreenPressed,
+            onSubtitlePressed: _toggleSubtitleShow,
             onDragUpdate: enableDrag ? _onDragUpdate : null,
             onDragEnd: enableDrag ? _onDragEnd : null,
             onSeekEnd: enableSeek ? _onSeekEnd : null,
+            isShowExternalSubtitle: _isShowExternalSubtitle.value,
           ),
         );
       },
     );
   }
 
+  /// 外挂字幕显示
+  Future<void> _toggleSubtitleShow() async {
+    _isShowExternalSubtitle.value = !_isShowExternalSubtitle.value;
+  }
+
   /// 全屏状态切换
   Future<void> _onFullScreenPressed() async {
     // 切换全屏
-    if (!isFullScreen) {
-      isFullScreen = true;
+    if (!FullScreenUtil.isFullScreen()) {
       _playController.getCurrentPosition().then((position) {
-        enterFullScreen(position);
+        _playController.enterFullScreen(widget._controller, position);
       });
     }
     // 退出全屏
     else {
-      isFullScreen = false;
-      await exitFullScreen();
+      await _playController.exitFullScreen();
     }
-  }
-
-  /// 播放器切换全屏
-  Future<void> enterFullScreen(int currentPosition) async {
-    final data = _playController._widgetData;
-    if (data == null) return;
-    data.startTime = currentPosition;
-
-    // 进入全屏播放器
-    AliPlayerWidgetData result = await Navigator.of(context).push(
-      PageRouteBuilder(
-        transitionDuration: const Duration(milliseconds: 100), // 动画持续时间
-        pageBuilder: (context, animation, secondaryAnimation) {
-          return AliPlayerFullScreenWidget(_playController, data);
-        },
-        transitionsBuilder: (context, animation, secondaryAnimation, child) {
-          // 淡入淡出动画
-          return FadeTransition(
-            opacity: animation,
-            child: child,
-          );
-        },
-      ),
-    );
-    int fullScreenPosition = await result.startTime ?? 0;
-    await _playController._aliPlayer
-        .seekTo(fullScreenPosition, result.seekMode);
-    _playController.play();
-  }
-
-  /// 播放器退出全屏
-  Future<void> exitFullScreen() async {
-    // 恢复状态栏和导航栏
-    await SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
-
-    await SystemChrome.setPreferredOrientations([
-      DeviceOrientation.portraitUp, // 正常竖屏
-      DeviceOrientation.portraitDown, // 倒置竖屏
-    ]);
-
-    final data = _fullController._widgetData;
-
-    if (data == null) return;
-
-    _fullController.getCurrentPosition().then((position) {
-      data.startTime = position;
-      // 先暂停播放器
-      _fullController.stop();
-
-      // 销毁全屏播放器
-      _fullController.destroy();
-
-      // 返回竖屏播放器
-      Navigator.pop(context, data);
-    });
   }
 
   /// 拖拽进度更新回调
   void _onDragUpdate(Duration duration) {
     _playController.requestThumbnailBitmap(duration);
+
+    // 记录拖拽开始位置
+    _dragStartPosition ??= _playController.currentPositionNotifier.value;
 
     _isDraggingNotifier.value = true;
     _currentSeekTimeNotifier.value = duration;
@@ -390,8 +430,23 @@ class AliPlayerWidgetState extends State<AliPlayerWidget>
 
   /// 拖拽进度结束回调
   void _onDragEnd(Duration duration) {
+    final startPosition = _dragStartPosition ?? Duration.zero;
+    final dragDistance = (duration - startPosition).abs();
+
     _isDraggingNotifier.value = false;
     _currentSeekTimeNotifier.value = Duration.zero;
+    _dragStartPosition = null;
+
+    // 只有拖拽距离超过阈值时间, 才认为是真正的拖拽操作
+    const threshold = Duration(seconds: 1);
+    if (dragDistance > threshold && _animationManager.isVisible) {
+      // 延迟隐藏，给用户查看时间
+      Future.delayed(const Duration(seconds: 2), () {
+        if (!_isDraggingNotifier.value && _animationManager.isVisible) {
+          _animationManager.hide();
+        }
+      });
+    }
   }
 
   /// 拖拽进度结束回调
@@ -401,6 +456,13 @@ class AliPlayerWidgetState extends State<AliPlayerWidget>
 
   /// 构建设置菜单面板控件
   Widget _buildSettingMenuPanel() {
+    // 受限场景下不显示设置菜单面板
+    if (isSceneType(_sceneType, [
+      SceneType.minimal,
+    ])) {
+      return const SizedBox.shrink();
+    }
+
     // 监听设置面板的可见性
     return ValueListenableBuilder(
       valueListenable: _isShowSettingMenuPanelNotifier,
@@ -438,7 +500,10 @@ class AliPlayerWidgetState extends State<AliPlayerWidget>
         onChanged: (value) => _playController.setBrightness(value),
       ),
       // 构建倍速选择控件
-      if (!_isSceneLive())
+      if (isNotSceneType(_sceneType, [
+        SceneType.live,
+        SceneType.restricted,
+      ]))
         SettingItem(
           type: SettingItemType.selector,
           text: "倍速",
@@ -449,18 +514,19 @@ class AliPlayerWidgetState extends State<AliPlayerWidget>
           displayFormatter: (option) => "${option}x",
         ),
       // 构建清晰度选择控件
-      if (!_isSceneLive())
-        SettingItem(
-          type: SettingItemType.selector,
-          text: "清晰度",
-          startIcon: Icons.hd_rounded,
-          options: _playController.trackInfoListNotifier.value,
-          initialValue: _playController.currentTrackInfoNotifier.value,
-          onChanged: (value) => _playController.selectTrack(value),
-          displayFormatter: (option) => TrackInfoUtil.getQuality(option),
-        ),
+      SettingItem(
+        type: SettingItemType.selector,
+        text: "清晰度",
+        startIcon: Icons.hd_rounded,
+        options: _playController.trackInfoListNotifier.value,
+        initialValue: _playController.currentTrackInfoNotifier.value,
+        onChanged: (value) => _playController.selectTrack(value),
+        displayFormatter: (option) => TrackInfoUtil.getQuality(option),
+      ),
       // 构建循环播放开关控件
-      if (!_isSceneLive())
+      if (isNotSceneType(_sceneType, [
+        SceneType.live,
+      ]))
         SettingItem(
           type: SettingItemType.switcher,
           text: "循环播放",
@@ -519,6 +585,15 @@ class AliPlayerWidgetState extends State<AliPlayerWidget>
 
   /// 构建 seek 缩略图控件
   Widget _buildSeekThumbnailWidget() {
+    // 受限场景下不显示 seek 缩略图
+    if (isSceneType(_sceneType, [
+      SceneType.live,
+      SceneType.restricted,
+      SceneType.minimal,
+    ])) {
+      return const SizedBox.shrink();
+    }
+
     // 监听播放进度、总时长、是否正在拖拽、当前拖拽进度等
     Listenable listener = Listenable.merge([
       _playController.totalDurationNotifier,
@@ -543,6 +618,60 @@ class AliPlayerWidgetState extends State<AliPlayerWidget>
             currentSeekTime: currentSeekTime,
             totalDuration: totalDuration,
             thumbnail: thumbnail,
+          ),
+        );
+      },
+    );
+  }
+
+  /// 构建外挂字幕组件
+  Widget _buildSubtitleWidget() {
+    // 受限场景下不显示外挂字幕组件
+    if (isSceneType(_sceneType, [
+      SceneType.minimal,
+    ])) {
+      return const SizedBox.shrink();
+    }
+
+    return ValueListenableBuilder<bool>(
+        valueListenable: _isShowExternalSubtitle,
+        builder: (context, show, _) {
+          if (!show) {
+            return const SizedBox.shrink();
+          }
+
+          return _buildSubtitleContent();
+        });
+  }
+
+  /// 外挂字幕内容
+  Widget _buildSubtitleContent() {
+    // 监听播放进度、总时长、是否正在拖拽、当前拖拽进度等
+    Listenable listener = Listenable.merge([
+      _playController.subtitleNotifier,
+      _playController.subtitleTrackIndexNotifier,
+      _playController.isSubtitleVisibleNotifier,
+      _currentSeekTimeNotifier,
+    ]);
+    return ListenableBuilder(
+      listenable: listener,
+      builder: (context, _) {
+        Subtitles? subtitles = _playController.subtitleNotifier.value;
+        int? trackIndex = _playController.subtitleTrackIndexNotifier.value;
+        final isSubtitleVisible =
+            _playController.isSubtitleVisibleNotifier.value;
+        return Positioned(
+          bottom:
+              _playController._widgetData?.subtitlePositionConfig?.bottom ?? 0,
+          left: _playController._widgetData?.subtitlePositionConfig?.left ?? 0,
+          right:
+              _playController._widgetData?.subtitlePositionConfig?.right ?? 0,
+          child: AliPlayerSubtitleWidget(
+            subtitleOn: isSubtitleVisible!,
+            subtitles: subtitles,
+            trackIndex: trackIndex,
+            subtitleBuilder: _playController.subtitleBuilder,
+            config: _playController.subtitleConfig,
           ),
         );
       },
@@ -610,6 +739,13 @@ class AliPlayerWidgetState extends State<AliPlayerWidget>
 
   /// 构建中心显示控件
   Widget _buildCenterDisplayWidget() {
+    // 受限场景下不显示中心显示控件
+    if (isSceneType(_sceneType, [
+      SceneType.minimal,
+    ])) {
+      return const SizedBox.shrink();
+    }
+
     // 监听播放状态显示视图的内容类型
     return ValueListenableBuilder(
       valueListenable: _contentViewTypeNotifier,
@@ -647,8 +783,19 @@ class AliPlayerWidgetState extends State<AliPlayerWidget>
 
   /// 播放器视图点击回调
   void _onPlayerViewTap() {
-    _togglePlayControlVisibility(forceHide: true);
+    // 如果正在拖拽，则不处理点击事件
+    if (_isDraggingNotifier.value) {
+      return;
+    }
+
+    // 切换控制面板显示状态
+    _togglePlayControlVisibility();
     _playController.togglePlayState();
+  }
+
+  /// 刷新按钮点击回调
+  void _onReplayIconTap() {
+    _playController.replay();
   }
 
   /// 播放器视图双击回调
@@ -794,16 +941,6 @@ class AliPlayerWidgetState extends State<AliPlayerWidget>
     return widget.overlays;
   }
 
-  /// 判断当前场景是否为直播
-  bool _isSceneLive() {
-    return _sceneType == SceneType.live;
-  }
-
-  /// 判断当前场景是否为列表播放
-  bool _isSceneListPlayer() {
-    return _sceneType == SceneType.listPlayer;
-  }
-
   /// 初始化状态
   /// StatefulWidget 的状态类中第一个被调用的方法，用于初始化状态，可以执行一些一次性的初始化工作
   ///
@@ -852,7 +989,7 @@ class AliPlayerWidgetState extends State<AliPlayerWidget>
     _contentViewTypeNotifier.dispose();
 
     _isShowSettingMenuPanelNotifier.dispose();
-
+    _isShowExternalSubtitle.dispose();
     _isDraggingNotifier.dispose();
     _currentSeekTimeNotifier.dispose();
   }
@@ -922,5 +1059,12 @@ class AliPlayerWidgetState extends State<AliPlayerWidget>
     final brightness = widgetsBinding.platformDispatcher.platformBrightness;
     final themeMode = (brightness == Brightness.light ? 'Light' : 'Dark');
     loge("Theme mode changed to $themeMode");
+  }
+
+  bool _isDownloadable() {
+    if (null == _playController._widgetData) return false;
+    if (null == _playController._widgetData?.videoSource) return false;
+    return _playController._widgetData?.videoSource is VidAuthVideoSource ||
+        _playController._widgetData?.videoSource is VidStsVideoSource;
   }
 }

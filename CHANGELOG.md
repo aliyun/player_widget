@@ -1,5 +1,71 @@
 # **AliPlayerWidget Changelog**
 
+## **[7.8.0] - Enhanced Subtitles, Scene Control, Download and Screenshot**
+
+### **New Features**
+
+- **External Subtitle Support**  
+  Added comprehensive support for external subtitles, including:
+  - Toggle button to show/hide external subtitles
+  - Customizable display logic and positioning
+  - Dedicated `SubtitleBuilder` and configuration moved to `AliPlayerWidgetData`
+  - Optimized rendering performance and code structure
+- **Advanced Scene Types for UI Control**  
+  Introduced new scene types to enable fine-grained UI behavior:
+  - `SceneType.minimal`: Surface-only playback with **no UI elements**
+  - `SceneType.restricted`: Disables **all controls and gestures** for secure or limited playback scenarios
+- **Enhanced Media Operations: Download, Screenshot & Live Refresh**
+  Implemented key user-facing media control capabilities:
+  - **Video Download**: Support for downloading VOD content, including authenticated **VID-based sources** (VidSts/VidAuth)
+  - **In-Player Screenshot**: Capture and save the current video frame during playback (supports both VOD and live)
+  - **Live Stream Refresh**: Dedicated refresh button to reload live streams when encountering network or playback issues
+- **Playback Tracking with Trace ID**  
+  Added `traceId` support in `AliPlayerWidget` to enable end-to-end video playback tracking and diagnostics.
+- **Multi-Definition VOD Playback Logic**  
+  Expanded playback logic to better handle multi-definition Video-on-Demand (VOD) content.
+
+### **Improvements**
+
+- **Player View Default Update**  
+  Changed default player view type on Android to `AliPlayerViewTypeForAndroid.textureview` for improved compatibility and performance.
+
+- **Documentation Enhancements**  
+  - Updated README with integration diagrams (`Integration.png`, `Integration_en.png`)
+  - Revised usage examples to use the modern `videoSource` API
+  - Deprecated `videoUrl` and `AliPlayerWidgetData.fromUrl` in favor of `videoSource`
+
+### **Breaking Changes**
+
+- **Recommended Global Configuration Initialization**
+  To ensure proper storage path setup and platform-specific behavior (e.g., Android external storage vs. iOS sandbox), it is **recommended** to initialize `AliPlayerWidgetGlobalSetting` early in your application lifecycle.
+  
+  **Migration Suggestion**:
+  Please refer to `example/main.dart` for the suggested `initializeGlobalSettings()` implementation, which intelligently configures cache and file directories based on the platform:
+  
+  ```dart
+  /// Initialize aliplayer_widget global settings, including storage paths.
+  /// Call this once at app startup.
+  Future<void> initializeGlobalSettings() async {
+    await AliPlayerWidgetGlobalSetting.setupConfig();
+    // ... (platform-specific path logic as shown in example)
+    AliPlayerWidgetGlobalSetting.setStoragePaths(cachePath: ..., filesPath: ...);
+  }
+  ```
+  
+  Failure to initialize global settings may result in missing directories, cache errors, or playback failures. This change ensures proper file management and platform compliance.
+  
+- **Deprecated Controller Methods**  
+  The following methods in `AliPlayerWidgetController` are now **deprecated** and will be removed in a future release:
+  
+  - `getWidgetVersion()` → Use `AliPlayerWidgetGlobalSetting.kWidgetVersion`
+  - `clearCaches()` → Use `AliPlayerWidgetGlobalSetting.clearCaches()`
+  
+  Widget version has been updated to **7.8.0** as part of this change (included in 7.8.0 release).
+
+---
+
+**Note**: This release significantly enhances subtitle capabilities, introduces powerful scene-based UI control, and provides greater flexibility in storage and file management. The breaking changes around cache and version APIs require minor migration. Upgrading is recommended for apps needing external subtitles, secure playback modes, or customizable storage paths.
+
 ---
 
 ## **[7.3.0] - Screen Keep-On & Streaming Protocol Fixes**

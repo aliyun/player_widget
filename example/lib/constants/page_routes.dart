@@ -17,8 +17,11 @@ class PageRoutes {
   /// 首页
   static const String home = '/home';
 
-  /// 中长视频页面
+  /// 中长视频页面（Direct URL）
   static const String longVideo = '/long_video';
+
+  /// VidAuth播放页面
+  static const String vidAuthPlay = '/vid_auth_play';
 
   /// 短视频页面
   static const String shortVideo = '/short_video';
@@ -31,6 +34,9 @@ class PageRoutes {
 
   /// 直播播放页面（竖屏）
   static const String livePortrait = '/live/portrait';
+
+  /// 外挂字幕演示页面
+  static const String externalSubtitle = '/external_subtitle';
 
   /// 调试页面
   static const String debug = '/debug';
@@ -46,9 +52,14 @@ class PageRoutes {
   /// A static list of home item configurations
   static final List<HomePageItemConfig> homeItemConfigurations = [
     const HomePageItemConfig(
-      name: '中长视频',
+      name: '中长视频播放（Direct URL）',
       icon: Icons.movie_rounded,
       pageRoute: longVideo,
+    ),
+    const HomePageItemConfig(
+      name: 'VidAuth播放',
+      icon: Icons.verified_rounded,
+      pageRoute: vidAuthPlay,
     ),
     const HomePageItemConfig(
       name: '直播播放（横屏）',
@@ -69,6 +80,11 @@ class PageRoutes {
       name: '短视频（支持预加载）',
       icon: Icons.shortcut_rounded,
       pageRoute: preloadShortVideo,
+    ),
+    const HomePageItemConfig(
+      name: '外挂字幕',
+      icon: Icons.subtitles,
+      pageRoute: externalSubtitle,
     ),
     const HomePageItemConfig(
       name: '设置页',

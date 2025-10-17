@@ -71,6 +71,8 @@ class _AliPlayerSeekThumbnailWidgetState
   Widget _buildThumbnailImage() {
     return widget.thumbnail != null
         ? Image(
+            width: 90,
+            height: 160,
             image: widget.thumbnail!,
             fit: BoxFit.cover,
           )

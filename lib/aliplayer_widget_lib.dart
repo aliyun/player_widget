@@ -21,20 +21,30 @@ export 'package:flutter_aliplayer/flutter_aliplayer_global_setting.dart';
 export 'package:flutter_aliplayer/flutter_aliplayer_factory.dart';
 
 // 导入必要的依赖
+import 'dart:async';
+import 'dart:convert';
+import 'dart:io';
 import 'dart:ui';
 
 import 'package:aliplayer_widget/constants/setting_constants.dart';
 import 'package:aliplayer_widget/base/safe_value_notifier.dart';
+import 'package:aliplayer_widget/constants/subtitle_model.dart';
+import 'package:aliplayer_widget/manager/file_manager.dart';
 import 'package:aliplayer_widget/manager/shared_animation_manager.dart';
+import 'package:aliplayer_widget/manager/storage_path_manager.dart';
+import 'package:aliplayer_widget/ui/aliplayer_subtitle_widget.dart';
 import 'package:aliplayer_widget/utils/format_util.dart';
 import 'package:aliplayer_widget/utils/scene_util.dart';
 import 'package:aliplayer_widget/utils/screen_util.dart';
+import 'package:aliplayer_widget/utils/subtitle_builder_utils.dart';
+import 'package:aliplayer_widget/utils/subtitle_config_utils.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_aliplayer/flutter_aliplayer.dart';
 import 'package:flutter_aliplayer/flutter_aliplayer_factory.dart';
 import 'package:flutter_aliplayer/flutter_aliplayer_global_setting.dart';
+import 'package:flutter_aliplayer/flutter_alidownloader.dart';
 import 'package:wakelock_plus/wakelock_plus.dart';
 
 import 'ui/aliplayer_center_display_widget.dart';

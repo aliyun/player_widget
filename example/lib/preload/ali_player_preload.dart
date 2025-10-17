@@ -4,14 +4,10 @@
 // Date: 2025/2/28
 // Brief: AliPlayer Preload
 
-import 'dart:io';
-
 import 'package:flutter/material.dart';
 
 import 'package:flutter_aliplayer/flutter_aliplayer_medialoader.dart';
-import 'package:aliplayer_widget/aliplayer_widget_lib.dart';
 import 'package:aliplayer_widget_example/model/video_info.dart';
-import 'package:path_provider/path_provider.dart';
 
 import 'ali_sliding_window.dart';
 
@@ -114,10 +110,6 @@ class AliPlayerPreload {
   ///
   /// 初始化媒体加载器
   Future<void> _initMediaLoader() async {
-    // Setup global configuration.
-    final Directory appDocumentsDir = await getApplicationDocumentsDirectory();
-    AliPlayerWidgetGlobalSetting.setupMediaLoaderConfig(appDocumentsDir.path);
-
     // Set the listener for media loader events.
     _mediaLoader.setOnLoadStatusListener(
       (String url) {

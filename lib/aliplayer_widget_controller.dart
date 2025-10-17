@@ -19,6 +19,15 @@ class AliPlayerWidgetController {
   /// 播放器实例
   late FlutterAliplayer _aliPlayer;
 
+  /// 下载器实例
+  late FlutterAliDownloader _aliDownloader;
+
+  /// 管理流订阅
+  late StreamSubscription _subscription;
+
+  // 下载保存路径
+  String? downloadSavePath = FileManager.getFolderPath(FolderType.download);
+
   /// 播放器唯一标识符
   late String _playerUniqueId;
 
@@ -27,6 +36,18 @@ class AliPlayerWidgetController {
 
   /// 播放数据源准备开始时间
   int _prepareStartTime = 0;
+
+  /// 外挂字幕
+  late Subtitles subtitles;
+
+  final Map<int, Subtitle> _activeSubtitles = {};
+
+  /// 获取字幕配置
+  SubtitleConfig get subtitleConfig =>
+      _widgetData?.subtitleConfig ?? const SubtitleConfig();
+
+  /// 获取字幕构建器
+  SubtitleBuilder? get subtitleBuilder => _widgetData?.subtitleBuilder;
 
   /// 渲染状态变化通知器
   ///
@@ -135,6 +156,36 @@ class AliPlayerWidgetController {
   final SafeValueNotifier<MemoryImage?> thumbnailNotifier =
       SafeValueNotifier(null);
 
+  /// 外挂字幕变化通知器
+  ///
+  /// Value notifier for externalSubtitle
+  final SafeValueNotifier<Subtitles?> subtitleNotifier =
+      SafeValueNotifier(null);
+
+  /// 外挂字幕trackIndex变化通知器
+  ///
+  /// The current displayed subtitle status
+  final SafeValueNotifier<int?> subtitleTrackIndexNotifier =
+      SafeValueNotifier(null);
+
+  /// 当前显示的字幕状态
+  ///
+  /// The current displayed subtitle status
+  final SafeValueNotifier<bool?> isSubtitleVisibleNotifier =
+      SafeValueNotifier(false);
+
+  /// 截图状态变化通知器
+  ///
+  ///
+  final SafeValueNotifier<String?> snapFileStateNotifier =
+      SafeValueNotifier(null);
+
+  /// 当前下载状态
+  ///
+  ///
+  final SafeValueNotifier<DownloadState> downloadStateNotifier =
+      SafeValueNotifier(const UnknownState());
+
   /// 缩略图是否获取成功
   bool _thumbnailSuccess = false;
 
@@ -163,6 +214,8 @@ class AliPlayerWidgetController {
     // 初始化播放器实例
     _initializePlayer();
 
+    _initializeDownloader();
+
     // 设置默认值
     _batchLoadDefaultValues();
   }
@@ -178,6 +231,9 @@ class AliPlayerWidgetController {
 
     // 销毁播放器实例
     Future.microtask(() => _destroyPlayer());
+
+    // 销毁下载器实例
+    Future.microtask(() => _destroyDownloader());
 
     // 销毁值监听器
     Future.microtask(() => _disposeValueNotifiers());
@@ -197,6 +253,8 @@ class AliPlayerWidgetController {
     /// 2、设置播放器事件回调
     // 设置播放器事件回调，准备完成事件
     _aliPlayer.setOnPrepared((String playerId) {
+      // 创建外挂字幕（方式1）
+      Future.microtask(() => _createExternalSubtitleWhenPrepared());
       _isPrepared = true;
 
       int cost = DateTime.now().millisecondsSinceEpoch - _prepareStartTime;
@@ -343,11 +401,70 @@ class AliPlayerWidgetController {
       onThumbnailGetFail: (playerId) {},
     );
 
+    // 设置外挂字幕代理回调
+    _aliPlayer.setOnSubtitleExtAdded(
+      (trackIndex, String url, playerId) async {
+        if (trackIndex < 0) {
+          debugPrint('外挂字幕添加失败');
+        }
+        await _aliPlayer.selectExtSubtitle(trackIndex, true);
+      },
+    );
+
+    /// 外挂字幕显示回调
+    _aliPlayer.setOnSubtitleShow(
+      (trackIndex, subtitleID, subtitle, playerId) {
+        // 添加字幕到活跃字幕集合中
+        _activeSubtitles[subtitleID] = Subtitle(
+          index: trackIndex,
+          text: subtitle,
+        );
+
+        // 更新显示
+        _updateSubtitleDisplay(trackIndex);
+      },
+    );
+
+    /// 外挂字幕隐藏回调
+    _aliPlayer.setOnSubtitleHide(
+      (trackIndex, subtitleID, playerId) {
+        // 从活跃字幕集合中移除
+        _activeSubtitles.remove(subtitleID);
+        // 更新显示
+        _updateSubtitleDisplay(trackIndex);
+      },
+    );
+
+    _aliPlayer.setOnSnapShot((path, playerId) {
+      logi("Flutter Snap Save : $path");
+      SnackBarUtil.success(_context, "SnapShot Save :$path");
+      snapFileStateNotifier.value = path;
+    });
+
     /// 3. 其它配置
-    // IPlayer.ScaleMode.SCALE_ASPECT_FILL
     _aliPlayer.setScalingMode(1);
 
     logi("Player initialization completed.");
+  }
+
+  /// 更新字幕显示
+  void _updateSubtitleDisplay(int trackIndex) {
+    // 获取当前轨道的所有活跃字幕
+    List<Subtitle> currentSubtitles = [];
+
+    _activeSubtitles.forEach((subtitleID, subtitle) {
+      if (subtitle.index == trackIndex) {
+        currentSubtitles.add(subtitle);
+      }
+    });
+
+    // 创建新的字幕对象
+    subtitles = Subtitles(currentSubtitles);
+
+    // 通知UI更新
+    subtitleNotifier.value = subtitles;
+    subtitleTrackIndexNotifier.value = trackIndex;
+    isSubtitleVisibleNotifier.value = currentSubtitles.isNotEmpty;
   }
 
   /// 销毁播放器实例
@@ -402,6 +519,37 @@ class AliPlayerWidgetController {
     trackInfoListNotifier.dispose();
 
     thumbnailNotifier.dispose();
+    subtitleNotifier.dispose();
+    subtitleTrackIndexNotifier.dispose();
+
+    snapFileStateNotifier.dispose();
+  }
+
+  void _initializeDownloader() {
+    _aliDownloader = FlutterAliDownloader.init();
+  }
+
+  /// 销毁下载器实例
+  ///
+  /// 释放下载器资源，根据当前视频源类型和选择的清晰度索引释放对应的下载资源。
+  /// 该方法会在控制器销毁时被调用，确保下载器资源得到正确释放。
+  void _destroyDownloader() {
+    int selectVideoIndex = 0;
+
+    if (null != currentTrackInfoNotifier.value) {
+      // 获取当前选择清晰度信息
+      selectVideoIndex = currentTrackInfoNotifier.value!.trackIndex!;
+    }
+
+    if (_widgetData?.videoSource is VidStsVideoSource) {
+      final stsSource = _widgetData?.videoSource as VidStsVideoSource;
+      String vid = stsSource.vid;
+      _aliDownloader.release(vid, selectVideoIndex);
+    } else {
+      final authSource = _widgetData?.videoSource as VidAuthVideoSource;
+      String vid = authSource.vid;
+      _aliDownloader.release(vid, selectVideoIndex);
+    }
   }
 
   /// 设置默认值
@@ -443,11 +591,8 @@ class AliPlayerWidgetController {
   void _setPlayerView(int playerViewId) {
     _playerLog("[api][setPlayerView]: $playerViewId");
     _aliPlayer.setPlayerView(playerViewId);
-
-    // 列表播放模式下，允许预渲染
-    if (_widgetData?.sceneType == SceneType.listPlayer) {
-      _aliPlayer.setOption(FlutterAvpdef.ALLOW_PRE_RENDER, 1);
-    }
+    // 配置预渲染
+    _configureAllowPreRender();
   }
 
   /// 配置播放控制器
@@ -460,10 +605,16 @@ class AliPlayerWidgetController {
 
     _widgetData = data;
 
-    // 列表播放模式下，允许预渲染
-    if (_widgetData?.sceneType == SceneType.listPlayer) {
-      _aliPlayer.setOption(FlutterAvpdef.ALLOW_PRE_RENDER, 1);
+    // 可选：推荐使用`播放器单点追查`功能，当使用阿里云播放器 SDK 播放视频发生异常时，可借助单点追查功能针对具体某个用户或某次播放会话的异常播放行为进行全链路追踪，以便您能快速诊断问题原因，可有效改善播放体验治理效率。
+    // traceId 值由您自行定义，需为您的用户或用户设备的唯一标识符，例如传入您业务的 userid 或者 IMEI、IDFA 等您业务用户的设备 ID。
+    // 传入 traceId 后，埋点日志上报功能开启，后续可以使用播放质量监控、单点追查和视频播放统计功能。
+    // 文档：https://help.aliyun.com/zh/vod/developer-reference/single-point-tracing
+    if (_widgetData?.traceId.isNotEmpty ?? false) {
+      _aliPlayer.setTraceID(_widgetData!.traceId);
     }
+
+    // 配置预渲染
+    _configureAllowPreRender();
 
     // 配置播放源
     _configurePlayerSource(data);
@@ -526,6 +677,18 @@ class AliPlayerWidgetController {
           playAuth: authSource.playAuth,
         );
         break;
+    }
+  }
+
+  /// 配置预渲染
+  ///
+  /// Configure pre rendering
+  void _configureAllowPreRender() {
+    // 列表播放模式下，允许预渲染
+    if (isSceneType(_widgetData?.sceneType, [
+      SceneType.listPlayer,
+    ])) {
+      _aliPlayer.setOption(FlutterAvpdef.ALLOW_PRE_RENDER, 1);
     }
   }
 
@@ -847,6 +1010,19 @@ class AliPlayerWidgetController {
     });
   }
 
+  /// 外挂字幕 （方式1）
+  ///
+  /// Create a externalSubtitle using method 1 (external URL).
+  Future<void> _createExternalSubtitleWhenPrepared() async {
+    // 如果外部配置了外挂字幕地址，则使用方式1创建外挂字幕
+    if (_widgetData == null || _widgetData!.externalSubtitleUrl.isEmpty) {
+      return;
+    }
+
+    // 创建外挂字幕
+    await _aliPlayer.addExtSubtitle(_widgetData!.externalSubtitleUrl);
+  }
+
   /// 请求缩略图
   ///
   /// Request a thumbnail bitmap at a specific position.
@@ -856,6 +1032,53 @@ class AliPlayerWidgetController {
     if (_thumbnailSuccess) {
       _aliPlayer.requestBitmapAtPosition(position.inMilliseconds);
     }
+  }
+
+  /// 设置字幕配置
+  ///
+  /// Set the subtitle configuration for the player.
+  /// [config] The subtitle configuration to be set
+  void setSubtitleConfig(SubtitleConfig config) {
+    if (_widgetData == null) {
+      return;
+    }
+
+    _widgetData!.subtitleConfig = config;
+  }
+
+  /// 设置字幕构建器
+  ///
+  /// Set the subtitle builder for custom subtitle rendering.
+  /// [builder] The subtitle builder to be set, null to use default builder
+  void setSubtitleBuilder(SubtitleBuilder? builder) {
+    if (_widgetData == null) {
+      return;
+    }
+
+    _widgetData!.subtitleBuilder = builder;
+  }
+
+  /// 更新字幕样式配置
+  ///
+  /// Update the subtitle style configuration.
+  /// [styleConfig] The subtitle style configuration to be updated
+  void updateSubtitleStyle(SubtitleStyleConfig styleConfig) {
+    if (_widgetData == null) return;
+
+    final updateSubtitleConfig =
+        _widgetData!.subtitleConfig.copyWith(styleConfig: styleConfig);
+    _widgetData!.subtitleConfig = updateSubtitleConfig;
+  }
+
+  /// 更新字幕位置配置
+  ///
+  /// Update the subtitle position configuration.
+  /// [positionConfig] The subtitle position configuration to be updated
+  void updateSubtitlePosition(SubtitlePositionConfig positionConfig) {
+    if (_widgetData == null) {
+      return;
+    }
+    _widgetData!.subtitlePositionConfig = positionConfig;
   }
 
   /// Player log information with a consistent format.
@@ -870,22 +1093,243 @@ class AliPlayerWidgetController {
     }
   }
 
+  /// Takes a snapshot of the current video frame and saves it as a PNG file.
+  /// 截取当前视频画面并保存为 PNG 文件。
+  ///
+  /// - On iOS: saves with filename only (e.g., `1234567890.png`).
+  ///   iOS：仅使用文件名（如 `1234567890.png`）。
+  /// - On Android: saves to `$_snapShotPath/snapshot_1234567890.png`.
+  ///   Android：保存至 `$_snapShotPath/snapshot_1234567890.png`。
+  ///
+  /// Filename includes a timestamp to ensure uniqueness.
+  /// 文件名含时间戳，确保唯一性。
+  void snapshot(String path) {
+    _aliPlayer.snapshot(path);
+  }
+
+  /// 启动视频下载流程
+  ///
+  /// 根据视频源类型初始化并开始下载视频。支持两种授权类型：
+  /// 1. STS授权方式 (VidStsVideoSource)
+  /// 2. 授权码方式 (VidAuthVideoSource)
+  ///
+  /// 下载前会检查视频是否已下载，避免重复下载。
+  void startVideoDownload() {
+    // 检查视频源是否存在
+    if (_widgetData?.videoSource == null) return;
+
+    // 检查是否已经下载完成，如果已完成则提示用户
+    if (downloadStateNotifier.value is DownloadCompletedState) {
+      final DownloadCompletedState state =
+          downloadStateNotifier.value as DownloadCompletedState;
+      SnackBarUtil.success(_context,
+          "This video has already been downloaded. SavePath: ${state.downloadFile}");
+      return;
+    }
+    // 如果不是初始状态，则重置为未知状态
+    else if (downloadStateNotifier.value is! UnknownState) {
+      downloadStateNotifier.value = const UnknownState();
+    }
+
+    // 设置下载保存目录
+    _aliDownloader.setSaveDir(downloadSavePath!);
+
+    String type; // 视频授权类型
+
+    // 根据不同视频源类型执行相应下载逻辑
+    if (_widgetData?.videoSource is VidStsVideoSource) {
+      // 处理 STS 类型视频源的下载准备
+      final stsSource = _widgetData?.videoSource as VidStsVideoSource;
+      type = FlutterAvpdef.DOWNLOADTYPE_STS;
+      String vid = stsSource.vid;
+      String accessKeyId = stsSource.accessKeyId;
+      String accessKeySecret = stsSource.accessKeySecret;
+      String securityToken = stsSource.securityToken;
+
+      _aliDownloader
+          .prepare(type, vid,
+              accessKeyId: accessKeyId,
+              accessKeySecret: accessKeySecret,
+              securityToken: securityToken)
+          .then((value) {
+        _executeDownloadWithMediaInfo(vid, value);
+      }).catchError((error, stack) {
+        if (error is PlatformException) {
+          // 返回错误
+          downloadStateNotifier.value = DownloadErrorState(
+              errorCode: error.code, errorMessage: error.message!);
+        } else {
+          downloadStateNotifier.value = DownloadErrorState(
+              errorCode: "Prepared Error", errorMessage: error);
+        }
+      });
+    } else {
+      // 处理 Auth 类型视频源的下载准备
+      final authSource = _widgetData?.videoSource as VidAuthVideoSource;
+      type = FlutterAvpdef.DOWNLOADTYPE_AUTH;
+      String vid = authSource.vid;
+      String playAuth = authSource.playAuth;
+
+      _aliDownloader.prepare(type, vid, playAuth: playAuth).then((value) {
+        _executeDownloadWithMediaInfo(vid, value);
+      }).catchError((error, stack) {
+        if (error is PlatformException) {
+          // 返回错误
+          downloadStateNotifier.value = DownloadErrorState(
+            errorCode: error.code,
+            errorMessage: error.message!,
+          );
+        } else {
+          downloadStateNotifier.value = DownloadErrorState(
+            errorCode: "Prepared Error",
+            errorMessage: error,
+          );
+        }
+      });
+    }
+  }
+
+  /// 根据媒体信息执行实际的下载操作
+  ///
+  /// 解析媒体信息并选择合适的视频轨道进行下载，同时监听下载过程中的各种状态变化：
+  /// - 下载进度更新
+  /// - 下载完成处理
+  /// - 下载错误处理
+  ///
+  /// 该方法会优先使用当前选择的清晰度，如果没有则使用默认的第一个视频轨道进行下载。
+  ///
+  /// [vid] 视频ID，用于标识要下载的视频资源
+  /// [mediaInfoValue] 媒体信息JSON字符串，包含视频轨道等信息
+  void _executeDownloadWithMediaInfo(String vid, dynamic mediaInfoValue) {
+    // 默认为 0
+    int selectVideoIndex = 0;
+    if (null != currentTrackInfoNotifier.value) {
+      // 获取当前选择清晰度信息
+      selectVideoIndex = currentTrackInfoNotifier.value!.trackIndex!;
+    } else {
+      // 获取OnPrepared清晰度信息
+      Map<String, dynamic> jsonMap = json.decode(mediaInfoValue);
+      AliMediaInfo info = AliMediaInfo.fromJson(jsonMap);
+      if (null != info.trackInfos && info.trackInfos!.isNotEmpty) {
+        selectVideoIndex = info.trackInfos![0].index!;
+      }
+    }
+    _aliDownloader.selectItem(vid, selectVideoIndex);
+
+    // 创建监听流控制器
+    StreamController<dynamic> controller = StreamController<dynamic>();
+    controller.addStream(_aliDownloader.start(vid, selectVideoIndex)!);
+
+    if (!controller.hasListener) {
+      _subscription = controller.stream.listen((event) {
+        String downloadEvent = event[EventChanneldef.TYPE_KEY];
+        if (downloadEvent == DownloadEvent.DOWNLOAD_PROGRESS) {
+          // String vid = event['vid'];
+          // int index = event['index'];
+          String progress = event[EventChanneldef.DOWNLOAD_PROGRESS];
+          downloadStateNotifier.value = DownloadingState(
+            progress: int.parse(progress),
+          );
+        } else if (downloadEvent == DownloadEvent.DOWNLOAD_COMPLETION) {
+          // String vid = event['vid'];
+          // int index = event['index'];
+          String fileSavePath = event['savePath'];
+          downloadStateNotifier.value = DownloadCompletedState(
+            downloadFile: fileSavePath,
+          );
+          // 关闭监听
+          _subscription.cancel();
+        } else if (downloadEvent == DownloadEvent.DOWNLOAD_ERROR) {
+          String errorCode = event['errorCode'];
+          String errorMsg = event['errorMsg'];
+          // 更新状态
+          downloadStateNotifier.value = DownloadErrorState(
+            errorCode: errorCode,
+            errorMessage: errorMsg,
+          );
+          // 关闭监听
+          _subscription.cancel();
+        }
+      });
+    }
+  }
+
   /// 获取 Flutter Widget 版本号
   ///
   /// Get Flutter Widget version
-  static String getWidgetVersion() {
-    return AliPlayerWidgetGlobalSetting.kWidgetVersion;
-  }
+  ///
+  /// Deprecated:
+  /// Use [AliPlayerWidgetGlobalSetting.kWidgetVersion] directly instead.
+  ///
+  /// This method will be removed in a future release.
+  @Deprecated('Use AliPlayerWidgetGlobalSetting.kWidgetVersion directly.')
+  static String getWidgetVersion() =>
+      AliPlayerWidgetGlobalSetting.kWidgetVersion;
 
   /// 清除 Widget 缓存
   ///
-  /// Clear widget cache
-  static Future<void> clearCaches() async {
-    // 清除视频缓存
-    await FlutterAliplayer.clearCaches();
+  /// Clear widget cache.
+  ///
+  /// Deprecated:
+  /// Use [AliPlayerWidgetGlobalSetting.clearCaches] instead.
+  ///
+  /// This method will be removed in a future release.
+  @Deprecated('Use AliPlayerWidgetGlobalSetting.clearCaches instead.')
+  static Future<void> clearCaches() =>
+      AliPlayerWidgetGlobalSetting.clearCaches();
 
-    // 清除图片缓存
-    PaintingBinding.instance.imageCache.clear();
-    PaintingBinding.instance.imageCache.clearLiveImages();
+  /// 播放器横竖屏切换
+  Future<void> enterFullScreen(
+      AliPlayerWidgetController controller, int currentPosition) async {
+    final data = controller._widgetData;
+    if (data == null) return;
+    data.startTime = currentPosition;
+
+    // 进入全屏播放器
+    AliPlayerWidgetData result = await Navigator.of(_context).push(
+      PageRouteBuilder(
+        transitionDuration: const Duration(milliseconds: 100), // 动画持续时间
+        pageBuilder: (context, animation, secondaryAnimation) {
+          return AliPlayerFullScreenWidget(controller, data);
+        },
+        transitionsBuilder: (context, animation, secondaryAnimation, child) {
+          // 淡入淡出动画
+          return FadeTransition(
+            opacity: animation,
+            child: child,
+          );
+        },
+      ),
+    );
+    final int fullScreenPosition = result.startTime;
+    await _aliPlayer.seekTo(fullScreenPosition, result.seekMode);
+    controller.play();
+  }
+
+  /// 播放器退出全屏
+  Future<void> exitFullScreen() async {
+    // 恢复状态栏和导航栏
+    await SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
+
+    await SystemChrome.setPreferredOrientations([
+      DeviceOrientation.portraitUp, // 正常竖屏
+      DeviceOrientation.portraitDown, // 倒置竖屏
+    ]);
+
+    final data = _fullController._widgetData;
+
+    if (data == null) return;
+
+    _fullController.getCurrentPosition().then((position) {
+      data.startTime = position;
+      // 先暂停播放器
+      _fullController.stop();
+
+      // 销毁全屏播放器
+      _fullController.destroy();
+
+      // 返回竖屏播放器
+      Navigator.pop(_context, data);
+    });
   }
 }

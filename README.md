@@ -103,6 +103,8 @@ dependencies:
 
 ### **2. 实现视频播放**
 
+![Integration](./Integration.png)
+
 以下是一个完整的示例，展示如何在页面中嵌入视频播放器。只需几行代码即可完成视频播放功能。
 
 ```dart
@@ -133,20 +135,26 @@ class _VideoPlayerPageState extends State<VideoPlayerPage> {
   @override
   void initState() {
     super.initState();
-    // 初始化播放器组件控制器
-    _controller = AliPlayerWidgetController(context);
-    // 配置播放器组件数据
-    final data = AliPlayerWidgetData.fromUrl(
-      videoUrl: "https://example.com/video.mp4", // 替换为实际视频地址
+
+    // 1. 设置播放器视频源
+    final videoSource = VideoSourceFactory.createUrlSource(
+      "https://example.com/video.mp4", // 替换为实际视频地址
+    );
+    // 2. 配置播放器组件数据
+    final data = AliPlayerWidgetData(
+      videoSource: videoSource,
       coverUrl: "https://example.com/cover.jpg", // 替换为实际封面图地址
       videoTitle: "Sample Video",
     );
-    _controller.configure(data); // 设置自动播放
+
+    // 3. 初始化播放器组件控制器
+    _controller = AliPlayerWidgetController(context);
+    _controller.configure(data);
   }
 
   @override
   void dispose() {
-    // 销毁播放器实例，释放资源
+    // 4. 销毁播放器组件控制器，释放资源
     _controller.destroy();
     super.dispose();
   }
@@ -233,25 +241,7 @@ AliPlayerWidget(
 
 - **`seek(Duration position)`**: 跳转到指定播放位置。
 
-- **`setUrl(String url)`**: 设置视频播放地址。
-
 - **`destroy()`**: 销毁播放器实例，释放资源。
-
-**示例**
-
-```dart
-// 初始化播放器组件控制器
-final controller = AliPlayerWidgetController(context);
-
-// 设置播放器组件数据
-AliPlayerWidgetData data = AliPlayerWidgetData.fromUrl(
-  videoUrl: "https://example.com/video.mp4",
-);
-controller.configure(data);
-
-// 销毁播放器
-controller.destroy();
-```
 
 ### **3. AliPlayerWidgetData**
 
@@ -259,7 +249,7 @@ controller.destroy();
 
 **属性**
 
-- **`videoUrl`**: 视频播放地址（必填）。
+- **`videoSource`**: 播放器视频源（必填）。
 
 - **`coverUrl`**: 封面图地址（可选）。
 
@@ -268,17 +258,6 @@ controller.destroy();
 - **`thumbnailUrl`**: 缩略图地址（可选）。
 
 - **`sceneType`**: 播放场景类型，默认为点播（`SceneType.vod`）。
-
-**示例**
-
-```dart
-AliPlayerWidgetData.fromUrl(
-  videoUrl: "https://example.com/video.mp4",
-  coverUrl: "https://example.com/cover.jpg",
-  videoTitle: "Sample Video",
-  sceneType: SceneType.vod,
-);
-```
 
 ---
 
@@ -291,14 +270,22 @@ AliPlayerWidgetData.fromUrl(
 - **URL 模式**：通过直接提供视频 URL 进行播放，适用于公开访问的视频资源。
 
   ```dart
-  // 方式1：使用 URL 创建播放数据
-  final data = AliPlayerWidgetData.fromUrl(
-    videoUrl: "https://example.com/video.mp4",
-  );
-  
-  // 方式2：使用 videoSource 创建播放数据
+  // 示例：使用 URL 创建播放数据
   final videoSource = VideoSourceFactory.createUrlSource(
-    "https://example.com/video.mp4",
+    "视频URL",
+  );
+  final data = AliPlayerWidgetData(
+    videoSource: videoSource,
+  );
+  ```
+
+- **VidAuth 模式（推荐）**：通过视频 ID 和播放凭证进行授权播放，适用于需要更简单授权机制的场景。
+
+  ```dart
+  // 示例：使用 VidAuth 创建播放数据
+  final videoSource = VideoSourceFactory.createVidAuthSource(
+    vid: "视频ID",
+    playAuth: "播放凭证",
   );
   final data = AliPlayerWidgetData(
     videoSource: videoSource,
@@ -308,26 +295,13 @@ AliPlayerWidgetData.fromUrl(
 - **VidSts 模式**：通过视频 ID(VID) 和阿里云 STS (Security Token Service) 令牌进行播放，提供更高的安全性和访问控制。
 
   ```dart
-  // 示例：使用VidSts创建播放数据
+  // 示例：使用 VidSts 创建播放数据
   final videoSource = VideoSourceFactory.createVidStsSource(
     vid: "视频ID",
     accessKeyId: "访问密钥ID",
     accessKeySecret: "访问密钥密文",
     securityToken: "安全令牌",
     region: "区域信息",
-  );
-  final data = AliPlayerWidgetData(
-    videoSource: videoSource,
-  );
-  ```
-
-- **VidAuth 模式**：通过视频 ID 和播放凭证进行授权播放，适用于需要更简单授权机制的场景。
-
-  ```dart
-  // 示例：使用VidAuth创建播放数据
-  final videoSource = VideoSourceFactory.createVidAuthSource(
-    vid: "视频ID",
-    playAuth: "播放凭证",
   );
   final data = AliPlayerWidgetData(
     videoSource: videoSource,

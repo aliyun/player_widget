@@ -34,20 +34,35 @@ class LinkConstants {
   // 私有构造函数，防止实例化
   LinkConstants._();
 
-  static const String vod = '点播地址';
+  static const String vid = '视频ID（Vid）';
+  static const String vidAuth = 'Vid播放凭证（PlayAuth）';
+  static const String url = '视频 Direct URL 地址';
   static const String thumbnail = '缩略图地址';
+  static const String externalSubtitle = '外挂字幕地址';
   static const String liveLandscape = '横屏直播地址';
   static const String livePortrait = '竖屏直播地址';
   static const String shortVideo = '短视频地址';
 
   static List<LinkItem> linkItems = [
     LinkItem(
-      name: vod,
+      name: url,
       route: PageRoutes.longVideo,
+    ),
+    LinkItem(
+      name: vid,
+      route: PageRoutes.vidAuthPlay,
+    ),
+    LinkItem(
+      name: vidAuth,
+      route: PageRoutes.vidAuthPlay,
     ),
     LinkItem(
       name: thumbnail,
       route: PageRoutes.longVideo,
+    ),
+    LinkItem(
+      name: externalSubtitle,
+      route: PageRoutes.externalSubtitle,
     ),
     LinkItem(
       name: liveLandscape,

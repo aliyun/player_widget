@@ -40,4 +40,8 @@ class DemoConstants {
 
   /// Key of Sample drama info list URL
   static const String keyDramaInfoListUrl = "dramaInfoListUrl";
+
+  /// URL of the sample external subtitle file
+  static const String defaultExternalSubtitleUrl =
+      "https://alivc-demo-cms.alicdn.com/versionProduct/resources/aliplayer_widget/long-video.srt";
 }
