@@ -265,43 +265,32 @@ class AliPlayerWidgetState extends State<AliPlayerWidget>
     }
 
     // 启用下载功能
-    bool enableDownloadPress = isNotSceneType(_sceneType, [
-          SceneType.live,
-        ]) &&
-        _isDownloadable();
-    // 启用截图功能
-    bool enableSnapshotPress = isNotSceneType(_sceneType, [
-      SceneType.live,
-    ]);
-
+    bool enableDownloadPress = _isDownloadEnable();
 
     Listenable listenable = Listenable.merge([
       _playController.downloadStateNotifier,
-      _playController.currentTrackInfoNotifier,
     ]);
-
     return ListenableBuilder(
-        listenable: listenable,
-        builder: (context, _) {
-          final downloadState = _playController.downloadStateNotifier.value;
-          return Positioned(
-            top: 0,
-            left: 0,
-            right: 0,
-            child: AliPlayerTopBarWidget(
-              animationManager: _animationManager,
-              title: _playController._widgetData?.videoTitle ?? "",
-              onBackPressed: _handleBackPress,
-              onSettingsPressed: _toggleSettingMenuPanel,
-              isDownload: downloadState is DownloadCompletedState,
-              onDownloadPressed:
-                  enableDownloadPress ? _onDownloadPressed : null,
-              onSnapshotPressed:
-                  enableSnapshotPress ? _onSnapshotPressed : null,
-              onPIPPressed: null,
-            ),
-          );
-        });
+      listenable: listenable,
+      builder: (context, _) {
+        final downloadState = _playController.downloadStateNotifier.value;
+        return Positioned(
+          top: 0,
+          left: 0,
+          right: 0,
+          child: AliPlayerTopBarWidget(
+            animationManager: _animationManager,
+            title: _playController._widgetData?.videoTitle ?? "",
+            onBackPressed: _handleBackPress,
+            onSettingsPressed: _toggleSettingMenuPanel,
+            isDownload: downloadState is DownloadCompletedState,
+            onDownloadPressed: enableDownloadPress ? _onDownloadPressed : null,
+            onSnapshotPressed: _onSnapshotPressed,
+            onPIPPressed: null, // TODO: 暂不支持
+          ),
+        );
+      },
+    );
   }
 
   /// 返回事件处理
@@ -324,18 +313,28 @@ class AliPlayerWidgetState extends State<AliPlayerWidget>
 
   /// 截图按钮点击回调
   void _onSnapshotPressed() {
+    // 获取截图文件名
+    String snapshotFileName = "${DateTime.now().millisecondsSinceEpoch}.png";
     if (Platform.isIOS) {
-      _playController.snapshot("${DateTime.now().millisecondsSinceEpoch}.png");
-    } else {
-      _playController.snapshot(
-          "${FileManager.getDownloadFilePath("snapshot_${DateTime.now().millisecondsSinceEpoch}.png")}");
+      _playController.snapshot(snapshotFileName);
+    } else if (Platform.isAndroid) {
+      // android needs absolute path
+      _playController
+          .snapshot("${FileManager.getDownloadFilePath(snapshotFileName)}");
     }
   }
 
-  /// PIP 按钮点击回调
-  void _onPIPPressed() {
-    // TODO keria; PIP feature to be implemented
-    SnackBarUtil.warning(context, "PIP feature to be implemented");
+  /// 检测是否支持下载
+  bool _isDownloadEnable() {
+    // 直播场景不支持下载
+    if (isSceneType(_sceneType, [
+      SceneType.live,
+    ])) {
+      return false;
+    }
+
+    // 仅 VID 视频源支持下载
+    return _playController.isVideoSourceVid();
   }
 
   /// 构建底部栏控件
@@ -1059,12 +1058,5 @@ class AliPlayerWidgetState extends State<AliPlayerWidget>
     final brightness = widgetsBinding.platformDispatcher.platformBrightness;
     final themeMode = (brightness == Brightness.light ? 'Light' : 'Dark');
     loge("Theme mode changed to $themeMode");
-  }
-
-  bool _isDownloadable() {
-    if (null == _playController._widgetData) return false;
-    if (null == _playController._widgetData?.videoSource) return false;
-    return _playController._widgetData?.videoSource is VidAuthVideoSource ||
-        _playController._widgetData?.videoSource is VidStsVideoSource;
   }
 }

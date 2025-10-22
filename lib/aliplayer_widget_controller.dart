@@ -25,7 +25,7 @@ class AliPlayerWidgetController {
   /// 管理流订阅
   late StreamSubscription _subscription;
 
-  // 下载保存路径
+  /// 下载保存路径
   String? downloadSavePath = FileManager.getFolderPath(FolderType.download);
 
   /// 播放器唯一标识符
@@ -435,9 +435,9 @@ class AliPlayerWidgetController {
       },
     );
 
+    /// 截图代理回调
     _aliPlayer.setOnSnapShot((path, playerId) {
-      logi("Flutter Snap Save : $path");
-      SnackBarUtil.success(_context, "SnapShot Save :$path");
+      SnackBarUtil.success(_context, "Snapshot taken: $path");
       snapFileStateNotifier.value = path;
     });
 
@@ -545,7 +545,7 @@ class AliPlayerWidgetController {
       final stsSource = _widgetData?.videoSource as VidStsVideoSource;
       String vid = stsSource.vid;
       _aliDownloader.release(vid, selectVideoIndex);
-    } else {
+    } else if (_widgetData?.videoSource is VidAuthVideoSource) {
       final authSource = _widgetData?.videoSource as VidAuthVideoSource;
       String vid = authSource.vid;
       _aliDownloader.release(vid, selectVideoIndex);
@@ -1118,6 +1118,15 @@ class AliPlayerWidgetController {
     // 检查视频源是否存在
     if (_widgetData?.videoSource == null) return;
 
+    // 检查下载保存目录是否存在
+    if (downloadSavePath == null || downloadSavePath!.isEmpty) {
+      SnackBarUtil.error(
+        _context,
+        "Please set AliPlayerWidgetGlobalSetting.setStoragePaths first.",
+      );
+      return;
+    }
+
     // 检查是否已经下载完成，如果已完成则提示用户
     if (downloadStateNotifier.value is DownloadCompletedState) {
       final DownloadCompletedState state =
@@ -1125,67 +1134,74 @@ class AliPlayerWidgetController {
       SnackBarUtil.success(_context,
           "This video has already been downloaded. SavePath: ${state.downloadFile}");
       return;
-    }
-    // 如果不是初始状态，则重置为未知状态
-    else if (downloadStateNotifier.value is! UnknownState) {
-      downloadStateNotifier.value = const UnknownState();
+    } else if (downloadStateNotifier.value is DownloadingState) {
+      // 如果处于加载状态，直接return
+      return;
     }
 
     // 设置下载保存目录
     _aliDownloader.setSaveDir(downloadSavePath!);
 
-    String type; // 视频授权类型
+    String? vid; // 视频ID
+    Future<dynamic>? downloadAction;
 
     // 根据不同视频源类型执行相应下载逻辑
     if (_widgetData?.videoSource is VidStsVideoSource) {
       // 处理 STS 类型视频源的下载准备
       final stsSource = _widgetData?.videoSource as VidStsVideoSource;
-      type = FlutterAvpdef.DOWNLOADTYPE_STS;
-      String vid = stsSource.vid;
+      vid = stsSource.vid;
       String accessKeyId = stsSource.accessKeyId;
       String accessKeySecret = stsSource.accessKeySecret;
       String securityToken = stsSource.securityToken;
 
-      _aliDownloader
-          .prepare(type, vid,
-              accessKeyId: accessKeyId,
-              accessKeySecret: accessKeySecret,
-              securityToken: securityToken)
-          .then((value) {
-        _executeDownloadWithMediaInfo(vid, value);
-      }).catchError((error, stack) {
-        if (error is PlatformException) {
-          // 返回错误
-          downloadStateNotifier.value = DownloadErrorState(
-              errorCode: error.code, errorMessage: error.message!);
-        } else {
-          downloadStateNotifier.value = DownloadErrorState(
-              errorCode: "Prepared Error", errorMessage: error);
-        }
-      });
-    } else {
+      downloadAction = _aliDownloader.prepare(
+        FlutterAvpdef.DOWNLOADTYPE_STS,
+        vid,
+        accessKeyId: accessKeyId,
+        accessKeySecret: accessKeySecret,
+        securityToken: securityToken,
+      );
+    } else if (_widgetData?.videoSource is VidAuthVideoSource) {
       // 处理 Auth 类型视频源的下载准备
       final authSource = _widgetData?.videoSource as VidAuthVideoSource;
-      type = FlutterAvpdef.DOWNLOADTYPE_AUTH;
-      String vid = authSource.vid;
+      vid = authSource.vid;
       String playAuth = authSource.playAuth;
 
-      _aliDownloader.prepare(type, vid, playAuth: playAuth).then((value) {
-        _executeDownloadWithMediaInfo(vid, value);
+      downloadAction = _aliDownloader.prepare(
+        FlutterAvpdef.DOWNLOADTYPE_AUTH,
+        vid,
+        playAuth: playAuth,
+      );
+    }
+
+    if (vid != null && vid.isNotEmpty) {
+      downloadAction?.then((value) {
+        _executeDownloadWithMediaInfo(vid!, value);
       }).catchError((error, stack) {
-        if (error is PlatformException) {
-          // 返回错误
-          downloadStateNotifier.value = DownloadErrorState(
-            errorCode: error.code,
-            errorMessage: error.message!,
-          );
-        } else {
-          downloadStateNotifier.value = DownloadErrorState(
-            errorCode: "Prepared Error",
-            errorMessage: error,
-          );
-        }
+        _handleDownloadError(error);
       });
+    } else {
+      // UrlVideoSource is not support;
+      downloadStateNotifier.value = const DownloadErrorState(
+        errorCode: "Video Source Error",
+        errorMessage: "Unsupported video source. Only vid source is supported.",
+      );
+    }
+  }
+
+  /// 处理下载错误
+  void _handleDownloadError(dynamic error) {
+    if (error is PlatformException) {
+      // 返回错误
+      downloadStateNotifier.value = DownloadErrorState(
+        errorCode: error.code,
+        errorMessage: error.message!,
+      );
+    } else {
+      downloadStateNotifier.value = DownloadErrorState(
+        errorCode: "Download Error",
+        errorMessage: error,
+      );
     }
   }
 
@@ -1224,15 +1240,13 @@ class AliPlayerWidgetController {
       _subscription = controller.stream.listen((event) {
         String downloadEvent = event[EventChanneldef.TYPE_KEY];
         if (downloadEvent == DownloadEvent.DOWNLOAD_PROGRESS) {
-          // String vid = event['vid'];
-          // int index = event['index'];
+          // 更新下载进度
           String progress = event[EventChanneldef.DOWNLOAD_PROGRESS];
           downloadStateNotifier.value = DownloadingState(
             progress: int.parse(progress),
           );
         } else if (downloadEvent == DownloadEvent.DOWNLOAD_COMPLETION) {
-          // String vid = event['vid'];
-          // int index = event['index'];
+          // 下载完成处理
           String fileSavePath = event['savePath'];
           downloadStateNotifier.value = DownloadCompletedState(
             downloadFile: fileSavePath,
@@ -1240,6 +1254,7 @@ class AliPlayerWidgetController {
           // 关闭监听
           _subscription.cancel();
         } else if (downloadEvent == DownloadEvent.DOWNLOAD_ERROR) {
+          // 错误处理
           String errorCode = event['errorCode'];
           String errorMsg = event['errorMsg'];
           // 更新状态
@@ -1252,6 +1267,13 @@ class AliPlayerWidgetController {
         }
       });
     }
+  }
+
+  /// 判断视频源是否为 VID
+  bool isVideoSourceVid() {
+    var videoSource = _widgetData?.videoSource;
+    return videoSource is VidStsVideoSource ||
+        videoSource is VidAuthVideoSource;
   }
 
   /// 获取 Flutter Widget 版本号
