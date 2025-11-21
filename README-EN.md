@@ -21,6 +21,7 @@ With a minimalist API design, AliPlayerWidget achieves low-code integration, all
   - **Gesture Control**: Supports intuitive brightness, volume, and playback progress adjustments via gestures, enhancing user experience.
   - **Support for Multiple Playback Sources**: Compatible with various video source types, including direct URL playback, VID+STS token playback, and VID+Auth authentication playback, meeting the playback requirements of different scenarios.
 - **Flexible UI Customization**:
+  - **Slot System**: Provides a powerful slot system that supports customizing various parts of the player interface, including top bar, bottom bar, play control, cover image, subtitles, etc., allowing developers to flexibly combine and create personalized interfaces. Through predefined slot positions, developers can easily replace default UI components or add custom elements.
   - **Overlay Support**: Allows custom overlay components with strong extensibility, enabling developers to implement complex features like advertisements and bullet chats.
   - **Modular Design**: Includes reusable UI components such as top bars, bottom bars, and settings panels, making it easy for developers to customize according to their needs.
   - **Full-Screen Adaptation**: Automatically adapts to landscape and portrait orientations, ensuring optimal display across different devices.
@@ -37,50 +38,23 @@ With a minimalist API design, AliPlayerWidget achieves low-code integration, all
 - **High Performance and Stability**:
   - Built on the AliCloud Player SDK, providing low-latency and highly stable video playback.
   - Optimized architecture design featuring lightweight components, asynchronous loading, and an event-driven model to ensure efficient operation and smooth user experience.
-- **Cross-Platform Support**: Fully leverages Flutter’s cross-platform capabilities, supporting both Android and iOS platforms, allowing single-codebase development for dual-platform execution.
+- **Cross-Platform Support**: Fully leverages Flutter's cross-platform capabilities, supporting both Android and iOS platforms, allowing single-codebase development for dual-platform execution.
+
+Detailed documentation can be found in the docs directory: [Complete Documentation Directory](./docs/README-EN.md)
 
 ---
 
-## **3. Prerequisites**
-### **3.1 Development Environment Setup**
-Before using **AliPlayerWidget**, ensure your development environment meets the following requirements:
-- **Flutter SDK**:
-  - Version must be no less than `2.10.0`, with version `3.22.2` recommended.
-  - Run `flutter doctor` to check and resolve any issues.
-- **JDK 11**:
-  > JDK 11 setup method: Preferences -> Build, Execution, Deployment -> Build Tools -> Gradle -> Gradle JDK -> Select 11 (Upgrade Android Studio if 11 is unavailable).
-- **Android Development Environment**:
-  - Install the latest version of Android Studio.
-  - Configure Android SDK with a minimum supported API level of 21 (Android 5.0).
-  - Gradle version should be no less than `7.0`.
-- **iOS Development Environment**:
-  - Install the latest version of Xcode.
-  - Configure CocoaPods, with version `1.13.0` recommended.
-  - Minimum supported iOS version is `10.0`.
+## **3. Integration Guide**
 
-### **3.2 Permission Configuration**
-- **Permission Settings**:
-  - Enable network permissions in both Android and iOS to allow the player to load online video resources.
-- **License Configuration**:
-  - You must obtain the License Authorization Certificate and License Key for the ApsaraVideo Player SDK. Detailed steps for obtaining these can be found at [Apply for License](https://www.alibabacloud.com/help/en/apsara-video-sdk/user-guide/license-authorization-and-management#13133fa053843).
-  - **Note**: If the License is not correctly configured, the player will not function properly and may throw authorization exceptions.
-  For more initialization configurations, refer to the `aliplayer_widget_example` sample project.
+For detailed information about prerequisites, please refer to the integration guide in the docs directory: [Integration Guide](./docs/integration-guide-en.md)
 
 ---
 
 ## **4. Quick Start**
+
 In just a few steps, you can easily implement video playback functionality! **AliPlayerWidget** offers a minimalist API design to help you rapidly integrate video playback features with minimal coding.
-### **4.1. Add Dependency**
-In your `pubspec.yaml` file, add the following dependency:
 
-```yaml
-dependencies:
-  aliplayer_widget: <latest_version>
-  flutter_aliplayer: <latest_version>
-```
-### **4.2 Implement Video Playback**
-
-![Integration_en](./Integration_en.png)
+![Integration_en](https://alivc-demo-cms.alicdn.com/versionProduct/installPackage/aliplayer_widget/Integration_en.png)
 
 Below is a complete example demonstrating how to embed a video player into a page. With just a few lines of code, you can achieve video playback functionality.
 ```dart
@@ -159,228 +133,38 @@ class _VideoPlayerPageState extends State<VideoPlayerPage> {
 **Support for More Scenarios**
 The above example demonstrates basic usage for VOD scenarios. For more complex scenarios (e.g., live streaming, playlist playback), refer to the `aliplayer_widget_example` sample project, which includes detailed code and usage instructions.
 
+For a more detailed quick start guide, please refer to the quick start documentation in the docs directory: [Quick Start Guide](./docs/quick-start-en.md)
+
 ---
 
 ## **5. Core Components**
-### **5.1 AliPlayerWidget**
-`AliPlayerWidget` is the core player component used to embed and play videos within Flutter applications.
-**Constructor**
-```dart
-AliPlayerWidget(
-  AliPlayerWidgetController controller, {
-  Key? key,
-  List<Widget> overlays = const [],
-});
-```
-- **`controller`**: The player controller used to manage playback logic.
-- **`overlays`**: Optional list of overlay components to stack custom UI elements over the player component.
 
-**Example**
+`AliPlayerWidget` adopts an MVC-inspired layered design, dividing the player's responsibilities into three core components:
 
-```dart
-AliPlayerWidget(
-  _controller,
-  overlays: [
-    Positioned(
-      right: 16,
-      bottom: 80,
-      child: Column(
-        children: [
-          IconButton(icon: Icon(Icons.favorite), onPressed: () {}),
-          IconButton(icon: Icon(Icons.share), onPressed: () {}),
-        ],
-      ),
-    ),
-  ],
-);
-```
+1. **AliPlayerWidget (View)**: The core player component used to embed and play videos within Flutter applications.
+2. **AliPlayerWidgetController (Controller)**: The core controller of the player component, managing initialization, playback, destruction, and other logic.
+3. **AliPlayerWidgetData (Data)**: The data model required by the player component, containing video URL, cover image, title, and other information.
 
-### **5.2 AliPlayerWidgetController**
-`AliPlayerWidgetController` is the core controller of the player component, managing initialization, playback, destruction, and other logic.
-**Primary Methods**
-- **`configure(AliPlayerWidgetData data)`**: Configures the data source.
-- **`play()`**: Starts video playback.
-- **`pause()`**: Pauses playback.
-- **`seek(Duration position)`**: Jumps to the specified playback position.
-- **`destroy()`**: Destroys the player instance to release resources.
-
-### **5.3 AliPlayerWidgetData**
-`AliPlayerWidgetData` is the data model required by the player component, containing video URL, cover image, title, and other information.
-**Attributes**
-- **`videoUrl`**: Video playback URL (mandatory).
-- **`coverUrl`**: Cover image URL (optional).
-- **`videoTitle`**: Video title (optional).
-- **`thumbnailUrl`**: Thumbnail URL (optional).
-- **`sceneType`**: Playback scenario type, defaulting to VOD (`SceneType.vod`).
+For detailed information about each core component, please refer to the core components documentation in the docs directory: [Core Components Documentation](./docs/core-components-en.md)
 
 ---
 
 ## **6. Custom Features**
 ### **6.1 Video Source Support**
 
-The player provides a flexible video source configuration method, supporting the following four main types of video sources:
-
-- **URL Mode**: Play videos by directly providing the video URL, suitable for publicly accessible video resources.
-
-  ```dart
-  // Method 1: Create playback data using a URL
-  final data = AliPlayerWidgetData.fromUrl(
-    videoUrl: "https://example.com/video.mp4",
-  );
-  
-  // Method 2: Create playback data using videoSource
-  final videoSource = VideoSourceFactory.createUrlSource(
-    "https://example.com/video.mp4",
-  );
-  final data = AliPlayerWidgetData(
-    videoSource: videoSource,
-  );
-  ```
-
-- **VidAuth Mode(Recommend)**: Authorize playback using a Video ID and playback credentials, suitable for scenarios requiring simpler authorization mechanisms.
-
-  ```dart
-  // Example: Create playback data using VidAuth
-  final videoSource = VideoSourceFactory.createVidAuthSource(
-    vid: "Video ID",
-    playAuth: "Playback Credentials",
-  );
-  final data = AliPlayerWidgetData(
-    videoSource: videoSource,
-  );
-  ```
-
-- **VidSts Mode**: Play videos using a Video ID (VID) and Alibaba Cloud STS (Security Token Service) token, providing enhanced security and access control.
-
-  ```dart
-  // Example: Create playback data using VidSts
-  final videoSource = VideoSourceFactory.createVidStsSource(
-    vid: "Video ID",
-    accessKeyId: "Access Key ID",
-    accessKeySecret: "Access Key Secret",
-    securityToken: "Security Token",
-    region: "Region Information",
-  );
-  final data = AliPlayerWidgetData(
-    videoSource: videoSource,
-  );
-  ```
-
-Developers can choose the most suitable video source type based on their specific requirements.
+The player provides flexible video source configuration methods, supporting multiple video source types. For detailed information, please refer to the video source support documentation in the docs directory: [Video Source Support Documentation](./docs/video-source-support-en.md)
 
 ### **6.2 Overlay Components**
 
-Using the `overlays` parameter, you can easily overlay custom UI components onto the player. For example, add like, comment, and share buttons.
-```dart
-AliPlayerWidget(
-  _controller,
-  overlays: [
-    Positioned(
-      right: 16,
-      bottom: 80,
-      child: Column(
-        children: [
-          IconButton(icon: Icon(Icons.favorite), onPressed: () {}),
-          IconButton(icon: Icon(Icons.comment), onPressed: () {}),
-          IconButton(icon: Icon(Icons.share), onPressed: () {}),
-        ],
-      ),
-    ),
-  ],
-);
-```
+Using the `overlays` parameter, you can easily overlay custom UI components onto the player. For detailed information, please refer to the slot system documentation in the docs directory: [Slot System Documentation](./docs/slot-system-en.md)
 
-### **6.3 Common Interfaces**
-`AliPlayerWidget` provides a series of external interfaces that allow developers to directly control player behavior. These interfaces are exposed through `AliPlayerWidgetController`, supporting playback control, status queries, data updates, and more.
-Here are some commonly used external interfaces and their use cases:
+### **6.3 API Reference**
 
-| **Category**                       | **Interface Name**       | **Function Description**                                     |
-| ---------------------------------- | ------------------------ | ------------------------------------------------------------ |
-| **Configuration & Initialization** | `configure`              | Configures the player data source and initializes the player. |
-|                                    | `prepare`                | Manually triggers the preparation process of the player.     |
-| **Playback Control**               | `play`                   | Starts video playback.                                       |
-|                                    | `pause`                  | Pauses playback.                                             |
-|                                    | `stop`                   | Stops playback and resets the player.                        |
-|                                    | `seek`                   | Jumps to the specified playback position.                    |
-|                                    | `togglePlayState`        | Toggles between play and pause states.                       |
-|                                    | `replay`                 | Replays the video (typically used after playback completion). |
-| **Playback Property Settings**     | `setSpeed`               | Sets playback speed.                                         |
-|                                    | `setVolume`              | Sets volume.                                                 |
-|                                    | `setVolumeWithDelta`     | Adjusts volume incrementally.                                |
-|                                    | `setBrightness`          | Sets screen brightness.                                      |
-|                                    | `setBrightnessWithDelta` | Adjusts screen brightness incrementally.                     |
-|                                    | `setLoop`                | Sets whether to loop playback.                               |
-|                                    | `setMute`                | Sets whether to mute audio.                                  |
-|                                    | `setMirrorMode`          | Sets mirror mode (e.g., horizontal or vertical mirroring).   |
-|                                    | `setRotateMode`          | Sets rotation angle (e.g., 90°, 180°, etc.).                 |
-|                                    | `setScaleMode`           | Sets rendering fill mode (e.g., stretch, crop, etc.).        |
-| **Quality Switching**              | `selectTrack`            | Switches playback quality.                                   |
-| **Thumbnail Related**              | `requestThumbnailBitmap` | Requests thumbnails at specified time points.                |
-| **Other Functions**                | `clearCaches`            | Clears player caches (including video and image caches).     |
-|                                    | `getWidgetVersion`       | Retrieves the current Flutter Widget version number.         |
-
-### **6.4 Event Notifications**
-`AliPlayerWidgetController` provides a series of `ValueNotifier`s for real-time notifications of player state changes and user operations. Below are some commonly used `notifier`s and their purposes:
-
-#### **Overview of Common Notifiers**
-**1. Playback State Management**
-
-| **Notifier**        | **Function Description**                                     |
-| ------------------- | ------------------------------------------------------------ |
-| `playStateNotifier` | Monitors changes in playback state (e.g., playing, paused, stopped). |
-| `playErrorNotifier` | Listens for errors during playback, providing error codes and descriptions. |
-
-**2. Playback Progress Management**
-
-| **Notifier**               | **Function Description**                                     |
-| -------------------------- | ------------------------------------------------------------ |
-| `currentPositionNotifier`  | Updates current playback progress in real-time (unit: milliseconds). |
-| `bufferedPositionNotifier` | Tracks video buffering progress, helping users understand cached content ranges. |
-| `totalDurationNotifier`    | Provides total video duration information for calculating playback percentage or displaying total duration. |
-
-**3. Volume and Brightness Control**
-
-| **Notifier**         | **Function Description**                                     |
-| -------------------- | ------------------------------------------------------------ |
-| `volumeNotifier`     | Monitors volume changes, supporting dynamic adjustment of volume levels (range typically 0.0 to 1.0). |
-| `brightnessNotifier` | Monitors screen brightness changes, allowing users to adjust brightness based on ambient light (range typically 0.0 to 1.0). |
-
-**4. Quality and Thumbnails**
-
-| **Notifier**               | **Function Description**                                     |
-| -------------------------- | ------------------------------------------------------------ |
-| `currentTrackInfoNotifier` | Tracks changes in current video quality information (e.g., SD, HD, UHD) and provides details after switching. |
-| `thumbnailNotifier`        | Monitors thumbnail loading status, ensuring real-time preview when dragging the progress bar. |
-
-#### **Usage Method**
-Use `ValueListenableBuilder` to listen for changes in `notifier`s, enabling real-time UI updates or logic execution.
-**Example Code**
-```dart
-// Listen for playback errors
-ValueListenableBuilder<Map<int?, String?>?>(
-  valueListenable: _controller.playErrorNotifier,
-  builder: (context, error, _) {
-    if (error != null) {
-      final errorCode = error.keys.firstOrNull;
-      final errorMsg = error.values.firstOrNull;
-      return Text("Playback Error: [$errorCode] $errorMsg");
-    }
-    return SizedBox.shrink();
-  },
-);
-```
+`AliPlayerWidget` provides a series of external interfaces that allow developers to directly control player behavior. For detailed information, please refer to the API reference documentation in the docs directory: [API Reference Documentation](./docs/api-reference-en.md)
 
 ---
 
-## **7. Notes**
-1. **Resource Release**: Ensure calling `AliPlayerWidgetController.destroy()` when destroying pages to release player resources.
-2. **Network Permissions**: Ensure necessary network permissions are configured in the app to load online videos.
-3. **Thumbnail Support**: If using thumbnail functionality, ensure valid thumbnail URLs are provided.
-4. **Debugging and Optimization**: Enable logging during development to facilitate troubleshooting. Also, optimize overlay component performance to avoid affecting playback smoothness.
-
-----
-
-## **8. Example Project and Demo Package**
+## **7. Example Project and Demo Package**
 To help developers quickly get started and deeply understand how to integrate and use **AliPlayerWidget** in real-world projects, we provide two resources: the **example project** and a **demo package** built based on this project. Below, we will introduce the purpose and access methods of each.
 
 ### **1. Example Project**
@@ -408,7 +192,7 @@ Scan the QR code below with your mobile phone to quickly download and install th
 
 ---
 
-## **9. Open Source and Source Code Access**
+## **8. Open Source and Source Code Access**
 **aliplayer_widget** has been published to the following Pub sources. Developers are recommended to integrate it via the package management tool:
 
 - **Pub Official Source**: [pub.dev](https://pub.dev/packages/aliplayer_widget)

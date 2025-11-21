@@ -1,5 +1,44 @@
 # **AliPlayerWidget Changelog**
 
+## **[7.9.0] – Slot System for Full UI Customization & Documentation Restructure**
+
+### **New Features**
+
+- **Slot-Based UI Customization System**
+   Introduced a powerful slot system to enable fine-grained, component-level customization of the player UI:
+  - Provides dedicated slots for key UI regions such as:
+    - Top bar, bottom bar, play controls
+    - Cover image, subtitles, setting menu
+    - Center feedback (volume/brightness/seek), seek thumbnail, play state display
+    - Overlay layer for custom business widgets
+  - Each slot can be:
+    - Left as default (built-in UI)
+    - Replaced with a custom builder
+    - Explicitly disabled (hidden) when not needed
+  - The slot system makes it easy to:
+    - Create different player themes (minimal, classic, short-video style, etc.)
+    - Inject business-specific UI (e.g., like/share/comment, custom badges, watermarks)
+    - Combine multiple UI behaviors without modifying core player logic.
+- **Overlay Slot Unification**
+  - Consolidated overlay-related customization into a dedicated **overlay slot**, so custom floating UI components are now part of the unified slot mechanism.
+  - Provides a clearer and more extensible way to manage all overlay elements on top of the video surface.
+
+### **Improvements**
+
+- **Backward-Compatible Overlay Usage**
+  - Existing `overlays` parameter usage remains supported to ensure compatibility with older integrations.
+  - Internally, overlays and slots are now unified under the new slot-based architecture, making future UI extensions easier to maintain.
+- **Documentation Restructure (docs/ Directory)**
+  - Reorganized documentation into modular topics under `docs/`, including (but not limited to):
+    - Integration Guide
+    - Quick Start
+    - Core Components
+    - API Reference
+    - Advanced Features (e.g., video source types, overlays/slot system)
+  - README (EN & CN) is now lighter and mainly acts as an entry point, linking to these dedicated documents instead of embedding all details directly.
+
+---
+
 ## **[7.8.0] - Enhanced Subtitles, Scene Control, Download and Screenshot**
 
 ### **New Features**

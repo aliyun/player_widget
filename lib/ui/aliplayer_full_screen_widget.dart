@@ -36,6 +36,7 @@ class AliPlayerScreenFullWidgetState extends State<AliPlayerFullScreenWidget> {
         }
       },
       child: Scaffold(
+        backgroundColor: Colors.black,
         body: Container(
           decoration: const BoxDecoration(color: Colors.black),
           width: double.infinity,

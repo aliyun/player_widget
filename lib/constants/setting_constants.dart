@@ -62,15 +62,15 @@ class SettingConstants {
   ///
   /// Available mirror mode options.
   static final List<int> mirrorModeOptions = [
-    FlutterAvpdef.AVP_MIRRORMODE_NONE,
-    FlutterAvpdef.AVP_MIRRORMODE_HORIZONTAL,
-    FlutterAvpdef.AVP_MIRRORMODE_VERTICAL,
+    MirrorMode.MIRROR_MODE_NONE,
+    MirrorMode.MIRROR_MODE_HORIZONTAL,
+    MirrorMode.MIRROR_MODE_VERTICAL,
   ];
 
   /// 默认的镜像模式
   ///
   /// Default mirror mode.
-  static const int defaultMirrorMode = FlutterAvpdef.AVP_MIRRORMODE_NONE;
+  static const int defaultMirrorMode = MirrorMode.MIRROR_MODE_NONE;
 
   /// 可选的旋转角度
   ///

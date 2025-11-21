@@ -32,6 +32,7 @@ import 'package:aliplayer_widget/constants/subtitle_model.dart';
 import 'package:aliplayer_widget/manager/file_manager.dart';
 import 'package:aliplayer_widget/manager/shared_animation_manager.dart';
 import 'package:aliplayer_widget/manager/storage_path_manager.dart';
+import 'package:aliplayer_widget/slot/slot_constants.dart';
 import 'package:aliplayer_widget/ui/aliplayer_subtitle_widget.dart';
 import 'package:aliplayer_widget/utils/format_util.dart';
 import 'package:aliplayer_widget/utils/scene_util.dart';
@@ -47,6 +48,7 @@ import 'package:flutter_aliplayer/flutter_aliplayer_global_setting.dart';
 import 'package:flutter_aliplayer/flutter_alidownloader.dart';
 import 'package:wakelock_plus/wakelock_plus.dart';
 
+import 'slot/slot_manager.dart';
 import 'ui/aliplayer_center_display_widget.dart';
 import 'ui/aliplayer_cover_image_widget.dart';
 import 'ui/aliplayer_custom_slider_widget.dart';

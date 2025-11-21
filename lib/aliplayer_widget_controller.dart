@@ -565,7 +565,7 @@ class AliPlayerWidgetController {
 
       final nonCoreResults = await Future.wait([
         _aliPlayer.getVolume(),
-        _aliPlayer.getRate(),
+        _aliPlayer.getSpeed(),
         _aliPlayer.isLoop(),
         _aliPlayer.isMuted(),
         _aliPlayer.getMirrorMode(),

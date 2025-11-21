@@ -5,6 +5,7 @@
 // Brief: 页面路由常量
 
 import 'package:aliplayer_widget_example/pages/home/home_page_item.dart';
+import 'package:aliplayer_widget_example/pages/slot/slot_demo_page.dart';
 import 'package:flutter/material.dart';
 
 /// 页面路由常量
@@ -47,6 +48,9 @@ class PageRoutes {
   /// 链接页面
   static const String link = '/link';
 
+  /// 插槽系统演示页面
+  static const String slotDemo = '/slot_demo';
+
   /// 首页按钮配置
   ///
   /// A static list of home item configurations
@@ -85,6 +89,11 @@ class PageRoutes {
       name: '外挂字幕',
       icon: Icons.subtitles,
       pageRoute: externalSubtitle,
+    ),
+    const HomePageItemConfig(
+      name: '插槽系统演示',
+      icon: Icons.extension,
+      pageRoute: slotDemo,
     ),
     const HomePageItemConfig(
       name: '设置页',

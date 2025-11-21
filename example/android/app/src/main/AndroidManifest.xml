@@ -56,7 +56,7 @@
             android:value="no80rm6m8ayTXNTk80637a6cdef2a482588e104c17b8993c7" /> <!--TODO license: please fill your license config here, 请勿移动此注释-->
         <meta-data
             android:name="com.aliyun.alivc_license.licensefile"
-            android:value="assets/cert/AliVideoCert-com_aliyun_aliplayerwidget_flutterexample-20250210180126.crt" /> <!--TODO license: please fill your license config here, 请勿移动此注释-->
+            android:value="assets/cert/AliVideoCert-com_aliyun_aliplayerwidget_flutterexample-20250606103413.crt" /> <!--TODO license: please fill your license config here, 请勿移动此注释-->
     </application>
     <!-- Required to query activities that can process text, see:
          https://developer.android.com/training/package-visibility and

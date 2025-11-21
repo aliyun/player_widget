@@ -6,6 +6,49 @@
 
 part of 'aliplayer_widget_lib.dart';
 
+/// 插槽构建器类型定义
+///
+/// Slot builder type definition
+typedef SlotWidgetBuilder = Widget Function(BuildContext context);
+
+/// 插槽类型枚举
+///
+/// Slot type enumeration
+enum SlotType {
+  /// 顶部栏插槽
+  topBar,
+
+  /// 底部栏插槽
+  bottomBar,
+
+  /// 播放控制插槽
+  playControl,
+
+  /// 封面图插槽
+  coverImage,
+
+  /// 播放状态插槽
+  playState,
+
+  /// 中心显示插槽
+  centerDisplay,
+
+  /// seek缩略图插槽
+  seekThumbnail,
+
+  /// 字幕插槽
+  subtitle,
+
+  /// 设置菜单插槽
+  settingMenu,
+
+  /// 播放器表面插槽
+  playerSurface,
+
+  /// 浮层插槽
+  overlays,
+}
+
 /// 一个用于播放视频的 Widget，支持自定义控制器和覆盖层。
 ///
 /// A widget for video playback that supports custom controllers and overlay layers.
@@ -18,7 +61,13 @@ class AliPlayerWidget extends StatefulWidget {
   /// 自定义覆盖层，允许在视频上方显示额外的 UI 元素。
   ///
   /// Custom overlay layers that allow displaying additional UI elements above the video.
+  @Deprecated('Use SlotType.overlays in slotBuilders instead.')
   final List<Widget> overlays;
+
+  /// 插槽构建器映射，允许自定义各个插槽的构建方式
+  ///
+  /// Slot builder map, allowing customization of how each slot is built
+  final Map<SlotType, SlotWidgetBuilder?> slotBuilders;
 
   /// 构造函数，用于创建 [AliPlayerWidget] 实例。
   ///
@@ -27,16 +76,19 @@ class AliPlayerWidget extends StatefulWidget {
   /// 参数：
   /// - [_controller]：视频播放控制器，必须提供，用于管理视频播放逻辑。
   /// - [key]：可选参数，用于标识 Widget 的唯一性。
-  /// - [overlays]：可选参数，默认为空列表，用于定义覆盖在视频上的 UI 元素。
+  /// - [overlays]：可选参数，默认为空列表，用于定义覆盖在视频上的 UI 元素。已废弃，请使用 slotBuilders 替代。
+  /// - [slotBuilders]：可选参数，默认为空映射，用于定义各个插槽的自定义构建器。
   ///
   /// Parameters:
   /// - _controller: The video player controller, required to manage video playback logic.
   /// - key: Optional parameter used to identify the uniqueness of the widget.
-  /// - overlays: Optional parameter, defaults to an empty list, used to define UI elements overlaid on the video.
+  /// - overlays: Optional parameter, defaults to an empty list, used to define UI elements overlaid on the video. Deprecated, use slotBuilders instead.
+  /// - slotBuilders: Optional parameter, defaults to empty map, used to define custom builders for each slot.
   const AliPlayerWidget(
     this._controller, {
     super.key,
     this.overlays = const [],
+    this.slotBuilders = const {},
   });
 
   @override
@@ -119,24 +171,98 @@ class AliPlayerWidgetState extends State<AliPlayerWidget>
         return ConstrainedBox(
           constraints: BoxConstraints.tight(playerViewSize),
           child: Stack(
-            children: [
-              _buildPlaySurfaceView(width, height),
-              _buildPlayCoverView(width, height),
-              _buildPlayControlView(),
-              _buildTopBarWidget(),
-              _buildBottomBarWidget(),
-              _buildSeekThumbnailWidget(),
-              _buildCenterDisplayWidget(),
-              _buildPlayStateView(),
-              // 添加浮层
-              ..._buildOverlays(),
-              _buildSettingMenuPanel(),
-              if (_isShowExternalSubtitle.value) _buildSubtitleWidget(),
-            ],
+            children: _buildAllSlots(width, height),
           ),
         );
       },
     );
+  }
+
+  /// 构建所有插槽组件
+  ///
+  /// Builds all slot widgets
+  List<Widget> _buildAllSlots(double width, double height) {
+    final slots = <Widget>[];
+
+    // 按顺序构建插槽
+    for (final slotType in SlotConstants.slotTypes) {
+      if (_shouldShowSlot(slotType)) {
+        slots.add(_buildSlot(
+          slotType,
+          builder: (context) => _buildSlotContent(slotType, width, height),
+        ));
+      }
+    }
+
+    // 构建浮层插槽
+    slots.addAll(SlotManager.buildOverlaysSlot(
+      widget: widget,
+      context: context,
+      defaultBuilder: (context) => const SizedBox.shrink(),
+    ));
+
+    return slots;
+  }
+
+  /// 根据插槽类型选择对应的构建器
+  Widget _buildSlotContent(SlotType slotType, double width, double height) {
+    switch (slotType) {
+      case SlotType.playerSurface:
+        return _buildPlaySurfaceView(width, height);
+      case SlotType.coverImage:
+        return _buildPlayCoverView(width, height);
+      case SlotType.playControl:
+        return _buildPlayControlView();
+      case SlotType.topBar:
+        return _buildTopBarWidget();
+      case SlotType.bottomBar:
+        return _buildBottomBarWidget();
+      case SlotType.seekThumbnail:
+        return _buildSeekThumbnailWidget();
+      case SlotType.centerDisplay:
+        return _buildCenterDisplayWidget();
+      case SlotType.playState:
+        return _buildPlayStateView();
+      case SlotType.settingMenu:
+        return _buildSettingMenuPanel();
+      case SlotType.subtitle:
+        return _buildSubtitleWidget();
+      default:
+        return const SizedBox.shrink();
+    }
+  }
+
+  /// 构建插槽或默认组件
+  ///
+  /// Build slot widget or default widget
+  Widget _buildSlot(
+    SlotType slotType, {
+    required Widget Function(BuildContext context) builder,
+  }) {
+    return SlotManager.buildSlot(
+      widget: widget,
+      slotType: slotType,
+      context: context,
+      defaultBuilder: builder,
+    );
+  }
+
+  /// 检查插槽是否应该显示
+  bool _shouldShowSlot(SlotType slotType) {
+    final config = SlotConstants.slotConfigs[slotType];
+    if (config == null) return true;
+
+    // 检查是否在排除场景中
+    if (config.excludedScenes.contains(_sceneType)) {
+      return false;
+    }
+
+    // 检查额外条件
+    if (config.additionalCondition != null) {
+      return config.additionalCondition!();
+    }
+
+    return true;
   }
 
   /// 构建播放器视图
@@ -157,15 +283,6 @@ class AliPlayerWidgetState extends State<AliPlayerWidget>
   ///
   /// build cover view
   Widget _buildPlayCoverView(double width, double height) {
-    // 受限场景下不显示封面图片
-    if (isSceneType(_sceneType, [
-      SceneType.live,
-      SceneType.restricted,
-      SceneType.minimal,
-    ])) {
-      return const SizedBox.shrink();
-    }
-
     // 获取封面图片的 URL
     final coverUrl = _playController._widgetData?.coverUrl;
     // 如果没有封面图片，则不显示
@@ -194,13 +311,6 @@ class AliPlayerWidgetState extends State<AliPlayerWidget>
 
   /// 构建播放控制视图
   Widget _buildPlayControlView() {
-    // 受限场景下禁用所有手势控制
-    if (isSceneType(_sceneType, [
-      SceneType.minimal,
-    ])) {
-      return const SizedBox.shrink();
-    }
-
     // 长按控制
     bool enableLongPress = isNotSceneType(_sceneType, [
       SceneType.live,
@@ -257,13 +367,6 @@ class AliPlayerWidgetState extends State<AliPlayerWidget>
 
   /// 构建顶部栏控件
   Widget _buildTopBarWidget() {
-    // 受限场景下不显示顶部栏
-    if (isSceneType(_sceneType, [
-      SceneType.minimal,
-    ])) {
-      return const SizedBox.shrink();
-    }
-
     // 启用下载功能
     bool enableDownloadPress = _isDownloadEnable();
 
@@ -339,13 +442,6 @@ class AliPlayerWidgetState extends State<AliPlayerWidget>
 
   /// 构建底部栏控件
   Widget _buildBottomBarWidget() {
-    // 受限场景下不显示底部栏
-    if (isSceneType(_sceneType, [
-      SceneType.minimal,
-    ])) {
-      return const SizedBox.shrink();
-    }
-
     // 拖动控制
     bool enableDrag = isNotSceneType(_sceneType, [
       SceneType.live,
@@ -455,13 +551,6 @@ class AliPlayerWidgetState extends State<AliPlayerWidget>
 
   /// 构建设置菜单面板控件
   Widget _buildSettingMenuPanel() {
-    // 受限场景下不显示设置菜单面板
-    if (isSceneType(_sceneType, [
-      SceneType.minimal,
-    ])) {
-      return const SizedBox.shrink();
-    }
-
     // 监听设置面板的可见性
     return ValueListenableBuilder(
       valueListenable: _isShowSettingMenuPanelNotifier,
@@ -584,15 +673,6 @@ class AliPlayerWidgetState extends State<AliPlayerWidget>
 
   /// 构建 seek 缩略图控件
   Widget _buildSeekThumbnailWidget() {
-    // 受限场景下不显示 seek 缩略图
-    if (isSceneType(_sceneType, [
-      SceneType.live,
-      SceneType.restricted,
-      SceneType.minimal,
-    ])) {
-      return const SizedBox.shrink();
-    }
-
     // 监听播放进度、总时长、是否正在拖拽、当前拖拽进度等
     Listenable listener = Listenable.merge([
       _playController.totalDurationNotifier,
@@ -625,22 +705,16 @@ class AliPlayerWidgetState extends State<AliPlayerWidget>
 
   /// 构建外挂字幕组件
   Widget _buildSubtitleWidget() {
-    // 受限场景下不显示外挂字幕组件
-    if (isSceneType(_sceneType, [
-      SceneType.minimal,
-    ])) {
-      return const SizedBox.shrink();
-    }
-
     return ValueListenableBuilder<bool>(
-        valueListenable: _isShowExternalSubtitle,
-        builder: (context, show, _) {
-          if (!show) {
-            return const SizedBox.shrink();
-          }
+      valueListenable: _isShowExternalSubtitle,
+      builder: (context, show, _) {
+        if (!show) {
+          return const SizedBox.shrink();
+        }
 
-          return _buildSubtitleContent();
-        });
+        return _buildSubtitleContent();
+      },
+    );
   }
 
   /// 外挂字幕内容
@@ -738,13 +812,6 @@ class AliPlayerWidgetState extends State<AliPlayerWidget>
 
   /// 构建中心显示控件
   Widget _buildCenterDisplayWidget() {
-    // 受限场景下不显示中心显示控件
-    if (isSceneType(_sceneType, [
-      SceneType.minimal,
-    ])) {
-      return const SizedBox.shrink();
-    }
-
     // 监听播放状态显示视图的内容类型
     return ValueListenableBuilder(
       valueListenable: _contentViewTypeNotifier,
@@ -933,11 +1000,6 @@ class AliPlayerWidgetState extends State<AliPlayerWidget>
         );
       },
     );
-  }
-
-  /// 构建浮层视图
-  List<Widget> _buildOverlays() {
-    return widget.overlays;
   }
 
   /// 初始化状态

@@ -16,6 +16,7 @@ import 'package:aliplayer_widget_example/pages/live/live_page.dart';
 import 'package:aliplayer_widget_example/pages/long_video/long_video_page.dart';
 import 'package:aliplayer_widget_example/pages/settings/settings_page.dart';
 import 'package:aliplayer_widget_example/pages/short_video/short_video_page.dart';
+import 'package:aliplayer_widget_example/pages/slot/slot_demo_page.dart';
 import 'package:aliplayer_widget_example/pages/vid_auth/vid_auth_play_page.dart';
 import 'package:flutter/material.dart';
 import 'package:path_provider/path_provider.dart';
@@ -108,6 +109,7 @@ class MyApp extends StatelessWidget {
         PageRoutes.debug: (_) => const DebugPage(),
         PageRoutes.settings: (_) => const SettingsPage(),
         PageRoutes.link: (_) => const LinkPage(),
+        PageRoutes.slotDemo: (_) => const SlotDemoPage(),
       },
     );
   }

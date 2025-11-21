@@ -60,11 +60,11 @@ class FormatUtil {
   /// [mirrorMode] 镜像模式
   static String formatMirrorMode(int mirrorMode) {
     switch (mirrorMode) {
-      case FlutterAvpdef.AVP_MIRRORMODE_NONE:
+      case MirrorMode.MIRROR_MODE_NONE:
         return 'None';
-      case FlutterAvpdef.AVP_MIRRORMODE_HORIZONTAL:
+      case MirrorMode.MIRROR_MODE_HORIZONTAL:
         return 'Horizontal';
-      case FlutterAvpdef.AVP_MIRRORMODE_VERTICAL:
+      case MirrorMode.MIRROR_MODE_VERTICAL:
         return 'Vertical';
       default:
         return 'Unknown';
