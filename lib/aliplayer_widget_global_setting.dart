@@ -13,7 +13,7 @@ class AliPlayerWidgetGlobalSetting {
   /// Flutter Widget version
   ///
   /// Flutter Widget 版本号
-  static const String kWidgetVersion = '7.9.0';
+  static const String kWidgetVersion = '7.9.1';
 
   /// extra data for global settings
   ///

@@ -1,5 +1,19 @@
 # **AliPlayerWidget Changelog**
 
+## **[7.9.1] – Slot Synchronization on Portrait-to-Fullscreen Transition & Brightness Control Deprecation**
+
+### **Improvements**
+ - **Synchronized UI Slots During Portrait-to-Fullscreen Transition**
+   - Ensured consistent slot state and rendering when switching from vertical (portrait) mode to fullscreen (landscape) mode.
+   - Custom or disabled slots (e.g., top bar, bottom controls, overlay) now correctly persist their configuration across orientation changes.
+   - Eliminates UI flickering or unexpected reversion to default components during rotation, providing a smoother and more predictable customization experience—especially critical for short-video and mobile-first scenarios.
+ - **Brightness Control View Hidden by Default**
+   - The built-in brightness adjustment UI (typically shown in center feedback during swipe gestures) has been hidden starting from this version.
+   - Rationale: Official system-level brightness control APIs are not uniformly supported across Android/iOS versions and OEM skins. Exposing this feature as a built-in component risks compatibility issues, inconsistent behavior, or app rejection on certain platforms.
+   - Customization Path: Developers requiring brightness control may implement it via the center feedback slot using platform-specific plugins or third-party packages, giving full control over compatibility and UX.
+
+---
+
 ## **[7.9.0] – Slot System for Full UI Customization & Documentation Restructure**
 
 ### **New Features**

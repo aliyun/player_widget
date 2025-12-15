@@ -25,18 +25,18 @@ AliPlayerWidget 提供了丰富的 API 接口，方便开发者直接控制播�
 
 ### **播放属性设置**
 
-| 接口名称                | 功能描述                         |
-| ----------------------- | -------------------------------- |
-| `setSpeed`              | 设置播放速度                     |
-| `setVolume`             | 设置音量                         |
-| `setVolumeWithDelta`    | 根据增量调整音量                 |
-| `setBrightness`         | 设置屏幕亮度                     |
-| `setBrightnessWithDelta`| 根据增量调整屏幕亮度             |
-| `setLoop`               | 设置是否循环播放                 |
-| `setMute`               | 设置是否静音                     |
-| `setMirrorMode`         | 设置镜像模式（如水平镜像、垂直镜像等） |
-| `setRotateMode`         | 设置旋转角度（如 90°、180° 等）  |
-| `setScaleMode`          | 设置渲染填充模式（如拉伸、裁剪等） |
+| 接口名称                | 功能描述                   |
+| ----------------------- |------------------------|
+| `setSpeed`              | 设置播放速度                 |
+| `setVolume`             | 设置音量                   |
+| `setVolumeWithDelta`    | 根据增量调整音量               |
+| `setBrightness`         | 设置屏幕亮度（逻辑细节需自行实现）      |
+| `setBrightnessWithDelta`| 根据增量调整屏幕亮度（逻辑细节需自行实现）  |
+| `setLoop`               | 设置是否循环播放               |
+| `setMute`               | 设置是否静音                 |
+| `setMirrorMode`         | 设置镜像模式（如水平镜像、垂直镜像等）    |
+| `setRotateMode`         | 设置旋转角度（如 90°、180° 等）   |
+| `setScaleMode`          | 设置渲染填充模式（如拉伸、裁剪等）      |
 
 ### **清晰度切换**
 

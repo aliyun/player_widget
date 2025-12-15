@@ -14,10 +14,14 @@ class AliPlayerFullScreenWidget extends StatefulWidget {
 
   final AliPlayerWidgetController controller;
 
+  // 支持插槽配置
+  final Map<SlotType, SlotWidgetBuilder?> slotBuilders;
+
   const AliPlayerFullScreenWidget(
     this.controller,
     this.data, {
     super.key,
+    this.slotBuilders = const {},
   });
 
   @override
@@ -40,7 +44,10 @@ class AliPlayerScreenFullWidgetState extends State<AliPlayerFullScreenWidget> {
         body: Container(
           decoration: const BoxDecoration(color: Colors.black),
           width: double.infinity,
-          child: AliPlayerWidget(_fullController),
+          child: AliPlayerWidget(
+            _fullController,
+            slotBuilders: widget.slotBuilders,
+          ),
         ),
       ),
     );
@@ -61,12 +68,15 @@ class AliPlayerScreenFullWidgetState extends State<AliPlayerFullScreenWidget> {
     _fullController = AliPlayerWidgetController(context);
     _fullController.configure(widget.data);
 
-    // 以指定位置起播
-    _fullController._aliPlayer.setStartTime(
-      widget.data.startTime,
-      widget.data.seekMode,
-    );
-    _fullController.play();
+    widget.controller.syncStateTo(_fullController).then((_) {
+      // 以指定位置起播
+      _fullController._aliPlayer.setStartTime(
+        widget.data.startTime,
+        widget.data.seekMode,
+      );
+      _fullController.play();
+    });
+
     // 暂停竖屏页面视频
     widget.controller.pause();
   }

@@ -25,18 +25,18 @@ AliPlayerWidget provides a rich set of API interfaces that allow developers to d
 
 ### **Playback Property Settings**
 
-| Interface Name          | Function Description                               |
-| ----------------------- | -------------------------------------------------- |
-| `setSpeed`              | Sets playback speed                                |
-| `setVolume`             | Sets volume                                        |
-| `setVolumeWithDelta`    | Adjusts volume incrementally                       |
-| `setBrightness`         | Sets screen brightness                             |
-| `setBrightnessWithDelta`| Adjusts screen brightness incrementally            |
-| `setLoop`               | Sets whether to loop playback                      |
-| `setMute`               | Sets whether to mute audio                         |
-| `setMirrorMode`         | Sets mirror mode (e.g., horizontal or vertical mirroring) |
-| `setRotateMode`         | Sets rotation angle (e.g., 90°, 180°, etc.)        |
-| `setScaleMode`          | Sets rendering fill mode (e.g., stretch, crop, etc.) |
+| Interface Name          | Function Description                                                           |
+| ----------------------- |--------------------------------------------------------------------------------|
+| `setSpeed`              | Sets playback speed                                                            |
+| `setVolume`             | Sets volume                                                                    |
+| `setVolumeWithDelta`    | Adjusts volume incrementally                                                   |
+| `setBrightness`         | Sets screen brightness(The logical details need to be implemented by yourself) |
+| `setBrightnessWithDelta`| Adjusts screen brightness incrementally(The logical details need to be implemented by yourself)|
+| `setLoop`               | Sets whether to loop playback                                                  |
+| `setMute`               | Sets whether to mute audio                                                     |
+| `setMirrorMode`         | Sets mirror mode (e.g., horizontal or vertical mirroring)                      |
+| `setRotateMode`         | Sets rotation angle (e.g., 90°, 180°, etc.)                                    |
+| `setScaleMode`          | Sets rendering fill mode (e.g., stretch, crop, etc.)                           |
 
 ### **Quality Switching**
 

@@ -788,8 +788,14 @@ class AliPlayerWidgetController {
   /// [brightness] The target brightness value, clamped between 0 and 1.
   void setBrightness(double brightness) {
     final value = clampDouble(brightness, 0, 1);
-
-    // TODO keria: brightness feature to be implemented
+    /**
+     * TODO: 亮度调节功能需由使用方自行实现
+     * aliplayer_widget 当前仅提供亮度状态管理（brightnessNotifier），未内置实际的屏幕亮度调节逻辑。
+     * 原因：Flutter 官方尚未提供统一的系统级亮度控制 API，实现该功能需依赖平台特定的原生插件（如 screen_brightness），
+     * 而此类插件可能引入版本兼容性问题（如 Flutter、JDK、CocoaPods 等环境差异），影响组件的跨平台稳定性。
+     * 建议：请根据您的项目环境，自行集成合适的亮度控制插件，并在此处调用其 API 完成实际亮度设置。
+     * 您可通过插件 README 中“开源与源码获取”部分提供的源码依赖方式，对本组件进行二次扩展。
+     */
     logi("setBrightness: ${brightnessNotifier.value} -> $value");
 
     brightnessNotifier.value = value;
@@ -1302,7 +1308,8 @@ class AliPlayerWidgetController {
 
   /// 播放器横竖屏切换
   Future<void> enterFullScreen(
-      AliPlayerWidgetController controller, int currentPosition) async {
+      AliPlayerWidgetController controller, int currentPosition,
+      {Map<SlotType, SlotWidgetBuilder?>? slotBuilders}) async {
     final data = controller._widgetData;
     if (data == null) return;
     data.startTime = currentPosition;
@@ -1312,7 +1319,11 @@ class AliPlayerWidgetController {
       PageRouteBuilder(
         transitionDuration: const Duration(milliseconds: 100), // 动画持续时间
         pageBuilder: (context, animation, secondaryAnimation) {
-          return AliPlayerFullScreenWidget(controller, data);
+          return AliPlayerFullScreenWidget(
+            controller,
+            data,
+            slotBuilders: slotBuilders ?? const {},
+          );
         },
         transitionsBuilder: (context, animation, secondaryAnimation, child) {
           // 淡入淡出动画
@@ -1344,6 +1355,9 @@ class AliPlayerWidgetController {
 
     _fullController.getCurrentPosition().then((position) {
       data.startTime = position;
+
+      _fullController.syncStateTo(_fullController);
+
       // 先暂停播放器
       _fullController.stop();
 
@@ -1353,5 +1367,30 @@ class AliPlayerWidgetController {
       // 返回竖屏播放器
       Navigator.pop(_context, data);
     });
+  }
+
+  /// 同步播放器状态到另一个控制器
+  ///
+  /// Sync player state to another controller
+  Future<void> syncStateTo(AliPlayerWidgetController targetController) async {
+    // 同步循环播放
+    await targetController.setLoop(isLoopNotifier.value);
+
+    // 同步静音状态
+    await targetController.setMute(isMuteNotifier.value);
+
+    // 同步镜像模式
+    await targetController.setMirrorMode(mirrorModeNotifier.value);
+
+    // 同步旋转角度
+    await targetController.setRotateMode(rotateModeNotifier.value);
+
+    // 同步渲染填充模式
+    await targetController.setScaleMode(scaleModeNotifier.value);
+
+    // 同步亮度（如果需要）
+    // targetController.setBrightness(brightnessNotifier.value);
+
+    logi("Player state synced successfully");
   }
 }

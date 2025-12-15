@@ -503,7 +503,11 @@ class AliPlayerWidgetState extends State<AliPlayerWidget>
     // 切换全屏
     if (!FullScreenUtil.isFullScreen()) {
       _playController.getCurrentPosition().then((position) {
-        _playController.enterFullScreen(widget._controller, position);
+        _playController.enterFullScreen(
+          widget._controller,
+          position,
+          slotBuilders: widget.slotBuilders,
+        );
       });
     }
     // 退出全屏
@@ -578,15 +582,15 @@ class AliPlayerWidgetState extends State<AliPlayerWidget>
         initialValue: _playController.volumeNotifier.value,
         onChanged: (value) => _playController.setVolume(value),
       ),
-      // 构建亮度滑块控件
-      SettingItem(
-        type: SettingItemType.slider,
-        text: "亮度",
-        startIcon: Icons.brightness_low_rounded,
-        endIcon: Icons.brightness_high_rounded,
-        initialValue: _playController.brightnessNotifier.value,
-        onChanged: (value) => _playController.setBrightness(value),
-      ),
+      // TODO 构建亮度滑块控件，使用时自行开启
+      // SettingItem(
+      //   type: SettingItemType.slider,
+      //   text: "亮度",
+      //   startIcon: Icons.brightness_low_rounded,
+      //   endIcon: Icons.brightness_high_rounded,
+      //   initialValue: _playController.brightnessNotifier.value,
+      //   onChanged: (value) => _playController.setBrightness(value),
+      // ),
       // 构建倍速选择控件
       if (isNotSceneType(_sceneType, [
         SceneType.live,
@@ -831,8 +835,9 @@ class AliPlayerWidgetState extends State<AliPlayerWidget>
   /// 根据 _centerDisplayViewContentType 获取对应的内容组件
   Widget _buildCenterDisplayContentWidget(ContentViewType contentViewType) {
     switch (contentViewType) {
-      case ContentViewType.brightness:
-        return _buildBrightnessSlider();
+      // TODO 亮度组件，使用时自行开启
+      // case ContentViewType.brightness:
+      //   return _buildBrightnessSlider();
       case ContentViewType.volume:
         return _buildVolumeSlider();
       case ContentViewType.speed:
