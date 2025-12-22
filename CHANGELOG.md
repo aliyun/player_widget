@@ -1,5 +1,15 @@
 # **AliPlayerWidget Changelog**
 
+## **[7.10.0] - Local JWT Play Authentication & Kernel SDK Update**
+
+### **New Features**
+ - **Local JWT Play Authentication (JWTPlayAuth)**
+   - Introduced support for locally signed playback credentials using JWT (JSON Web Token). The client’s AppServer can now generate a JWT-based play token using the PlayKey, which is then validated by the on-demand streaming service.
+   - This enhancement improves security and flexibility by enabling offline or edge-side credential generation without requiring real-time authentication calls to external services.
+### **Updates**
+   - **Kernel SDK Updated to v7.10.0**
+   - Upgraded the underlying kernel SDK to version 7.10.0, incorporating performance improvements, bug fixes, and compatibility enhancements for the new JWTPlayAuth feature.
+
 ## **[7.9.1] – Slot Synchronization on Portrait-to-Fullscreen Transition & Brightness Control Deprecation**
 
 ### **Improvements**

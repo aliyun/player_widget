@@ -5,11 +5,11 @@
 // Brief: VidAuth播放页面
 
 import 'package:aliplayer_widget/aliplayer_widget_lib.dart';
-import 'package:aliplayer_widget_example/constants/page_routes.dart';
 import 'package:aliplayer_widget_example/manager/sp_manager.dart';
 import 'package:aliplayer_widget_example/pages/link/link_constants.dart';
-import 'package:aliplayer_widget_example/utils/toast_utils.dart';
 import 'package:flutter/material.dart';
+
+import 'package:aliplayer_widget_example/constants/demo_constants.dart';
 
 class VidAuthPlayPage extends StatefulWidget {
   const VidAuthPlayPage({super.key});
@@ -47,26 +47,13 @@ class _VidAuthPlayPageState extends State<VidAuthPlayPage> {
     // 获取保存的vid 及 playAuth
     var savedVidLink = SPManager.instance.getString(LinkConstants.vid);
     var savedPlayAuthLink = SPManager.instance.getString(LinkConstants.vidAuth);
-    // 如果没有保存的链接，提示用户并跳转到 LinkPage
+    // 如果没有保存的链接，则使用默认链接
     if (savedVidLink == null ||
         savedVidLink.isEmpty ||
         savedPlayAuthLink == null ||
         savedPlayAuthLink.isEmpty) {
-      final linkVidItem = LinkItem(
-        name: LinkConstants.vid,
-        route: PageRoutes.vidAuthPlay,
-      );
-      final linkPlayAuthItem = LinkItem(
-        name: LinkConstants.vidAuth,
-        route: PageRoutes.vidAuthPlay,
-      );
-      ToastUtils.showSetUpLinkSnackBar(
-        context,
-        linkVidItem,
-        linkItemTwo: linkPlayAuthItem,
-        message: '请先设置视频Vid及PlayAuth',
-      );
-      return;
+        savedVidLink = DemoConstants.sampleVid;
+        savedPlayAuthLink = DemoConstants.samplePlayAuth;
     }
 
     final videoSource = VideoSourceFactory.createVidAuthSource(
