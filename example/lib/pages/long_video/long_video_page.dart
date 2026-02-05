@@ -37,7 +37,7 @@ class _LongVideoPageState extends State<LongVideoPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('中长视频播放（Direct URL）'),
+        title: const Text('中长视频播放'),
         backgroundColor: Colors.orangeAccent,
       ),
       body: _buildPlayWidget(),
@@ -100,22 +100,28 @@ class _LongVideoPageState extends State<LongVideoPage> {
     // 初始化播放器组件控制器
     _controller = AliPlayerWidgetController(context);
 
-    // 获取保存的链接
-    var savedLink = SPManager.instance.getString(LinkConstants.url);
+    // 获取保存的 vid 及 playAuth
+    var saveVid = SPManager.instance.getString(LinkConstants.vid);
+    var savedPlayAuth = SPManager.instance.getString(LinkConstants.vidAuth);
     // 如果没有保存的链接，则使用默认链接
-    if (savedLink == null || savedLink.isEmpty) {
-      savedLink = DemoConstants.sampleVideoUrl;
+    if (saveVid == null ||
+        saveVid.isEmpty ||
+        savedPlayAuth == null ||
+        savedPlayAuth.isEmpty) {
+      // 客户端播放器 SDK 版本要求：使用 本地签名播放凭证（JWTPlayAuth） 进行播放时，客户端播放器 SDK 版本需要 ≥ 7.10.0，否则无法完成播放鉴权
+      saveVid = DemoConstants.sampleVid;
+      savedPlayAuth = DemoConstants.samplePlayAuth;
     }
 
-    // 获取保存的缩略图链接
-    final thumbnailUrl = SPManager.instance.getString(LinkConstants.thumbnail);
-
     // 设置播放器视频源
-    final videoSource = VideoSourceFactory.createUrlSource(savedLink);
+    final videoSource = VideoSourceFactory.createVidAuthSource(
+      vid: saveVid,
+      playAuth: savedPlayAuth,
+    );
+
     // 设置播放器组件数据
     final data = AliPlayerWidgetData(
       videoSource: videoSource,
-      thumbnailUrl: thumbnailUrl ?? "",
       videoTitle: "Long Video Title",
     );
     _controller.configure(data);

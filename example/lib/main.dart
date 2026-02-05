@@ -17,7 +17,6 @@ import 'package:aliplayer_widget_example/pages/long_video/long_video_page.dart';
 import 'package:aliplayer_widget_example/pages/settings/settings_page.dart';
 import 'package:aliplayer_widget_example/pages/short_video/short_video_page.dart';
 import 'package:aliplayer_widget_example/pages/slot/slot_demo_page.dart';
-import 'package:aliplayer_widget_example/pages/vid_auth/vid_auth_play_page.dart';
 import 'package:flutter/material.dart';
 import 'package:path_provider/path_provider.dart';
 
@@ -100,7 +99,6 @@ class MyApp extends StatelessWidget {
       routes: {
         PageRoutes.home: (_) => const HomePage(),
         PageRoutes.longVideo: (_) => const LongVideoPage(),
-        PageRoutes.vidAuthPlay: (_) => const VidAuthPlayPage(),
         PageRoutes.externalSubtitle: (_) => const ExternalSubtitlePage(),
         PageRoutes.shortVideo: (_) => const ShortVideoPage(preload: false),
         PageRoutes.preloadShortVideo: (_) => const ShortVideoPage(),

@@ -487,6 +487,7 @@ class AliPlayerWidgetState extends State<AliPlayerWidget>
             onDragEnd: enableDrag ? _onDragEnd : null,
             onSeekEnd: enableSeek ? _onSeekEnd : null,
             isShowExternalSubtitle: _isShowExternalSubtitle.value,
+            isShowExternalSubtitleBtn: _playController.subtitleNotifier.value != null,
           ),
         );
       },

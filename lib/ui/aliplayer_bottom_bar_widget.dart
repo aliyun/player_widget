@@ -22,6 +22,9 @@ class AliPlayerBottomBarWidget extends AliPlayerSharedAnimationWidget {
   /// 外挂字幕的显示状态
   final bool isShowExternalSubtitle;
 
+  /// 外挂字幕按钮显示状态
+  final bool isShowExternalSubtitleBtn;
+
   /// 播放/暂停按钮点击回调
   final VoidCallback? onPlayIconPressed;
 
@@ -69,6 +72,7 @@ class AliPlayerBottomBarWidget extends AliPlayerSharedAnimationWidget {
     this.onDragUpdate,
     this.onDragEnd,
     this.onSeekEnd,
+    required this.isShowExternalSubtitleBtn,
   });
 
   @override
@@ -116,14 +120,15 @@ class AliPlayerBottomBarWidget extends AliPlayerSharedAnimationWidget {
           ),
 
           // 右边: 外挂字幕显示控制
-          IconButton(
-            icon: Icon(
-              isShowExternalSubtitle ? Icons.subtitles : Icons.subtitles_off,
-              color: Colors.white,
-              size: 30,
+          if (isShowExternalSubtitleBtn)
+            IconButton(
+              icon: Icon(
+                isShowExternalSubtitle ? Icons.subtitles : Icons.subtitles_off,
+                color: Colors.white,
+                size: 30,
+              ),
+              onPressed: onSubtitlePressed,
             ),
-            onPressed: onSubtitlePressed,
-          ),
 
           // 右边：全屏切换按钮
           IconButton(

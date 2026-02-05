@@ -21,9 +21,6 @@ class PageRoutes {
   /// 中长视频页面（Direct URL）
   static const String longVideo = '/long_video';
 
-  /// VidAuth播放页面
-  static const String vidAuthPlay = '/vid_auth_play';
-
   /// 短视频页面
   static const String shortVideo = '/short_video';
 
@@ -56,14 +53,9 @@ class PageRoutes {
   /// A static list of home item configurations
   static final List<HomePageItemConfig> homeItemConfigurations = [
     const HomePageItemConfig(
-      name: '中长视频播放（Direct URL）',
+      name: '中长视频播放',
       icon: Icons.movie_rounded,
       pageRoute: longVideo,
-    ),
-    const HomePageItemConfig(
-      name: 'VidAuth播放',
-      icon: Icons.verified_rounded,
-      pageRoute: vidAuthPlay,
     ),
     const HomePageItemConfig(
       name: '直播播放（横屏）',

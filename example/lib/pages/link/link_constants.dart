@@ -45,16 +45,12 @@ class LinkConstants {
 
   static List<LinkItem> linkItems = [
     LinkItem(
-      name: url,
+      name: vid,
       route: PageRoutes.longVideo,
     ),
     LinkItem(
-      name: vid,
-      route: PageRoutes.vidAuthPlay,
-    ),
-    LinkItem(
       name: vidAuth,
-      route: PageRoutes.vidAuthPlay,
+      route: PageRoutes.longVideo,
     ),
     LinkItem(
       name: thumbnail,
