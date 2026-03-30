@@ -13,29 +13,33 @@ AliPlayerWidget(
   AliPlayerWidgetController controller, {
   Key? key,
   List<Widget> overlays = const [],
+  Map<SlotType, SlotWidgetBuilder?> slotBuilders = const {},
+  OnBackPressedCallback? onBackPressed,
 });
 ```
 
 - **`controller`**: The player controller used to manage playback logic.
-- **`overlays`**: Optional list of overlay components to stack custom UI elements over the player component.
+- **`overlays`**: Optional list of overlay components to stack custom UI elements over the player component (deprecated, use `slotBuilders` instead).
+- **`slotBuilders`**: Optional slot builder map, allowing customization of how each slot is built. See [Slot System](slot-system-en.md) for details.
+- **`onBackPressed`**: Optional back button press callback. Called when the user presses the back button. Returns `true` to indicate the event was handled and no default action is needed; returns `false` or `null` to execute the default behavior (`Navigator.pop`).
 
-### **Example**
+#### **Back Event Handling**
+
+By default, when the user presses the back button:
+1. If currently in fullscreen mode, it will exit fullscreen first
+2. If `onBackPressed` callback is provided, it will be called
+3. If the callback returns `false` or `null`, the default `Navigator.pop()` will be executed
+
+With the `onBackPressed` callback, you can fully customize the back behavior:
 
 ```dart
 AliPlayerWidget(
   _controller,
-  overlays: [
-    Positioned(
-      right: 16,
-      bottom: 80,
-      child: Column(
-        children: [
-          IconButton(icon: Icon(Icons.favorite), onPressed: () {}),
-          IconButton(icon: Icon(Icons.share), onPressed: () {}),
-        ],
-      ),
-    ),
-  ],
+  onBackPressed: () {
+    // Custom back logic
+    Navigator.of(context).pop();
+    return true; // Return true to indicate handled, no default action needed
+  },
 );
 ```
 

@@ -1,5 +1,36 @@
 # **AliPlayerWidget Changelog**
 
+## **[7.13.0] - Custom Back Press Callback & Documentation Improvements**
+
+### **Update**
+  - **Kernel SDK Updated to v7.13.0**
+
+### **New Features**
+
+- **Custom Back Press Callback (`onBackPressed`)**
+  - Added `onBackPressed` callback parameter to `AliPlayerWidget`, allowing developers to fully customize back button behavior.
+  - The callback is invoked when the user presses the back button.
+  - Return `true` to indicate the event was handled and prevent default behavior.
+  - Return `false` or `null` to execute the default `Navigator.pop()` behavior.
+  - This enables scenarios such as:
+    - Showing confirmation dialogs before exiting
+    - Navigating to specific routes instead of simple pop
+    - Implementing custom back stack management in short-video scenarios
+
+### **Documentation Updates**
+
+- **Core Components Documentation Enhancement**
+
+---
+
+## **[7.11.0] - Version Upgrade and Page Consolidation Notes**
+
+### **Update**
+  - **Kernel SDK Updated to v7.11.0**
+  - **remove VidAuthPlay page and consolidate into long video page**
+
+---
+
 ## **[7.10.0] - Local JWT Play Authentication & Kernel SDK Update**
 
 ### **New Features**

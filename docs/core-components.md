@@ -13,29 +13,33 @@ AliPlayerWidget(
   AliPlayerWidgetController controller, {
   Key? key,
   List<Widget> overlays = const [],
+  Map<SlotType, SlotWidgetBuilder?> slotBuilders = const {},
+  OnBackPressedCallback? onBackPressed,
 });
 ```
 
 - **`controller`**: 播放器控制器，用于管理播放逻辑。
-- **`overlays`**: 可选的浮层组件列表，用于在播放器组件上叠加自定义 UI。
+- **`overlays`**: 可选的浮层组件列表，用于在播放器组件上叠加自定义 UI（已废弃，建议使用 `slotBuilders`）。
+- **`slotBuilders`**: 可选的插槽构建器映射，允许自定义各个插槽的构建方式。详见 [插槽系统](slot-system.md)。
+- **`onBackPressed`**: 可选的返回按钮点击回调。当用户按下返回键时调用。返回 `true` 表示已处理返回事件，不再执行默认行为；返回 `false` 或 `null` 将执行默认行为（`Navigator.pop`）。
 
-### **示例**
+#### **返回事件处理**
+
+默认情况下，当用户按下返回键时：
+1. 如果当前处于全屏模式，会先退出全屏
+2. 如果提供了 `onBackPressed` 回调，会调用该回调
+3. 如果回调返回 `false` 或 `null`，执行默认的 `Navigator.pop()`
+
+通过 `onBackPressed` 回调，您可以完全自定义返回行为：
 
 ```dart
 AliPlayerWidget(
   _controller,
-  overlays: [
-    Positioned(
-      right: 16,
-      bottom: 80,
-      child: Column(
-        children: [
-          IconButton(icon: Icon(Icons.favorite), onPressed: () {}),
-          IconButton(icon: Icon(Icons.share), onPressed: () {}),
-        ],
-      ),
-    ),
-  ],
+  onBackPressed: () {
+    // 自定义返回逻辑
+    Navigator.of(context).pop();
+    return true; // 返回 true 表示已处理，不再执行默认行为
+  },
 );
 ```
 

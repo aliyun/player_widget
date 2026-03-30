@@ -49,6 +49,13 @@ enum SlotType {
   overlays,
 }
 
+/// 返回键回调类型定义
+///
+/// Return button callback type definition
+/// 返回 true 表示已处理返回事件，不再执行默认行为
+/// 返回 false 或 null 表示未处理，执行默认行为（Navigator.pop）
+typedef OnBackPressedCallback = bool? Function();
+
 /// 一个用于播放视频的 Widget，支持自定义控制器和覆盖层。
 ///
 /// A widget for video playback that supports custom controllers and overlay layers.
@@ -69,6 +76,15 @@ class AliPlayerWidget extends StatefulWidget {
   /// Slot builder map, allowing customization of how each slot is built
   final Map<SlotType, SlotWidgetBuilder?> slotBuilders;
 
+  /// 返回按钮点击回调。当用户按下返回键时调用。
+  /// 如果返回 true，表示已处理返回事件，不再执行默认行为。
+  /// 如果返回 false 或 null，且当前不是全屏状态，将执行默认行为（Navigator.pop）。
+  ///
+  /// Back button press callback. Called when the user presses the back button.
+  /// Returns true to indicate the back event was handled and no default action is needed.
+  /// Returns false or null to allow default behavior (Navigator.pop) if not in fullscreen mode.
+  final OnBackPressedCallback? onBackPressed;
+
   /// 构造函数，用于创建 [AliPlayerWidget] 实例。
   ///
   /// Constructor to create an instance of [AliPlayerWidget].
@@ -78,17 +94,20 @@ class AliPlayerWidget extends StatefulWidget {
   /// - [key]：可选参数，用于标识 Widget 的唯一性。
   /// - [overlays]：可选参数，默认为空列表，用于定义覆盖在视频上的 UI 元素。已废弃，请使用 slotBuilders 替代。
   /// - [slotBuilders]：可选参数，默认为空映射，用于定义各个插槽的自定义构建器。
+  /// - [onBackPressed]：可选参数，返回按钮点击回调，用于自定义返回行为。
   ///
   /// Parameters:
   /// - _controller: The video player controller, required to manage video playback logic.
   /// - key: Optional parameter used to identify the uniqueness of the widget.
   /// - overlays: Optional parameter, defaults to an empty list, used to define UI elements overlaid on the video. Deprecated, use slotBuilders instead.
   /// - slotBuilders: Optional parameter, defaults to empty map, used to define custom builders for each slot.
+  /// - onBackPressed: Optional parameter, back button press callback, used to customize back behavior.
   const AliPlayerWidget(
     this._controller, {
     super.key,
     this.overlays = const [],
     this.slotBuilders = const {},
+    this.onBackPressed,
   });
 
   @override
@@ -398,15 +417,24 @@ class AliPlayerWidgetState extends State<AliPlayerWidget>
 
   /// 返回事件处理
   bool _handleBackPress() {
+    // 如果当前是全屏模式，先退出全屏
     if (FullScreenUtil.isFullScreen()) {
-      // 如果当前是全屏模式，退出全屏
       _playController.exitFullScreen();
-      return false; // 阻止默认的返回操作
-    } else {
-      // 如果不是全屏模式，执行正常的返回操作
-      Navigator.of(context).pop();
-      return true;
+      return false; // 已处理返回事件（退出全屏），不执行默认行为
     }
+
+    // 调用用户自定义的返回回调
+    final onBackPressed = widget.onBackPressed;
+    if (onBackPressed != null) {
+      final handled = onBackPressed();
+      if (handled == true) {
+        return false; // 用户已处理，不执行默认行为
+      }
+    }
+
+    // 执行默认的返回操作
+    Navigator.of(context).pop();
+    return true;
   }
 
   /// 下载按钮点击回调
