@@ -1,9 +1,9 @@
 # **AliPlayerWidget Changelog**
 
-## **[7.13.0] - Custom Back Press Callback & Documentation Improvements**
+## **[7.12.0] - Custom Back Press Callback & Documentation Improvements**
 
 ### **Update**
-  - **Kernel SDK Updated to v7.13.0**
+  - **Kernel SDK Updated to v7.12.0**
 
 ### **New Features**
 
