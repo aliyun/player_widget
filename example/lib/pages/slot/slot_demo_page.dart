@@ -4,6 +4,7 @@
 // Date: 2025/11/14
 // Brief: 插槽系统演示页面
 
+import 'package:aliplayer_widget/slot/slot_elements.dart';
 import 'package:aliplayer_widget_example/constants/demo_constants.dart';
 import 'package:aliplayer_widget_example/manager/sp_manager.dart';
 import 'package:aliplayer_widget_example/pages/link/link_constants.dart';
@@ -31,8 +32,8 @@ enum CustomUIStyle {
   /// 经典风格
   classic,
 
-  /// 极简风格
-  minimal
+  /// 细粒度控制（支持按需隐藏默认插槽中的 UI 元素）
+  fineGrained,
 }
 
 class _SlotDemoPageState extends State<SlotDemoPage>
@@ -105,7 +106,7 @@ class _SlotDemoPageState extends State<SlotDemoPage>
   Widget _buildBody() {
     return Column(
       children: [
-        _useCustomUI ? _buildCustomPlayerWidget() : _buildDefaultPlayerWidget(),
+        _buildPlayerWidgetByStyle(),
         Expanded(
           flex: 1,
           child: _buildControlPanel(),
@@ -114,10 +115,53 @@ class _SlotDemoPageState extends State<SlotDemoPage>
     );
   }
 
+  /// 根据样式构建播放器组件
+  Widget _buildPlayerWidgetByStyle() {
+    // 如果不使用自定义UI，则返回默认播放器组件
+    if (!_useCustomUI) {
+      return _buildDefaultPlayerWidget();
+    }
+    // 如果使用细粒度控制，则返回细粒度控制的播放器组件
+    if (_uiStyle == CustomUIStyle.fineGrained) {
+      return _buildFineGrainedPlayerWidget();
+    }
+    // 否则返回自定义播放器组件
+    return _buildCustomPlayerWidget();
+  }
+
   /// 构建默认播放器组件
   Widget _buildDefaultPlayerWidget() {
     return AliPlayerWidget(
       _controller,
+    );
+  }
+
+  /// 构建细粒度控制的播放器组件
+  Widget _buildFineGrainedPlayerWidget() {
+    return AliPlayerWidget(
+      _controller,
+      hiddenSlotElements: const {
+        // 演示：隐藏顶部栏插槽中的 UI 元素
+        SlotType.topBar: {
+          TopBarElements.download,
+          TopBarElements.snapshot,
+        },
+        // 演示：隐藏底部栏插槽的 UI 元素
+        SlotType.bottomBar: {
+          BottomBarElements.progress,
+        },
+        // 演示：隐藏设置菜单插槽的 UI 元素
+        SlotType.settingMenu: {
+          SettingMenuElements.speed,
+          SettingMenuElements.mute,
+        },
+        // 演示：禁用播放控制插槽的手势交互
+        SlotType.playControl: {
+          PlayControlElements.doubleTap,
+          PlayControlElements.leftVerticalDrag,
+          PlayControlElements.rightVerticalDrag,
+        },
+      },
     );
   }
 
@@ -145,8 +189,8 @@ class _SlotDemoPageState extends State<SlotDemoPage>
         return _buildModernTopBar();
       case CustomUIStyle.classic:
         return _buildClassicTopBar();
-      case CustomUIStyle.minimal:
-        return _buildMinimalTopBar();
+      case CustomUIStyle.fineGrained:
+        return const SizedBox.shrink(); // 不会被调用
     }
   }
 
@@ -206,66 +250,6 @@ class _SlotDemoPageState extends State<SlotDemoPage>
   /// 经典风格顶部栏
   Widget _buildClassicTopBar() {
     return Positioned(
-      top: 0,
-      left: 0,
-      right: 0,
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-        decoration: BoxDecoration(
-          boxShadow: const [
-            BoxShadow(
-              color: Colors.black26,
-              blurRadius: 8,
-              offset: Offset(0, 2),
-            ),
-          ],
-          border: Border(
-            bottom: BorderSide(
-              color: Colors.white.withOpacity(0.1),
-              width: 0.5,
-            ),
-          ),
-        ),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Container(
-              decoration: BoxDecoration(
-                color: Colors.white.withOpacity(0.3),
-                shape: BoxShape.circle,
-              ),
-              child: IconButton(
-                icon: const Icon(Icons.arrow_back, color: Colors.white),
-                onPressed: () => Navigator.of(context).pop(),
-              ),
-            ),
-            const Text(
-              "经典风格",
-              style: TextStyle(
-                color: Colors.white,
-                fontSize: 16,
-                fontWeight: FontWeight.w600,
-              ),
-            ),
-            Container(
-              decoration: BoxDecoration(
-                color: Colors.white.withOpacity(0.3),
-                shape: BoxShape.circle,
-              ),
-              child: IconButton(
-                icon: const Icon(Icons.more_vert, color: Colors.white),
-                onPressed: () {},
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  /// 极简风格顶部栏
-  Widget _buildMinimalTopBar() {
-    return Positioned(
       top: 16,
       left: 16,
       right: 16,
@@ -285,7 +269,7 @@ class _SlotDemoPageState extends State<SlotDemoPage>
             ),
           ),
           const Text(
-            "极简风格",
+            "经典风格",
             style: TextStyle(
               color: Colors.white,
               fontSize: 16,
@@ -316,8 +300,8 @@ class _SlotDemoPageState extends State<SlotDemoPage>
         return _buildModernBottomBar();
       case CustomUIStyle.classic:
         return _buildClassicBottomBar();
-      case CustomUIStyle.minimal:
-        return _buildMinimalBottomBar();
+      case CustomUIStyle.fineGrained:
+        return const SizedBox.shrink(); // 不会被调用
     }
   }
 
@@ -421,7 +405,7 @@ class _SlotDemoPageState extends State<SlotDemoPage>
             return Row(
               children: [
                 // 播放/暂停按钮
-                _buildControlButton(
+                _buildClassicControlButton(
                   icon: playState == FlutterAvpdef.started
                       ? Icons.pause
                       : Icons.play_arrow,
@@ -442,7 +426,7 @@ class _SlotDemoPageState extends State<SlotDemoPage>
                 const SizedBox(width: 12),
 
                 // 进度条
-                Expanded(child: _buildProgressSlider()),
+                Expanded(child: _buildClassicProgressSlider()),
                 const SizedBox(width: 12),
 
                 // 总时长
@@ -463,18 +447,17 @@ class _SlotDemoPageState extends State<SlotDemoPage>
     );
   }
 
-  /// 构建控制按钮
-  Widget _buildControlButton({
+  /// 构建经典风格控制按钮
+  Widget _buildClassicControlButton({
     required IconData icon,
     required VoidCallback onPressed,
   }) {
     return Container(
-      width: 40,
-      height: 40,
+      width: 36,
+      height: 36,
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.2),
-        shape: BoxShape.circle,
-        border: Border.all(color: Colors.white.withOpacity(0.3)),
+        color: Colors.black54,
+        borderRadius: BorderRadius.circular(18),
       ),
       child: IconButton(
         icon: Icon(icon, color: Colors.white, size: 20),
@@ -484,8 +467,8 @@ class _SlotDemoPageState extends State<SlotDemoPage>
     );
   }
 
-  /// 构建进度条
-  Widget _buildProgressSlider() {
+  /// 构建经典风格进度条
+  Widget _buildClassicProgressSlider() {
     return ValueListenableBuilder<Duration>(
       valueListenable: _controller.currentPositionNotifier,
       builder: (context, currentPosition, child) {
@@ -528,49 +511,6 @@ class _SlotDemoPageState extends State<SlotDemoPage>
     final minutes = duration.inMinutes;
     final seconds = duration.inSeconds % 60;
     return '$minutes:${seconds.toString().padLeft(2, '0')}';
-  }
-
-  /// 极简风格底部栏
-  Widget _buildMinimalBottomBar() {
-    return Positioned(
-      bottom: 16,
-      left: 0,
-      right: 0,
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Container(
-            width: 52,
-            height: 52,
-            decoration: BoxDecoration(
-              color: Colors.black54,
-              borderRadius: BorderRadius.circular(26),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withOpacity(0.3),
-                  blurRadius: 8,
-                  spreadRadius: 1,
-                ),
-              ],
-            ),
-            child: ValueListenableBuilder<int>(
-              valueListenable: _controller.playStateNotifier,
-              builder: (context, playState, child) {
-                return IconButton(
-                  icon: Icon(
-                    playState == FlutterAvpdef.started
-                        ? Icons.pause
-                        : Icons.play_arrow,
-                    color: Colors.white,
-                  ),
-                  onPressed: _controller.togglePlayState,
-                );
-              },
-            ),
-          ),
-        ],
-      ),
-    );
   }
 
   /// 构建自定义播放控制
@@ -657,9 +597,9 @@ class _SlotDemoPageState extends State<SlotDemoPage>
             ),
             const SizedBox(height: 10),
             const Text(
-              "• 顶部栏、底部栏、播放控制等UI组件可完全自定义\n"
-              "• 可以选择隐藏任意组件\n"
-              "• 可以在Widget外部通过Notifier控制播放器",
+              "• 插槽化设计：播放器界面拆分为多个可组合区域\n"
+              "• 灵活自定义：顶部栏、底部栏等插槽支持完全自定义\n"
+              "• 细粒度控制：支持按需隐藏默认插槽中的 UI 元素",
             ),
             const SizedBox(height: 16),
 
@@ -684,9 +624,10 @@ class _SlotDemoPageState extends State<SlotDemoPage>
                   onSelected: (_) => _switchUIStyle(CustomUIStyle.classic),
                 ),
                 ChoiceChip(
-                  label: const Text('极简'),
-                  selected: _uiStyle == CustomUIStyle.minimal && _useCustomUI,
-                  onSelected: (_) => _switchUIStyle(CustomUIStyle.minimal),
+                  label: const Text('细粒度控制'),
+                  selected:
+                      _uiStyle == CustomUIStyle.fineGrained && _useCustomUI,
+                  onSelected: (_) => _switchUIStyle(CustomUIStyle.fineGrained),
                 ),
                 ChoiceChip(
                   label: const Text('默认'),

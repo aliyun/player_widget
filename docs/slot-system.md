@@ -118,6 +118,41 @@ AliPlayerWidget(
 )
 ```
 
+### **7. 插槽元素显隐控制（细粒度控制）**
+
+当您希望**在保留默认插槽 UI 的前提下**，仅隐藏其中的部分元素（如按钮或功能项），而不需要完全自定义整个插槽时，可以使用 `hiddenSlotElements` 进行细粒度控制。
+
+```dart
+AliPlayerWidget(
+  controller,
+  hiddenSlotElements: const {
+    // 隐藏顶部栏插槽中的 UI 元素
+    SlotType.topBar: {
+      TopBarElements.download,
+      TopBarElements.snapshot,
+    },
+
+    // 禁用播放控制插槽的手势交互
+    SlotType.playControl: {
+      PlayControlElements.doubleTap,
+      PlayControlElements.leftVerticalDrag,
+      PlayControlElements.rightVerticalDrag,
+    },
+  },
+);
+```
+
+**使用说明：**
+
+* `hiddenSlotElements` 的 `key` 为插槽类型（如 `SlotType.topBar`）
+* `value` 为该插槽中需要隐藏的 UI 元素集合
+
+**注意事项：**
+
+* 该能力**仅对默认插槽 UI 生效**
+* 如果为某个插槽配置了 `slotBuilders`（自定义构建器），则该插槽将由自定义 Widget 全权接管，对应的 `hiddenSlotElements` 配置将**不再生效**
+* `PlayControlElements` 用于**禁用手势交互**，而非隐藏 UI 元素。
+
 ## **插槽系统工作原理**
 
 插槽系统通过以下三级渲染策略工作：

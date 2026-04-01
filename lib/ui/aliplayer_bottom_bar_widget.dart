@@ -5,6 +5,8 @@
 // Brief: 播放器自定义底部栏组件
 
 import 'package:aliplayer_widget/aliplayer_widget_lib.dart';
+import 'package:aliplayer_widget/slot/slot_elements.dart';
+import 'package:aliplayer_widget/slot/slot_manager.dart';
 import 'package:aliplayer_widget/utils/scene_util.dart';
 import 'package:flutter/material.dart';
 
@@ -77,69 +79,94 @@ class AliPlayerBottomBarWidget extends AliPlayerSharedAnimationWidget {
 
   @override
   Widget buildContent(BuildContext context) {
+    // 一次性获取隐藏配置，避免重复遍历 widget tree
+    // Get hidden config once to avoid repeated widget tree traversal
+    final hiddenElements = SlotManager.getHiddenElements(
+      context,
+      SlotType.bottomBar,
+    );
+
+    // 根据配置构建可见元素，避免过早创建 Widget
+    // Build visible elements based on config, avoiding premature Widget creation
+    final slotElements = <Widget>[];
+
+    // 左边：播放/暂停按钮
+    if (hiddenElements.isElementVisible(BottomBarElements.play)) {
+      slotElements.add(IconButton(
+        icon: Icon(
+          isPlaying ? Icons.pause : Icons.play_arrow,
+          color: Colors.white,
+          size: 30,
+        ),
+        onPressed: onPlayIconPressed,
+      ));
+    }
+
+    // 中间：刷新按钮（可选：直播场景）
+    if (isSceneType(sceneType, [SceneType.live]) &&
+        hiddenElements.isElementVisible(BottomBarElements.refresh)) {
+      slotElements.add(IconButton(
+        onPressed: onReplayIconPressed,
+        icon: const Icon(
+          Icons.refresh,
+          color: Colors.white,
+          size: 30,
+        ),
+      ));
+    }
+
+    // 中间：自定义进度条组件
+    if (hiddenElements.isElementVisible(BottomBarElements.progress)) {
+      slotElements.add(Expanded(
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 8.0),
+          child: AliPlayerVideoSlider(
+            currentPosition: currentPosition,
+            totalDuration: totalDuration,
+            bufferedPosition: bufferedPosition,
+            onDragUpdate: onDragUpdate,
+            onDragEnd: onDragEnd,
+            onSeekEnd: onSeekEnd,
+          ),
+        ),
+      ));
+    } else {
+      // 隐藏时仍需保持弹性布局
+      // Must maintain flex layout when hidden
+      slotElements.add(const Expanded(child: SizedBox.shrink()));
+    }
+
+    // 右边: 外挂字幕显示控制
+    if (isShowExternalSubtitleBtn &&
+        hiddenElements.isElementVisible(BottomBarElements.subtitle)) {
+      slotElements.add(IconButton(
+        icon: Icon(
+          isShowExternalSubtitle ? Icons.subtitles : Icons.subtitles_off,
+          color: Colors.white,
+          size: 30,
+        ),
+        onPressed: onSubtitlePressed,
+      ));
+    }
+
+    // 右边：全屏切换按钮
+    if (hiddenElements.isElementVisible(BottomBarElements.fullscreen)) {
+      slotElements.add(IconButton(
+        icon: const Icon(
+          Icons.fullscreen,
+          color: Colors.white,
+          size: 30,
+        ),
+        onPressed: onFullScreenPressed,
+      ));
+    }
+
     return Container(
       height: kBottomNavigationBarHeight,
       color: Colors.black.withOpacity(0.3),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-        children: [
-          // 左边：播放/暂停按钮
-          IconButton(
-            icon: Icon(
-              isPlaying ? Icons.pause : Icons.play_arrow,
-              color: Colors.white,
-              size: 30,
-            ),
-            onPressed: onPlayIconPressed,
-          ),
-          // 中间：刷新按钮（可选：直播场景）
-          if (isSceneType(sceneType, [
-            SceneType.live,
-          ]))
-            IconButton(
-              onPressed: onReplayIconPressed,
-              icon: const Icon(
-                Icons.refresh,
-                color: Colors.white,
-                size: 30,
-              ),
-            ),
-          // 中间：自定义进度条组件
-          Expanded(
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 8.0),
-              child: AliPlayerVideoSlider(
-                currentPosition: currentPosition,
-                totalDuration: totalDuration,
-                bufferedPosition: bufferedPosition,
-                onDragUpdate: onDragUpdate,
-                onDragEnd: onDragEnd,
-                onSeekEnd: onSeekEnd,
-              ),
-            ),
-          ),
-
-          // 右边: 外挂字幕显示控制
-          if (isShowExternalSubtitleBtn)
-            IconButton(
-              icon: Icon(
-                isShowExternalSubtitle ? Icons.subtitles : Icons.subtitles_off,
-                color: Colors.white,
-                size: 30,
-              ),
-              onPressed: onSubtitlePressed,
-            ),
-
-          // 右边：全屏切换按钮
-          IconButton(
-            icon: const Icon(
-              Icons.fullscreen,
-              color: Colors.white,
-              size: 30,
-            ),
-            onPressed: onFullScreenPressed,
-          ),
-        ],
+        children: slotElements,
       ),
     );
   }

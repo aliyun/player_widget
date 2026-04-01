@@ -21,7 +21,7 @@ With a minimalist API design, AliPlayerWidget achieves low-code integration, all
   - **Gesture Control**: Supports intuitive brightness, volume, and playback progress adjustments via gestures, enhancing user experience.
   - **Support for Multiple Playback Sources**: Compatible with various video source types, including direct URL playback, VID+STS token playback, and VID+Auth authentication playback, meeting the playback requirements of different scenarios.
 - **Flexible UI Customization**:
-  - **Slot System**: Provides a powerful slot system that supports customizing various parts of the player interface, including top bar, bottom bar, play control, cover image, subtitles, etc., allowing developers to flexibly combine and create personalized interfaces. Through predefined slot positions, developers can easily replace default UI components or add custom elements.
+  - **Slot System**: Provides a powerful slot-based architecture that enables customization of all parts of the player UI, including the top bar, bottom bar, playback controls, cover image, subtitles, and more. Supports full slot customization, as well as fine-grained control over the visibility and gesture interactions of UI elements within default slots.
   - **Overlay Support**: Allows custom overlay components with strong extensibility, enabling developers to implement complex features like advertisements and bullet chats.
   - **Modular Design**: Includes reusable UI components such as top bars, bottom bars, and settings panels, making it easy for developers to customize according to their needs.
   - **Full-Screen Adaptation**: Automatically adapts to landscape and portrait orientations, ensuring optimal display across different devices.

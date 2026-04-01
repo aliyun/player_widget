@@ -4,6 +4,9 @@
 // Date: 2025/2/13
 // Brief: 播放器自定义顶部横栏组件
 
+import 'package:aliplayer_widget/aliplayer_widget_lib.dart';
+import 'package:aliplayer_widget/slot/slot_elements.dart';
+import 'package:aliplayer_widget/slot/slot_manager.dart';
 import 'package:flutter/material.dart';
 
 import 'aliplayer_shared_animation_widget.dart';
@@ -46,90 +49,120 @@ class AliPlayerTopBarWidget extends AliPlayerSharedAnimationWidget {
 
   @override
   Widget buildContent(BuildContext context) {
+    // 一次性获取隐藏配置，避免重复遍历 widget tree
+    // Get hidden config once to avoid repeated widget tree traversal
+    final hiddenElements = SlotManager.getHiddenElements(
+      context,
+      SlotType.topBar,
+    );
+
+    // 根据配置构建可见元素，避免过早创建 Widget
+    // Build visible elements based on config, avoiding premature Widget creation
+    final slotElements = <Widget>[];
+
+    // 返回按钮
+    if (hiddenElements.isElementVisible(TopBarElements.back)) {
+      slotElements.add(IconButton(
+        icon: const Icon(
+          Icons.arrow_back,
+          color: Colors.white,
+        ),
+        onPressed: onBackPressed,
+      ));
+    }
+
+    // 标题
+    if (hiddenElements.isElementVisible(TopBarElements.title)) {
+      slotElements.add(Expanded(
+        child: title == null || title!.isEmpty
+            ? const SizedBox.shrink()
+            : Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 8),
+                child: Text(
+                  title!,
+                  textAlign: TextAlign.left,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: const TextStyle(
+                    fontSize: 16,
+                    color: Colors.white,
+                  ),
+                ),
+              ),
+      ));
+    } else {
+      // 隐藏时仍需保持弹性布局
+      // Must maintain flex layout when hidden
+      slotElements.add(const Expanded(child: SizedBox.shrink()));
+    }
+
+    // 下载按钮，可选
+    if (isDownload != null &&
+        onDownloadPressed != null &&
+        hiddenElements.isElementVisible(TopBarElements.download)) {
+      slotElements.add(Padding(
+        padding: const EdgeInsets.only(left: 4),
+        child: IconButton(
+          icon: Icon(
+            isDownload! ? Icons.download_done_rounded : Icons.download_rounded,
+            color: Colors.white,
+          ),
+          onPressed: () => onDownloadPressed?.call(isDownload!),
+        ),
+      ));
+    }
+
+    // 截图按钮，可选
+    if (onSnapshotPressed != null &&
+        hiddenElements.isElementVisible(TopBarElements.snapshot)) {
+      slotElements.add(Padding(
+        padding: const EdgeInsets.only(left: 4),
+        child: IconButton(
+          icon: const Icon(
+            Icons.camera_alt_rounded,
+            color: Colors.white,
+          ),
+          onPressed: onSnapshotPressed,
+        ),
+      ));
+    }
+
+    // PIP 按钮，可选
+    if (onPIPPressed != null &&
+        hiddenElements.isElementVisible(TopBarElements.pip)) {
+      slotElements.add(Padding(
+        padding: const EdgeInsets.only(left: 4),
+        child: IconButton(
+          icon: const Icon(
+            Icons.picture_in_picture_alt_rounded,
+            color: Colors.white,
+          ),
+          onPressed: onPIPPressed,
+        ),
+      ));
+    }
+
+    // 设置按钮，可选
+    if (onSettingsPressed != null &&
+        hiddenElements.isElementVisible(TopBarElements.settings)) {
+      slotElements.add(Padding(
+        padding: const EdgeInsets.only(left: 4),
+        child: IconButton(
+          icon: const Icon(
+            Icons.settings,
+            color: Colors.white,
+          ),
+          onPressed: onSettingsPressed,
+        ),
+      ));
+    }
+
     return Container(
       height: kToolbarHeight,
       color: Colors.black.withOpacity(0.3),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          // 返回按钮
-          IconButton(
-            icon: const Icon(
-              Icons.arrow_back,
-              color: Colors.white,
-            ),
-            onPressed: onBackPressed,
-          ),
-
-          // 标题
-          Expanded(
-            child: title == null || title!.isEmpty
-                ? const SizedBox.shrink()
-                : Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 8),
-                    child: Text(
-                      title!,
-                      textAlign: TextAlign.left,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: const TextStyle(
-                        fontSize: 16,
-                        color: Colors.white,
-                      ),
-                    ),
-                  ),
-          ),
-
-          // 下载按钮，可选
-          if (isDownload != null && onDownloadPressed != null) ...[
-            const SizedBox(width: 4),
-            IconButton(
-              icon: Icon(
-                isDownload!
-                    ? Icons.download_done_rounded
-                    : Icons.download_rounded,
-                color: Colors.white,
-              ),
-              onPressed: () => onDownloadPressed?.call(isDownload!),
-            ),
-          ],
-
-          // 截图按钮，可选
-          if (onSnapshotPressed != null) ...[
-            const SizedBox(width: 4),
-            IconButton(
-              icon: const Icon(
-                Icons.camera_alt_rounded,
-                color: Colors.white,
-              ),
-              onPressed: onSnapshotPressed,
-            )
-          ],
-
-          // PIP 按钮，可选
-          if (onPIPPressed != null) ...[
-            const SizedBox(width: 4),
-            IconButton(
-              icon: const Icon(
-                Icons.picture_in_picture_alt_rounded,
-                color: Colors.white,
-              ),
-              onPressed: onPIPPressed,
-            )
-          ],
-
-          // 设置按钮，仅当 onSettingsPressed 不为空时显示
-          if (onSettingsPressed != null) ...[
-            const SizedBox(width: 4),
-            IconButton(
-              icon: const Icon(
-                Icons.settings,
-                color: Colors.white,
-              ),
-              onPressed: onSettingsPressed,
-            ),
-          ],
-        ],
+        children: slotElements,
       ),
     );
   }

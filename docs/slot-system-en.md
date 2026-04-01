@@ -118,6 +118,41 @@ AliPlayerWidget(
 )
 ```
 
+### **7. Fine-Grained Slot Element Visibility Control**
+
+When you want to **keep the default slot UI** but only hide specific elements (such as buttons or functional items) within it, rather than customizing the entire slot, you can use `hiddenSlotElements` for fine-grained control.
+
+```dart
+AliPlayerWidget(
+  controller,
+  hiddenSlotElements: const {
+    // Hide UI elements in the top bar slot
+    SlotType.topBar: {
+      TopBarElements.download,
+      TopBarElements.snapshot,
+    },
+
+    // Disable gesture interactions in the play control slot
+    SlotType.playControl: {
+      PlayControlElements.doubleTap,
+      PlayControlElements.leftVerticalDrag,
+      PlayControlElements.rightVerticalDrag,
+    },
+  },
+);
+```
+
+**Usage Notes:**
+
+* The `key` of `hiddenSlotElements` is the slot type (e.g., `SlotType.topBar`)
+* The `value` is the set of UI elements to hide within that slot
+
+**Important:**
+
+* This feature **only works with default slot UI**
+* If a `slotBuilders` (custom builder) is configured for a slot, that slot will be fully managed by the custom Widget, and the corresponding `hiddenSlotElements` configuration will **no longer take effect**
+* `PlayControlElements` is used to **disable gesture interactions**, not to hide UI elements.
+
 ## **How the Slot System Works**
 
 The slot system works through the following three-level rendering strategy:

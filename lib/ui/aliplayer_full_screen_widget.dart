@@ -17,11 +17,22 @@ class AliPlayerFullScreenWidget extends StatefulWidget {
   // 支持插槽配置
   final Map<SlotType, SlotWidgetBuilder?> slotBuilders;
 
+  /// 控制默认插槽中单个 UI 元素的显示与隐藏。
+  ///
+  /// 用于在不替换整个插槽的情况下，对插槽内部元素进行细粒度控制。
+  /// 与 [slotBuilders] 不同，后者会完全替换整个插槽，
+  /// [hiddenSlotElements] 仅对默认实现中的部分元素进行隐藏。
+  ///
+  /// Key 为插槽类型 [SlotType]，Value 为需要隐藏的元素 key 集合。
+  /// 元素 key 由常量类定义，例如：[TopBarElements]、[BottomBarElements] 等。
+  final Map<SlotType, Set<String>> hiddenSlotElements;
+
   const AliPlayerFullScreenWidget(
     this.controller,
     this.data, {
     super.key,
     this.slotBuilders = const {},
+    this.hiddenSlotElements = const {},
   });
 
   @override
@@ -47,6 +58,7 @@ class AliPlayerScreenFullWidgetState extends State<AliPlayerFullScreenWidget> {
           child: AliPlayerWidget(
             _fullController,
             slotBuilders: widget.slotBuilders,
+            hiddenSlotElements: widget.hiddenSlotElements,
           ),
         ),
       ),

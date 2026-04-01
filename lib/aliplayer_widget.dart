@@ -76,6 +76,65 @@ class AliPlayerWidget extends StatefulWidget {
   /// Slot builder map, allowing customization of how each slot is built
   final Map<SlotType, SlotWidgetBuilder?> slotBuilders;
 
+  /// 控制默认插槽中单个 UI 元素的显示与隐藏。
+  ///
+  /// 用于在不替换整个插槽的情况下，对插槽内部元素进行细粒度控制。
+  ///
+  /// Controls the visibility of individual UI elements within default slots.
+  ///
+  /// Allows fine-grained control over elements inside a slot without
+  /// replacing the entire slot widget.
+  ///
+  /// 与 [slotBuilders] 不同，后者会完全替换整个插槽（例如整个顶部栏），
+  /// [hiddenSlotElements] 仅对默认实现中的部分元素进行隐藏。
+  ///
+  /// Unlike [slotBuilders], which replaces an entire slot (e.g. the top bar),
+  /// [hiddenSlotElements] only hides selected elements while preserving
+  /// the default implementation.
+  ///
+  /// 在保留默认 UI 结构（如顶部栏、底部栏、设置面板等）的前提下，
+  /// 可以显式排除某些可选元素（如下载按钮、截图按钮等）。
+  ///
+  /// This makes it possible to keep the default UI structure (such as the
+  /// top bar, bottom bar, or settings panel) while excluding specific
+  /// optional elements (e.g. download or snapshot buttons).
+  ///
+  /// 注意：如果某个 [SlotType] 已通过 [slotBuilders] 自定义，
+  /// 则该插槽对应的 [hiddenSlotElements] 配置不会生效，
+  /// 因为该插槽已完全由自定义组件接管。
+  ///
+  /// If a [SlotType] is overridden via [slotBuilders], the corresponding
+  /// configuration in [hiddenSlotElements] does not take effect, since
+  /// the slot is fully controlled by the custom implementation.
+  ///
+  /// Key 为插槽类型 [SlotType]，
+  /// Value 为需要隐藏的元素 key 集合。
+  ///
+  /// The map key is a [SlotType], and the value is the set of element
+  /// keys to hide.
+  ///
+  /// 元素 key 由常量类定义，例如：
+  /// [TopBarElements]、[BottomBarElements] 等。
+  ///
+  /// Element keys are defined by constant classes such as
+  /// [TopBarElements] and [BottomBarElements].
+  ///
+  /// 示例：
+  ///
+  /// Example:
+  /// ```dart
+  /// hiddenSlotElements: {
+  ///   SlotType.topBar: {
+  ///     TopBarElements.download,
+  ///     TopBarElements.snapshot,
+  ///   },
+  ///   SlotType.bottomBar: {
+  ///     BottomBarElements.fullscreen,
+  ///   },
+  /// }
+  /// ```
+  final Map<SlotType, Set<String>> hiddenSlotElements;
+
   /// 返回按钮点击回调。当用户按下返回键时调用。
   /// 如果返回 true，表示已处理返回事件，不再执行默认行为。
   /// 如果返回 false 或 null，且当前不是全屏状态，将执行默认行为（Navigator.pop）。
@@ -94,6 +153,7 @@ class AliPlayerWidget extends StatefulWidget {
   /// - [key]：可选参数，用于标识 Widget 的唯一性。
   /// - [overlays]：可选参数，默认为空列表，用于定义覆盖在视频上的 UI 元素。已废弃，请使用 slotBuilders 替代。
   /// - [slotBuilders]：可选参数，默认为空映射，用于定义各个插槽的自定义构建器。
+  /// - [hiddenSlotElements]：可选参数，默认为空映射，用于隐藏插槽内单个 UI 元素。
   /// - [onBackPressed]：可选参数，返回按钮点击回调，用于自定义返回行为。
   ///
   /// Parameters:
@@ -101,12 +161,14 @@ class AliPlayerWidget extends StatefulWidget {
   /// - key: Optional parameter used to identify the uniqueness of the widget.
   /// - overlays: Optional parameter, defaults to an empty list, used to define UI elements overlaid on the video. Deprecated, use slotBuilders instead.
   /// - slotBuilders: Optional parameter, defaults to empty map, used to define custom builders for each slot.
+  /// - hiddenSlotElements: Optional parameter, defaults to empty map, used to hide individual UI elements within slots.
   /// - onBackPressed: Optional parameter, back button press callback, used to customize back behavior.
   const AliPlayerWidget(
     this._controller, {
     super.key,
     this.overlays = const [],
     this.slotBuilders = const {},
+    this.hiddenSlotElements = const {},
     this.onBackPressed,
   });
 
@@ -330,17 +392,17 @@ class AliPlayerWidgetState extends State<AliPlayerWidget>
 
   /// 构建播放控制视图
   Widget _buildPlayControlView() {
-    // 长按控制
+    // 长按控制（场景限制）
     bool enableLongPress = isNotSceneType(_sceneType, [
       SceneType.live,
       SceneType.restricted,
     ]);
-    // 拖动控制
+    // 水平拖动控制（场景限制）
     bool enableDrag = isNotSceneType(_sceneType, [
       SceneType.live,
       SceneType.restricted,
     ]);
-    // 竖向手势控制
+    // 竖向手势控制（场景限制）
     bool enableVerticalGestures = isNotSceneType(_sceneType, [
       SceneType.listPlayer,
     ]);
@@ -515,7 +577,8 @@ class AliPlayerWidgetState extends State<AliPlayerWidget>
             onDragEnd: enableDrag ? _onDragEnd : null,
             onSeekEnd: enableSeek ? _onSeekEnd : null,
             isShowExternalSubtitle: _isShowExternalSubtitle.value,
-            isShowExternalSubtitleBtn: _playController.subtitleNotifier.value != null,
+            isShowExternalSubtitleBtn:
+                _playController.subtitleNotifier.value != null,
           ),
         );
       },
@@ -536,6 +599,7 @@ class AliPlayerWidgetState extends State<AliPlayerWidget>
           widget._controller,
           position,
           slotBuilders: widget.slotBuilders,
+          hiddenSlotElements: widget.hiddenSlotElements,
         );
       });
     }
@@ -604,6 +668,7 @@ class AliPlayerWidgetState extends State<AliPlayerWidget>
     return [
       // 构建声音滑块控件
       SettingItem(
+        elementKey: SettingMenuElements.volume,
         type: SettingItemType.slider,
         text: "声音",
         startIcon: Icons.volume_down_rounded,
@@ -613,6 +678,7 @@ class AliPlayerWidgetState extends State<AliPlayerWidget>
       ),
       // TODO 构建亮度滑块控件，使用时自行开启
       // SettingItem(
+      //   elementKey: SettingMenuElements.brightness,
       //   type: SettingItemType.slider,
       //   text: "亮度",
       //   startIcon: Icons.brightness_low_rounded,
@@ -626,6 +692,7 @@ class AliPlayerWidgetState extends State<AliPlayerWidget>
         SceneType.restricted,
       ]))
         SettingItem(
+          elementKey: SettingMenuElements.speed,
           type: SettingItemType.selector,
           text: "倍速",
           startIcon: Icons.speed_rounded,
@@ -636,6 +703,7 @@ class AliPlayerWidgetState extends State<AliPlayerWidget>
         ),
       // 构建清晰度选择控件
       SettingItem(
+        elementKey: SettingMenuElements.trackInfo,
         type: SettingItemType.selector,
         text: "清晰度",
         startIcon: Icons.hd_rounded,
@@ -649,6 +717,7 @@ class AliPlayerWidgetState extends State<AliPlayerWidget>
         SceneType.live,
       ]))
         SettingItem(
+          elementKey: SettingMenuElements.loop,
           type: SettingItemType.switcher,
           text: "循环播放",
           startIcon: Icons.loop_rounded,
@@ -657,6 +726,7 @@ class AliPlayerWidgetState extends State<AliPlayerWidget>
         ),
       // 构建静音播放开关控件
       SettingItem(
+        elementKey: SettingMenuElements.mute,
         type: SettingItemType.switcher,
         text: "静音播放",
         startIcon: _playController.isMuteNotifier.value
@@ -667,6 +737,7 @@ class AliPlayerWidgetState extends State<AliPlayerWidget>
       ),
       // 构建镜像模式选择控件
       SettingItem(
+        elementKey: SettingMenuElements.mirrorMode,
         type: SettingItemType.selector,
         text: "镜像模式",
         startIcon: Icons.swap_horiz_rounded,
@@ -677,6 +748,7 @@ class AliPlayerWidgetState extends State<AliPlayerWidget>
       ),
       // 构建旋转模式选择控件
       SettingItem(
+        elementKey: SettingMenuElements.rotateMode,
         type: SettingItemType.selector,
         text: "旋转模式",
         startIcon: Icons.crop_rotate_rounded,
@@ -687,6 +759,7 @@ class AliPlayerWidgetState extends State<AliPlayerWidget>
       ),
       // 构建渲染填充选择控件
       SettingItem(
+        elementKey: SettingMenuElements.scaleMode,
         type: SettingItemType.selector,
         text: "渲染填充",
         startIcon: Icons.crop_rounded,
@@ -845,6 +918,9 @@ class AliPlayerWidgetState extends State<AliPlayerWidget>
 
   /// 构建中心显示控件
   Widget _buildCenterDisplayWidget() {
+    // 获取 centerDisplay 插槽的隐藏元素配置
+    final hiddenElements = widget.hiddenSlotElements[SlotType.centerDisplay];
+
     // 监听播放状态显示视图的内容类型
     return ValueListenableBuilder(
       valueListenable: _contentViewTypeNotifier,
@@ -854,25 +930,47 @@ class AliPlayerWidgetState extends State<AliPlayerWidget>
           return const SizedBox.shrink();
         }
 
+        // 检查当前内容类型是否被隐藏
+        final contentWidget = _buildCenterDisplayContentWidget(
+          contentViewType,
+          hiddenElements,
+        );
+
+        // 如果内容被隐藏，返回空组件
+        if (contentWidget == null) {
+          return const SizedBox.shrink();
+        }
+
         return AliPlayerCenterDisplayWidget(
-          contentWidget: _buildCenterDisplayContentWidget(contentViewType),
+          contentWidget: contentWidget,
         );
       },
     );
   }
 
   /// 根据 _centerDisplayViewContentType 获取对应的内容组件
-  Widget _buildCenterDisplayContentWidget(ContentViewType contentViewType) {
+  ///
+  /// [hiddenElements] 为需要隐藏的元素 key 集合，若当前类型被隐藏则返回 null
+  Widget? _buildCenterDisplayContentWidget(
+    ContentViewType contentViewType,
+    Set<String>? hiddenElements,
+  ) {
     switch (contentViewType) {
       // TODO 亮度组件，使用时自行开启
       // case ContentViewType.brightness:
-      //   return _buildBrightnessSlider();
+      //   return hiddenElements.isElementVisible(CenterDisplayElements.brightness)
+      //       ? _buildBrightnessSlider()
+      //       : null;
       case ContentViewType.volume:
-        return _buildVolumeSlider();
+        return hiddenElements.isElementVisible(CenterDisplayElements.volume)
+            ? _buildVolumeSlider()
+            : null;
       case ContentViewType.speed:
-        return _buildSpeedDisplayView();
-      default: // 不显示时返回空组件
-        return const SizedBox.shrink();
+        return hiddenElements.isElementVisible(CenterDisplayElements.speed)
+            ? _buildSpeedDisplayView()
+            : null;
+      default:
+        return null;
     }
   }
 
