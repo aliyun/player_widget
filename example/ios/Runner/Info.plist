@@ -3,7 +3,7 @@
 <plist version="1.0">
 <dict>
 	<key>AlivcLicenseFile</key>
-	<string>AliVideoCert-com_aliyun_aliplayerwidget_flutterexample-20250210180126.crt</string>
+	<string>license.crt</string>
 	<key>AlivcLicenseKey</key>
 	<string>no80rm6m8ayTXNTk80637a6cdef2a482588e104c17b8993c7</string>
 	<key>CADisableMinimumFrameDurationOnPhone</key>

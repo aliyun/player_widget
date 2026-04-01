@@ -1307,9 +1307,18 @@ class AliPlayerWidgetController {
       AliPlayerWidgetGlobalSetting.clearCaches();
 
   /// 播放器横竖屏切换
+  ///
+  /// [controller] 播放器控制器
+  /// [currentPosition] 当前播放位置
+  /// [slotBuilders] 插槽构建器映射，用于自定义插槽内容
+  /// [hiddenSlotElements] 隐藏插槽元素配置，用于在全屏模式下隐藏特定插槽内的UI元素
+  ///   Key为插槽类型[SlotType]，Value为要隐藏的元素标识符集合
   Future<void> enterFullScreen(
-      AliPlayerWidgetController controller, int currentPosition,
-      {Map<SlotType, SlotWidgetBuilder?>? slotBuilders}) async {
+    AliPlayerWidgetController controller,
+    int currentPosition, {
+    Map<SlotType, SlotWidgetBuilder?>? slotBuilders,
+    Map<SlotType, Set<String>>? hiddenSlotElements,
+  }) async {
     final data = controller._widgetData;
     if (data == null) return;
     data.startTime = currentPosition;
@@ -1323,6 +1332,7 @@ class AliPlayerWidgetController {
             controller,
             data,
             slotBuilders: slotBuilders ?? const {},
+            hiddenSlotElements: hiddenSlotElements ?? const {},
           );
         },
         transitionsBuilder: (context, animation, secondaryAnimation, child) {

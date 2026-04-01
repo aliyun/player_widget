@@ -1,9 +1,27 @@
 # **AliPlayerWidget Changelog**
 
+## **[7.12.1] - Fine-Grained Slot Element Control**
+
+### **New Features**
+
+- **Fine-Grained Slot Element Visibility Control (`hiddenSlotElements`)**
+  - `SlotType.centerDisplay`: Control visibility of volume, brightness, and speed indicators
+  - `SlotType.playState`: Control visibility of error icon and error message
+  - `SlotType.seekThumbnail`: Control visibility of thumbnail image and time text
+  - `SlotType.playControl`: Disable specific gesture interactions
+
+### **Notes**
+
+- This feature **only works with default slot UI**
+- If a `slotBuilders` is configured for a slot, `hiddenSlotElements` for that slot will **not take effect**
+- `PlayControlElements` is used to **disable gesture interactions**, not hide UI elements.
+
+---
+
 ## **[7.12.0] - Custom Back Press Callback & Documentation Improvements**
 
 ### **Update**
-  - **Kernel SDK Updated to v7.12.0**
+  - **Kernel SDK Updated to v7.13.0**
 
 ### **New Features**
 

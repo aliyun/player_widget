@@ -4,6 +4,9 @@
 // Date: 2025/2/12
 // Brief: 播放器 seek 缩略图控件
 
+import 'package:aliplayer_widget/aliplayer_widget_lib.dart';
+import 'package:aliplayer_widget/slot/slot_elements.dart';
+import 'package:aliplayer_widget/slot/slot_manager.dart';
 import 'package:aliplayer_widget/utils/format_util.dart';
 import 'package:flutter/material.dart';
 
@@ -53,13 +56,35 @@ class _AliPlayerSeekThumbnailWidgetState
       return const SizedBox.shrink();
     }
 
+    // 一次性获取隐藏配置，避免重复遍历 widget tree
+    // Get hidden config once to avoid repeated widget tree traversal
+    final hiddenElements = SlotManager.getHiddenElements(
+      context,
+      SlotType.seekThumbnail,
+    );
+
+    // 检查元素是否可见
+    final showThumbnail = hiddenElements.isElementVisible(
+      SeekThumbnailElements.thumbnail,
+    );
+    final showTimeText = hiddenElements.isElementVisible(
+      SeekThumbnailElements.timeText,
+    );
+
+    // 如果所有元素都被隐藏，返回空组件
+    if (!showThumbnail && !showTimeText) {
+      return const SizedBox.shrink();
+    }
+
     return Center(
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          _buildThumbnailImage(),
-          const SizedBox(height: 8.0),
-          _buildTimeText(),
+          if (showThumbnail) _buildThumbnailImage(),
+          // 只有当缩略图和时间文本都显示时才添加间距
+          // Only add spacing when both thumbnail and time text are visible
+          if (showThumbnail && showTimeText) const SizedBox(height: 8.0),
+          if (showTimeText) _buildTimeText(),
         ],
       ),
     );

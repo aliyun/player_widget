@@ -33,6 +33,7 @@ import 'package:aliplayer_widget/manager/file_manager.dart';
 import 'package:aliplayer_widget/manager/shared_animation_manager.dart';
 import 'package:aliplayer_widget/manager/storage_path_manager.dart';
 import 'package:aliplayer_widget/slot/slot_constants.dart';
+import 'package:aliplayer_widget/slot/slot_elements.dart';
 import 'package:aliplayer_widget/ui/aliplayer_subtitle_widget.dart';
 import 'package:aliplayer_widget/utils/format_util.dart';
 import 'package:aliplayer_widget/utils/scene_util.dart';

@@ -4,8 +4,10 @@
 // Date: 2025/2/11
 // Brief: 播放状态控件
 
+import 'package:aliplayer_widget/aliplayer_widget_lib.dart';
+import 'package:aliplayer_widget/slot/slot_elements.dart';
+import 'package:aliplayer_widget/slot/slot_manager.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_aliplayer/flutter_avpdef.dart';
 
 /// 播放状态控件
 ///
@@ -29,17 +31,17 @@ class AliPlayerPlayStateWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return _buildContentArea();
+    return _buildContentArea(context);
   }
 
   /// 构建核心内容区域
   ///
   /// Build the core content area
-  Widget _buildContentArea() {
+  Widget _buildContentArea(BuildContext context) {
     return Container(
       color: Colors.black.withOpacity(0.5),
       alignment: Alignment.center,
-      child: _buildErrorState(),
+      child: _buildErrorState(context),
     );
   }
 
@@ -47,23 +49,45 @@ class AliPlayerPlayStateWidget extends StatelessWidget {
   /// 包括一个红色的错误图标和错误信息文本
   ///
   /// Build UI for error state
-  Widget _buildErrorState() {
+  Widget _buildErrorState(BuildContext context) {
+    // 一次性获取隐藏配置，避免重复遍历 widget tree
+    // Get hidden config once to avoid repeated widget tree traversal
+    final hiddenElements = SlotManager.getHiddenElements(
+      context,
+      SlotType.playState,
+    );
+
+    // 检查元素是否可见
+    final showIcon = hiddenElements.isElementVisible(
+      PlayStateElements.errorIcon,
+    );
+    final showMessage = hiddenElements.isElementVisible(
+      PlayStateElements.errorMessage,
+    );
+
+    // 当所有元素都被隐藏时，返回空容器
+    if (!showIcon && !showMessage) {
+      return const SizedBox.shrink();
+    }
+
     return Column(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
-        const Icon(
-          Icons.error,
-          color: Colors.red,
-          size: _playStateIconSize,
-        ),
-        const SizedBox(height: 16),
-        Text(
-          _buildErrorMessage(),
-          style: _errorMessageStyle,
-          textAlign: TextAlign.center,
-          overflow: TextOverflow.ellipsis,
-          maxLines: 3,
-        ),
+        if (showIcon)
+          const Icon(
+            Icons.error,
+            color: Colors.red,
+            size: _playStateIconSize,
+          ),
+        if (showIcon && showMessage) const SizedBox(height: 16),
+        if (showMessage)
+          Text(
+            _buildErrorMessage(),
+            style: _errorMessageStyle,
+            textAlign: TextAlign.center,
+            overflow: TextOverflow.ellipsis,
+            maxLines: 3,
+          ),
       ],
     );
   }

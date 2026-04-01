@@ -4,8 +4,11 @@
 // Date: 2025/2/12
 // Brief: 播放器设置面板控件
 
+import 'package:aliplayer_widget/aliplayer_widget_lib.dart';
+import 'package:aliplayer_widget/slot/slot_manager.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+
 import 'aliplayer_custom_selector_widget.dart';
 import 'aliplayer_custom_slider_widget.dart';
 import 'aliplayer_custom_switch_widget.dart';
@@ -19,6 +22,9 @@ enum SettingItemType {
 
 /// 设置项数据模型
 class SettingItem<T> {
+  /// 元素的唯一标识 key，对应 `[SettingMenuElements.xxx]`
+  final String elementKey;
+
   /// 设置项类型
   final SettingItemType type;
 
@@ -44,6 +50,7 @@ class SettingItem<T> {
   final String Function(T)? displayFormatter;
 
   const SettingItem({
+    required this.elementKey,
     required this.type,
     required this.text,
     required this.initialValue,
@@ -56,7 +63,8 @@ class SettingItem<T> {
 
   /// 比较两个 SettingItem 是否相等
   bool isEqualTo(SettingItem<T> other) {
-    return this.type == other.type &&
+    return this.elementKey == other.elementKey &&
+        this.type == other.type &&
         this.text == other.text &&
         this.initialValue == other.initialValue &&
         this.startIcon == other.startIcon &&
@@ -146,6 +154,18 @@ class _AliPlayerSettingMenuPanelState extends State<AliPlayerSettingMenuPanel>
   ///
   /// Builds the content of the setting panel.
   Widget _buildSettingPanel(BuildContext context) {
+    // 一次性获取隐藏配置，避免在 where 中重复遍历 widget tree
+    // Get hidden config once to avoid repeated widget tree traversal in where
+    final hiddenElements = SlotManager.getHiddenElements(
+      context,
+      SlotType.settingMenu,
+    );
+
+    // 根据配置过滤被隐藏的元素
+    final visibleItems = widget.settingItems
+        .where((item) => hiddenElements.isElementVisible(item.elementKey))
+        .toList();
+
     return Container(
       width: MediaQuery.of(context).size.width * 0.6,
       height: double.infinity,
@@ -155,7 +175,7 @@ class _AliPlayerSettingMenuPanelState extends State<AliPlayerSettingMenuPanel>
           padding: const EdgeInsets.symmetric(horizontal: 8.0),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
-            children: widget.settingItems.map(_buildSettingItem).toList(),
+            children: visibleItems.map(_buildSettingItem).toList(),
           ),
         ),
       ),
