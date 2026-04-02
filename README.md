@@ -47,17 +47,29 @@ Language: 中文简体 | [English](README-EN.md)
 
 - **跨平台支持**：充分利用 Flutter 的跨平台特性，支持 Android 和 iOS 平台，一次开发即可实现双端运行。
 
-详细的文档请参考 docs 目录下的完整文档目录：[完整文档目录](./docs/README.md)
+---
+
+## **三、快速开始**
+
+### **1. 在线阅读**
+
+**[🌐 点击这里开始在线阅读](https://aliyun.github.io/player_widget/)**
+
+### **2. 本地阅读**
+
+如果您希望在本地阅读文档，请参考 [**文档目录**](./docs/README.md)。
+
+该目录提供了清晰的文档结构与步骤说明，便于 **AI 与开发者共同理解和执行**。未来我们还将提供专门的 **Skills 支持**，以实现更加完整和便捷的接入体验。
 
 ---
 
-## **三、集成指引**
+## **四、快速集成**
 
-有关前提条件的详细信息，请查看 docs 目录下的集成指引文档：[集成指引](./docs/integration-guide.md)
+有关前提条件的详细信息，请参阅 [集成指引](./docs/integration-guide.md)。
 
 ---
 
-## **四、快速开始**
+## **五、快速接入**
 
 只需几步，您就可以轻松实现视频播放功能！**AliPlayerWidget** 提供了极简的 API 设计，帮助您以低代码的方式快速集成视频播放功能。
 
@@ -140,39 +152,27 @@ class _VideoPlayerPageState extends State<VideoPlayerPage> {
 3. **释放资源**：
    - 在 `dispose` 方法中调用 `_controller.destroy()`，避免内存泄漏。
 
-**更多场景支持**
-
-上述示例展示了点播场景的基本用法。如需了解更复杂的场景（如直播、列表播放等），请参考 `aliplayer_widget_example` 示例工程，其中包含了详细的代码和使用说明。
-
-如需更详细的快速开始指南，请查看 docs 目录下的快速开始文档：[快速开始指南](./docs/quick-start.md)
-
----
-
-## **五、核心组件**
-
-`AliPlayerWidget` 采用类似 MVC 的分层设计，将播放器的职责拆分为三个核心组件：
-
-1. **AliPlayerWidget (View)**: 核心的播放器组件，用于嵌入到 Flutter 应用中并播放视频。
-2. **AliPlayerWidgetController (Controller)**: 播放器组件的核心控制器，用于管理播放器组件的初始化、播放、销毁等逻辑。
-3. **AliPlayerWidgetData (Data)**: 播放器组件所需的数据模型，包含视频地址、封面图、标题等信息。
-
-有关各核心组件的详细说明，请查看 docs 目录下的核心组件文档：[核心组件文档](./docs/core-components.md)
+如需更详细的快速开始指南，请查看 [快速开始指南](./docs/quick-start.md)
 
 ---
 
 ## **六、自定义功能**
 
-### **1. 视频源支持**
+### **1. 插槽系统**
 
-播放器提供了灵活的视频源配置方式，支持多种视频源类型。有关详细信息，请查看 docs 目录下的视频源支持文档：[视频源支持文档](./docs/video-source-support.md)
+插槽 (Slot) 是播放器 UI 的基本组成单元，支持自定义播放器界面的各个部分，包括顶部栏、底部栏、播放控制、封面图、字幕等。您可以选择完全自定义插槽，或通过细粒度控制隐藏默认插槽中的特定 UI 元素。有关详细信息，请查看 [插槽系统文档](./docs/slot-system.md)
 
-### **2. 浮层组件**
+### **2. 视频源支持**
 
-通过 `overlays` 参数，您可以轻松地在播放器上叠加自定义 UI 组件。有关详细信息，请查看 docs 目录下的插槽系统文档：[插槽系统文档](./docs/slot-system.md)
+播放器提供了灵活的视频源配置方式，支持多种视频源类型。有关详细信息，请查看 [视频源支持文档](./docs/video-source-support.md)
 
-### **3. API 参考**
+### **3. 浮层组件**
 
-`AliPlayerWidget` 提供了一系列对外接口，方便开发者直接控制播放器的行为。有关详细信息，请查看 docs 目录下的 API 参考文档：[API 参考文档](./docs/api-reference.md)
+通过 `overlays` 参数，您可以轻松地在播放器上叠加自定义 UI 组件。有关详细信息，请查看 [插槽系统文档](./docs/slot-system.md)
+
+### **4. API 参考**
+
+`AliPlayerWidget` 提供了一系列对外接口，方便开发者直接控制播放器的行为。有关详细信息，请查看 [API 参考文档](./docs/api-reference.md)
 
 ---
 
@@ -228,5 +228,21 @@ class _VideoPlayerPageState extends State<VideoPlayerPage> {
 - **文档与注释**：源码包含详细注释和开发指南，便于二次开发与定制。
 
 ---
+
+## **九、相关产品**
+
+AliPlayerWidget 基于阿里云音视频能力构建，建议结合以下云产品使用，通过端云结合获得更好的播放能力和视频体验：
+
+- [阿里云视频点播（VOD）](https://www.aliyun.com/product/vod)
+- [阿里云视频直播（Live）](https://www.aliyun.com/product/live)
+- [音视频终端 SDK](https://help.aliyun.com/zh/apsara-video-sdk/)
+
+---
+
+## **十、联系我们**
+
+- 📘 **官方文档**：[播放器帮助中心](https://help.aliyun.com/zh/vod/)
+- 💬 **GitHub Issues**：[欢迎提交反馈与建议](https://github.com/aliyun/player_widget/issues)
+- 🔍 **控制台**：[视频点播控制台](https://vod.console.aliyun.com)
 
 更多关于使用阿里云播放器 SDK 的常见问题及修复建议，请参见[播放器常见问题](https://help.aliyun.com/zh/vod/support/faq-about-apsaravideo-player/)。
