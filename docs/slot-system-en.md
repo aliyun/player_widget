@@ -1,42 +1,48 @@
-# **Slot System Usage Guide**
+# **Slot System**
 
-## **Overview**
+**Slot** is the basic building block of the player UI. Each slot is responsible for a specific part of the interface, such as the top control bar or bottom progress bar. All slots are stacked in layers to form the complete player interface.
 
-The AliPlayerWidget slot system allows developers to flexibly customize various parts of the player interface. Through the slot system, you can easily implement multiple UI styles to meet different product and user requirements. Like building with blocks, you can freely combine various interface components to create a player interface that matches your brand characteristics.
+The AliPlayerWidget slot system allows developers to flexibly customize various parts of the player UI. With this system, you can easily implement different UI styles to meet various product and user requirements. Like building blocks, you can freely combine interface components to create a player interface that matches your brand identity.
 
-## **Slot Types and Functions**
+---
 
-The system provides the following slot types, covering all aspects of the player interface:
+## **1. Slot Types and Functions**
 
-| Slot Type | Function Description | Default Display |
-|-----------|---------------------|-----------------|
+The system provides the following slot types, **arranged from bottom to top by layer**:
+
+| Slot Type | Description | Default Visible |
+|---------|---------|---------|
 | **playerSurface** | Player view slot for displaying video content (customization not recommended) | Yes |
-| **topBar** | Top bar slot, typically containing back button, title and settings button | Yes |
-| **bottomBar** | Bottom bar slot, typically containing play controls, progress bar and fullscreen button | Yes |
-| **playControl** | Play control slot, handling player gesture controls | Yes |
-| **coverImage** | Cover image slot, displaying cover image before video loads | Yes (conditionally) |
-| **playState** | Play state slot, displaying play errors and other status information | Yes (conditionally) |
-| **centerDisplay** | Center display slot, showing volume, brightness and other information during gesture operations | Yes (conditionally) |
-| **seekThumbnail** | Seek thumbnail slot, displaying preview thumbnails when dragging the progress bar | Yes (conditionally) |
-| **subtitle** | Subtitle slot, for displaying video subtitles | Yes (conditionally) |
-| **settingMenu** | Settings menu slot, containing player settings options | Yes (except minimal scene) |
-| **overlays** | Overlay slot, for adding custom overlay layers | No |
+| **subtitle** | Subtitle slot for displaying video subtitles | Yes (conditional) |
+| **coverImage** | Cover image slot, displays a cover image before video loads | Yes (conditional) |
+| **playControl** | Play control slot, handles gesture controls for the player | Yes |
+| **topBar** | Top bar slot, typically contains back button, title, and settings button | Yes |
+| **bottomBar** | Bottom bar slot, typically contains play controls, progress bar, and fullscreen button | Yes |
+| **seekThumbnail** | Seek thumbnail slot, displays preview thumbnails when dragging the progress bar | Yes (conditional) |
+| **centerDisplay** | Center display slot, shows volume, brightness, and other info during gesture operations | Yes (conditional) |
+| **playState** | Play state slot, displays status information like playback errors | Yes (conditional) |
+| **settingMenu** | Settings menu slot, contains player settings options | Yes (except in minimal mode) |
+| **overlays** | Overlay slot, positioned at the topmost layer for custom overlay content like likes, comments, and share buttons | No |
 
-> **Note**: The `playerSurface` slot is responsible for rendering and displaying video content. Modifying this slot may cause the player to malfunction, so customizing this slot is not recommended.
+> **Note**: The `playerSurface` slot is responsible for rendering video content. Modifying this slot may cause the player to malfunction, so customization is not recommended.
 
-## **Usage Methods**
+## **2. Usage**
 
-### **1. Using Default Interface**
+### **2.1 Using Default Interface**
 
-The simplest way to use it is without providing the slotBuilders parameter, and the player will use the default interface:
+Without any configuration, the player will use the built-in default interface:
 
 ```dart
 AliPlayerWidget(controller)
 ```
 
-### **2. Customizing Partial Slots**
+### **2.2 Customizing Slots**
 
-Customize only specific slots, with others using the default interface. For example, customizing only the top bar:
+Use the `slotBuilders` parameter to customize any slot. Unspecified slots will continue to use the default interface.
+
+#### **Partial Customization**
+
+Replace only the slots you want to customize, while keeping others at default:
 
 ```dart
 AliPlayerWidget(
@@ -47,9 +53,9 @@ AliPlayerWidget(
 )
 ```
 
-### **3. Fully Customized Interface**
+#### **Full Customization**
 
-You can customize all slots to create a completely personalized player interface:
+Customize all slots for a completely personalized interface:
 
 ```dart
 AliPlayerWidget(
@@ -70,46 +76,57 @@ AliPlayerWidget(
 )
 ```
 
-### **4. Hiding Specific Slots**
+### **2.3 Hiding Slots**
 
-By setting the slot value to null, you can hide specific slots:
-
-```dart
-AliPlayerWidget(
-  controller,
-  slotBuilders: {
-    SlotType.topBar: null, // Hide top bar
-    SlotType.bottomBar: null, // Hide bottom bar
-    SlotType.centerDisplay: null, // Hide center display
-  },
-)
-```
-
-### **5. Customizing Overlays**
-
-Use the overlay slot to add custom overlay layers:
+Set a slot to `null` to hide it:
 
 ```dart
 AliPlayerWidget(
   controller,
   slotBuilders: {
-    SlotType.overlays: (context) => MyCustomOverlays(),
+    SlotType.topBar: null,
+    SlotType.bottomBar: null,
   },
 )
 ```
 
-### **6. Backward Compatibility**
+### **2.4 Fine-grained Control**
 
-To ensure backward compatibility, the overlays parameter used in older versions still works, but has been marked as deprecated. Please use the new slot system instead:
+When you want to hide only certain elements (like buttons) within a default slot without customizing the entire slot, use `hiddenSlotElements`:
 
 ```dart
-// Old version method (deprecated)
+AliPlayerWidget(
+  controller,
+  hiddenSlotElements: const {
+    // Hide download and snapshot buttons in the top bar
+    SlotType.topBar: {
+      TopBarElements.download,
+      TopBarElements.snapshot,
+    },
+    // Disable double-tap and vertical swipe gestures in play control
+    SlotType.playControl: {
+      PlayControlElements.doubleTap,
+      PlayControlElements.leftVerticalDrag,
+      PlayControlElements.rightVerticalDrag,
+    },
+  },
+)
+```
+
+> **Note**: `hiddenSlotElements` only applies to default slots. If a slot is customized via `slotBuilders`, the `hiddenSlotElements` configuration for that slot will be ignored.
+
+### **2.5 Backward Compatibility**
+
+The legacy `overlays` parameter is deprecated. Please migrate to the new slot system:
+
+```dart
+// Legacy (deprecated)
 AliPlayerWidget(
   controller,
   overlays: [MyOverlayWidget()],
 )
 
-// New version method (recommended)
+// New approach (recommended)
 AliPlayerWidget(
   controller,
   slotBuilders: {
@@ -118,65 +135,28 @@ AliPlayerWidget(
 )
 ```
 
-### **7. Fine-Grained Slot Element Visibility Control**
+## **3. How It Works**
 
-When you want to **keep the default slot UI** but only hide specific elements (such as buttons or functional items) within it, rather than customizing the entire slot, you can use `hiddenSlotElements` for fine-grained control.
+The slot system uses a three-tier rendering strategy:
 
-```dart
-AliPlayerWidget(
-  controller,
-  hiddenSlotElements: const {
-    // Hide UI elements in the top bar slot
-    SlotType.topBar: {
-      TopBarElements.download,
-      TopBarElements.snapshot,
-    },
+1. **Custom First**: If a custom builder is provided for a slot, use the custom builder
+2. **Default Fallback**: If no custom builder is provided, use the system default builder
+3. **Explicit Hide**: If the slot value is null, hide the slot
 
-    // Disable gesture interactions in the play control slot
-    SlotType.playControl: {
-      PlayControlElements.doubleTap,
-      PlayControlElements.leftVerticalDrag,
-      PlayControlElements.rightVerticalDrag,
-    },
-  },
-);
-```
+## **4. Scene Adaptation**
 
-**Usage Notes:**
+Certain slots automatically adapt their behavior based on the playback scene (SceneType):
 
-* The `key` of `hiddenSlotElements` is the slot type (e.g., `SlotType.topBar`)
-* The `value` is the set of UI elements to hide within that slot
+- **vod** (Video on Demand): All slot features are supported
+- **live** (Live Streaming): Progress dragging related slot features are disabled
+- **listPlayer** (List Player): Vertical gesture related slot features are disabled
+- **restricted** (Restricted Playback): Timeline operation related slot features are disabled
+- **minimal** (Minimal Mode): Only the playerSurface slot is displayed
 
-**Important:**
+## **5. Examples**
 
-* This feature **only works with default slot UI**
-* If a `slotBuilders` (custom builder) is configured for a slot, that slot will be fully managed by the custom Widget, and the corresponding `hiddenSlotElements` configuration will **no longer take effect**
-* `PlayControlElements` is used to **disable gesture interactions**, not to hide UI elements.
+See `example/lib/pages/slot/slot_demo_page.dart` for a complete slot usage example.
 
-## **How the Slot System Works**
+---
 
-The slot system works through the following three-level rendering strategy:
-
-1. **Custom Priority**: If a custom builder for the slot is provided, the custom builder is used
-2. **Default Fallback**: If no custom builder is provided, the system default builder is used
-3. **Explicitly Hidden**: If the slot value is null, the slot is hidden
-
-## **Scene Adaptation**
-
-Based on different playback scenes (SceneType), certain slot behaviors will automatically adapt:
-
-- **vod** (Video on Demand scene): Supports all slot functions
-- **live** (Live streaming scene): Disables progress dragging related slot functions
-- **listPlayer** (List player scene): Disables vertical gesture related slot functions
-- **restricted** (Restricted playback scene): Disables timeline operation related slot functions
-- **minimal** (Minimal playback scene): Only displays the playerSurface slot
-
-## **Practical Examples**
-
-Please refer to `example/lib/pages/slot/slot_demo_page.dart` to see complete slot usage examples, including:
-
-- Implementation of modern, classic, and minimalist UI styles
-- How to customize top bar, bottom bar and play control slots
-- How to control the player externally through Notifier from outside the Widget
-
-Through the slot system, you can easily create player interfaces that meet various requirements.
+With the slot system, you can easily create player interfaces that meet various requirements.

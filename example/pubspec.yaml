@@ -38,7 +38,7 @@ dependencies:
     path: ../
 
   # The following adds the flutter aliplayer package
-  flutter_aliplayer: ^7.8.0
+  flutter_aliplayer: ^7.12.0
   #  flutter_aliplayer:
   #    path: ../../FlutterSDK/flutter_aliplayer
 

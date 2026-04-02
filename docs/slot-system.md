@@ -1,42 +1,48 @@
-# **插槽系统使用指南**
+# **插槽系统 (Slot System)**
 
-## **概述**
+**插槽 (Slot)** 是播放器 UI 的基本组成单元，每个插槽负责界面中的一部分功能，如顶部控制栏、底部进度条等。所有插槽按层级叠加，共同构成完整的播放器界面。
 
 AliPlayerWidget 插槽系统允许开发者灵活自定义播放器界面的各个部分。通过插槽系统，您可以轻松实现多种 UI 风格，满足不同产品和用户需求。就像搭积木一样，您可以自由组合各个界面组件，创建出符合您品牌特色的播放器界面。
 
-## **插槽类型及功能**
+---
 
-系统提供了以下几种插槽类型，覆盖播放器界面的各个方面：
+## **1. 插槽类型及功能**
+
+系统提供了以下几种插槽类型，**按层级从底到顶排列**：
 
 | 插槽类型 | 功能描述 | 默认显示 |
 |---------|---------|---------|
 | **playerSurface** | 播放器视图插槽，用于显示视频内容（不建议自定义） | 是 |
+| **subtitle** | 字幕插槽，用于显示视频字幕 | 是（有条件） |
+| **coverImage** | 封面图插槽，在视频加载前显示封面图片 | 是（有条件） |
+| **playControl** | 播放控制插槽，处理播放器的手势控制 | 是 |
 | **topBar** | 顶部栏插槽，通常包含返回按钮、标题和设置按钮 | 是 |
 | **bottomBar** | 底部栏插槽，通常包含播放控制、进度条和全屏按钮 | 是 |
-| **playControl** | 播放控制插槽，处理播放器的手势控制 | 是 |
-| **coverImage** | 封面图插槽，在视频加载前显示封面图片 | 是（有条件） |
-| **playState** | 播放状态插槽，显示播放错误等状态信息 | 是（有条件） |
+| **seekThumbnail** | Seek 缩略图插槽，在拖动进度条时显示预览缩略图 | 是（有条件） |
 | **centerDisplay** | 中心显示插槽，在手势操作时显示音量、亮度等信息 | 是（有条件） |
-| **seekThumbnail** | seek缩略图插槽，在拖动进度条时显示预览缩略图 | 是（有条件） |
-| **subtitle** | 字幕插槽，用于显示视频字幕 | 是（有条件） |
-| **settingMenu** | 设置菜单插槽，包含播放器设置选项 | 是（minimal场景除外） |
-| **overlays** | 浮层插槽，用于添加自定义覆盖层 | 否 |
+| **playState** | 播放状态插槽，显示播放错误等状态信息 | 是（有条件） |
+| **settingMenu** | 设置菜单插槽，包含播放器设置选项 | 是（minimal 场景除外） |
+| **overlays** | 浮层插槽，位于最顶层，用于添加点赞、评论、分享等自定义覆盖内容 | 否 |
 
 > **注意**：`playerSurface` 插槽负责视频内容的渲染显示，修改此插槽可能导致播放器无法正常工作，因此不建议自定义该插槽。
 
-## **使用方法**
+## **2. 使用方法**
 
-### **1. 使用默认界面**
+### **2.1 使用默认界面**
 
-最简单的使用方式是不提供 slotBuilders 参数，播放器将使用默认界面：
+无需任何配置，播放器将使用内置的默认界面：
 
 ```dart
 AliPlayerWidget(controller)
 ```
 
-### **2. 自定义部分插槽**
+### **2.2 自定义插槽**
 
-只自定义特定插槽，其他使用默认界面。例如，只自定义顶部栏：
+通过 `slotBuilders` 参数，您可以自定义任意插槽。未指定的插槽将继续使用默认界面。
+
+#### **部分自定义**
+
+只替换需要自定义的插槽，其他保持默认：
 
 ```dart
 AliPlayerWidget(
@@ -47,9 +53,9 @@ AliPlayerWidget(
 )
 ```
 
-### **3. 完全自定义界面**
+#### **完全自定义**
 
-您可以自定义所有插槽，创建完全个性化的播放器界面：
+自定义所有插槽，实现完全个性化的界面：
 
 ```dart
 AliPlayerWidget(
@@ -70,46 +76,57 @@ AliPlayerWidget(
 )
 ```
 
-### **4. 隐藏特定插槽**
+### **2.3 隐藏插槽**
 
-通过将插槽值设置为 null，可以隐藏特定插槽：
-
-```dart
-AliPlayerWidget(
-  controller,
-  slotBuilders: {
-    SlotType.topBar: null, // 隐藏顶部栏
-    SlotType.bottomBar: null, // 隐藏底部栏
-    SlotType.centerDisplay: null, // 隐藏中心显示
-  },
-)
-```
-
-### **5. 自定义浮层**
-
-使用浮层插槽添加自定义覆盖层：
+将插槽设置为 `null` 即可隐藏该插槽：
 
 ```dart
 AliPlayerWidget(
   controller,
   slotBuilders: {
-    SlotType.overlays: (context) => MyCustomOverlays(),
+    SlotType.topBar: null,
+    SlotType.bottomBar: null,
   },
 )
 ```
 
-### **6. 向后兼容**
+### **2.4 细粒度控制**
 
-为保证向后兼容，旧版本使用的 overlays 参数仍然可以工作，但已被标记为废弃，请使用新的插槽系统替代：
+当您希望**在保留默认插槽 UI 的前提下**，仅隐藏其中的部分元素（如按钮），而不需要完全自定义整个插槽时，可使用 `hiddenSlotElements`：
 
 ```dart
-// 旧版本方式（已废弃）
+AliPlayerWidget(
+  controller,
+  hiddenSlotElements: const {
+    // 隐藏顶部栏中的下载和截图按钮
+    SlotType.topBar: {
+      TopBarElements.download,
+      TopBarElements.snapshot,
+    },
+    // 禁用播放控制中的双击和垂直滑动手势
+    SlotType.playControl: {
+      PlayControlElements.doubleTap,
+      PlayControlElements.leftVerticalDrag,
+      PlayControlElements.rightVerticalDrag,
+    },
+  },
+)
+```
+
+> **注意**：`hiddenSlotElements` 仅对默认插槽生效。如果通过 `slotBuilders` 自定义了某个插槽，该插槽的 `hiddenSlotElements` 配置将被忽略。
+
+### **2.5 向后兼容**
+
+旧版本的 `overlays` 参数已废弃，请迁移至新的插槽系统：
+
+```dart
+// 旧版本（已废弃）
 AliPlayerWidget(
   controller,
   overlays: [MyOverlayWidget()],
 )
 
-// 新版本方式（推荐）
+// 新版本（推荐）
 AliPlayerWidget(
   controller,
   slotBuilders: {
@@ -118,42 +135,7 @@ AliPlayerWidget(
 )
 ```
 
-### **7. 插槽元素显隐控制（细粒度控制）**
-
-当您希望**在保留默认插槽 UI 的前提下**，仅隐藏其中的部分元素（如按钮或功能项），而不需要完全自定义整个插槽时，可以使用 `hiddenSlotElements` 进行细粒度控制。
-
-```dart
-AliPlayerWidget(
-  controller,
-  hiddenSlotElements: const {
-    // 隐藏顶部栏插槽中的 UI 元素
-    SlotType.topBar: {
-      TopBarElements.download,
-      TopBarElements.snapshot,
-    },
-
-    // 禁用播放控制插槽的手势交互
-    SlotType.playControl: {
-      PlayControlElements.doubleTap,
-      PlayControlElements.leftVerticalDrag,
-      PlayControlElements.rightVerticalDrag,
-    },
-  },
-);
-```
-
-**使用说明：**
-
-* `hiddenSlotElements` 的 `key` 为插槽类型（如 `SlotType.topBar`）
-* `value` 为该插槽中需要隐藏的 UI 元素集合
-
-**注意事项：**
-
-* 该能力**仅对默认插槽 UI 生效**
-* 如果为某个插槽配置了 `slotBuilders`（自定义构建器），则该插槽将由自定义 Widget 全权接管，对应的 `hiddenSlotElements` 配置将**不再生效**
-* `PlayControlElements` 用于**禁用手势交互**，而非隐藏 UI 元素。
-
-## **插槽系统工作原理**
+## **3. 插槽系统工作原理**
 
 插槽系统通过以下三级渲染策略工作：
 
@@ -161,7 +143,7 @@ AliPlayerWidget(
 2. **默认备选**：如果没有提供自定义构建器，则使用系统默认构建器
 3. **显式隐藏**：如果插槽值为 null，则隐藏该插槽
 
-## **场景适配**
+## **4. 场景适配**
 
 根据不同的播放场景（SceneType），某些插槽的行为会自动适配：
 
@@ -171,13 +153,11 @@ AliPlayerWidget(
 - **restricted** (受限播放场景): 禁用时间轴操作相关插槽功能
 - **minimal** (最小化播放场景): 仅显示 playerSurface 插槽
 
-## 实践示例
+## **5. 实践示例**
 
-请参考 `example/lib/pages/slot/slot_demo_page.dart` 查看完整的插槽使用示例，其中包括：
+请参考 `example/lib/pages/slot/slot_demo_page.dart` 查看完整的插槽使用示例。
 
-- 现代、经典、极简三种 UI 风格的实现
-- 如何自定义顶部栏、底部栏和播放控制插槽
-- 如何在 Widget 外部通过 Notifier 控制播放器
+---
 
 通过插槽系统，您可以轻松创建满足各种需求的播放器界面。
 
