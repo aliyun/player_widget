@@ -82,7 +82,7 @@ class _AliPlayerCustomSliderWidgetState
           widget.text,
           style: const TextStyle(
             fontSize: 12,
-            color: Colors.black,
+            color: Colors.white,
           ),
         ),
         const SizedBox(width: 4),
