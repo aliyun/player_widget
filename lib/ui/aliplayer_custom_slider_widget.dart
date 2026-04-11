@@ -89,6 +89,7 @@ class _AliPlayerCustomSliderWidgetState
         Icon(
           widget.startIcon,
           size: 16,
+          color: Colors.white,
         ),
         const SizedBox(width: 4),
         Expanded(
