@@ -48,7 +48,7 @@ AliPlayerWidget(controller)
 AliPlayerWidget(
   controller,
   slotBuilders: {
-    SlotType.topBar: (context) => MyCustomTopBar(),
+    SlotType.topBar: (context, controller) => MyCustomTopBar(controller),
   },
 )
 ```
@@ -62,16 +62,16 @@ AliPlayerWidget(
   controller,
   slotBuilders: {
     // 注意：不建议自定义 playerSurface
-    SlotType.topBar: (context) => MyCustomTopBar(),
-    SlotType.bottomBar: (context) => MyCustomBottomBar(),
-    SlotType.playControl: (context) => MyPlayControl(),
-    SlotType.coverImage: (context) => MyCoverImage(),
-    SlotType.playState: (context) => MyPlayState(),
-    SlotType.centerDisplay: (context) => MyCenterDisplay(),
-    SlotType.seekThumbnail: (context) => MySeekThumbnail(),
-    SlotType.subtitle: (context) => MySubtitle(),
-    SlotType.settingMenu: (context) => MySettingMenu(),
-    SlotType.overlays: (context) => MyOverlays(),
+    SlotType.topBar: (context, controller) => MyCustomTopBar(controller),
+    SlotType.bottomBar: (context, controller) => MyCustomBottomBar(controller),
+    SlotType.playControl: (context, controller) => MyPlayControl(controller),
+    SlotType.coverImage: (context, controller) => MyCoverImage(controller),
+    SlotType.playState: (context, controller) => MyPlayState(controller),
+    SlotType.centerDisplay: (context, controller) => MyCenterDisplay(controller),
+    SlotType.seekThumbnail: (context, controller) => MySeekThumbnail(controller),
+    SlotType.subtitle: (context, controller) => MySubtitle(controller),
+    SlotType.settingMenu: (context, controller) => MySettingMenu(controller),
+    SlotType.overlays: (context, controller) => MyOverlays(controller),
   },
 )
 ```
@@ -130,10 +130,12 @@ AliPlayerWidget(
 AliPlayerWidget(
   controller,
   slotBuilders: {
-    SlotType.overlays: (context) => MyOverlayWidget(),
+    SlotType.overlays: (context, controller) => MyOverlayWidget(controller),
   },
 )
 ```
+
+> **重要提示**：`controller` 参数确保 slotBuilder 在全屏模式下也能正确工作。进入全屏时会创建新的控制器实例，通过参数传递控制器，您的 slotBuilder 将始终控制正确的播放器实例。
 
 ## **3. 插槽系统工作原理**
 

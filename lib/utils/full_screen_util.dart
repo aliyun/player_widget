@@ -7,6 +7,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
+import 'orientation_util.dart';
+
 /// 播放器全屏切换工具类
 class FullScreenUtil {
   // 私有构造函数，防止实例化
@@ -21,10 +23,7 @@ class FullScreenUtil {
     await SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersiveSticky);
 
     // 锁定屏幕方向为横屏
-    await SystemChrome.setPreferredOrientations([
-      DeviceOrientation.landscapeLeft, // 左横屏
-      DeviceOrientation.landscapeRight, // 右横屏
-    ]);
+    await OrientationUtil.switchToLandscape();
   }
 
   /// 退出全屏模式
@@ -36,10 +35,7 @@ class FullScreenUtil {
     await SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
 
     // 解锁屏幕方向，恢复为竖屏
-    await SystemChrome.setPreferredOrientations([
-      DeviceOrientation.portraitUp, // 正常竖屏
-      DeviceOrientation.portraitDown, // 倒置竖屏
-    ]);
+    await OrientationUtil.switchToPortrait();
   }
 
   /// 获取当前屏幕方向

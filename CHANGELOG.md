@@ -1,5 +1,28 @@
 # **AliPlayerWidget Changelog**
 
+## **[7.12.2] - Slot Builder Controller Parameter & Fullscreen Improvements**
+
+### **New Features**
+
+- **Slot Builder Controller Parameter for Fullscreen Support**
+  - Introduced `SlotWidgetBuilderWithController` type that passes the current `AliPlayerWidgetController` instance to slot builders.
+  - Enables custom slot UI to correctly control the player in fullscreen mode.
+  - The new signature: `Widget Function(BuildContext context, AliPlayerWidgetController controller)`.
+  - **Backward Compatible**: Old single-parameter `SlotWidgetBuilder` is still supported but deprecated. Automatic signature detection ensures seamless migration.
+
+### **Improvements**
+
+- **Simplified Fullscreen Toggle Logic**
+  - Refactored fullscreen toggle logic for better maintainability.
+  - Unified system UI handling across portrait and landscape modes.
+
+### **Bug Fixes**
+
+- **Documentation Language Switching**
+  - Fixed case-insensitive language switching in the documentation site.
+
+---
+
 ## **[7.12.1] - Fine-Grained Slot Element Control**
 
 ### **New Features**

@@ -17,11 +17,18 @@ class SlotManager {
   /// 构建插槽或默认组件
   ///
   /// Build slot widget or default widget
+  ///
+  /// [controller] 播放器控制器，传递给 slotBuilder 以支持在全屏模式下正确控制播放器
+  ///
+  /// 支持两种 slotBuilder 签名以保持向后兼容：
+  /// - `Widget Function(BuildContext)` - 旧版本（已废弃）
+  /// - `Widget Function(BuildContext, AliPlayerWidgetController)` - 新版本（推荐）
   static Widget buildSlot({
     required AliPlayerWidget widget,
     required SlotType slotType,
     required Widget Function(BuildContext context) defaultBuilder,
     required BuildContext context,
+    required AliPlayerWidgetController controller,
   }) {
     final slotBuilders = widget.slotBuilders;
 
@@ -32,16 +39,48 @@ class SlotManager {
 
     // 如果插槽构建器不为null，则使用自定义构建器，否则使用默认构建器
     final slotBuilder = slotBuilders[slotType];
-    return slotBuilder?.call(context) ?? defaultBuilder(context);
+    if (slotBuilder != null) {
+      // 检测函数签名以支持向后兼容
+      // 支持旧版 SlotWidgetBuilder (单参数) 和新版 SlotWidgetBuilderWithController (双参数)
+      return _callSlotBuilder(slotBuilder, context, controller);
+    }
+    return defaultBuilder(context);
+  }
+
+  /// 调用 slotBuilder，自动检测签名类型以支持向后兼容
+  ///
+  /// Call slotBuilder with automatic signature detection for backward compatibility
+  static Widget _callSlotBuilder(
+    Function slotBuilder,
+    BuildContext context,
+    AliPlayerWidgetController controller,
+  ) {
+    // 通过反射检测函数参数数量
+    // 如果函数接受2个参数，使用新版签名；否则使用旧版签名
+    try {
+      // 尝试新版签名 (context, controller)
+      return Function.apply(slotBuilder, [context, controller]);
+    } catch (e) {
+      // 如果失败，回退到旧版签名
+      // ignore: deprecated_member_use
+      return Function.apply(slotBuilder, [context]);
+    }
   }
 
   /// 构建浮层插槽
   ///
   /// Build overlays slot widgets
+  ///
+  /// [controller] 播放器控制器，传递给 slotBuilder 以支持在全屏模式下正确控制播放器
+  ///
+  /// 支持两种 slotBuilder 签名以保持向后兼容：
+  /// - `Widget Function(BuildContext)` - 旧版本（已废弃）
+  /// - `Widget Function(BuildContext, AliPlayerWidgetController)` - 新版本（推荐）
   static List<Widget> buildOverlaysSlot({
     required AliPlayerWidget widget,
     required Widget Function(BuildContext context) defaultBuilder,
     required BuildContext context,
+    required AliPlayerWidgetController controller,
   }) {
     const slotType = SlotType.overlays;
     final slotBuilders = widget.slotBuilders;
@@ -54,7 +93,7 @@ class SlotManager {
     // 如果插槽构建器不为null，则使用自定义构建器
     final slotBuilder = slotBuilders[slotType];
     if (slotBuilder != null) {
-      return [slotBuilder(context)];
+      return [_callSlotBuilder(slotBuilder, context, controller)];
     }
 
     // 回退到默认的overlays参数（向后兼容）
@@ -123,6 +162,7 @@ class SlotManager {
     required Map<SlotType, Widget Function(BuildContext context)>
         defaultBuilders,
     required BuildContext context,
+    required AliPlayerWidgetController controller,
   }) {
     final result = <SlotType, Widget>{};
 
@@ -136,6 +176,7 @@ class SlotManager {
           slotType: slotType,
           defaultBuilder: defaultBuilder,
           context: context,
+          controller: controller,
         );
       }
     }

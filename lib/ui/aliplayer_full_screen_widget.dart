@@ -15,7 +15,7 @@ class AliPlayerFullScreenWidget extends StatefulWidget {
   final AliPlayerWidgetController controller;
 
   // 支持插槽配置
-  final Map<SlotType, SlotWidgetBuilder?> slotBuilders;
+  final Map<SlotType, Function?> slotBuilders;
 
   /// 控制默认插槽中单个 UI 元素的显示与隐藏。
   ///
@@ -68,14 +68,8 @@ class AliPlayerScreenFullWidgetState extends State<AliPlayerFullScreenWidget> {
   @override
   void initState() {
     super.initState();
-    // 隐藏状态栏和导航栏
-    SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersiveSticky);
-
-    // 锁定屏幕方向为横屏
-    SystemChrome.setPreferredOrientations([
-      DeviceOrientation.landscapeLeft, // 左横屏
-      DeviceOrientation.landscapeRight, // 右横屏
-    ]);
+    // 使用 FullScreenUtil 统一处理全屏系统 UI 设置
+    FullScreenUtil.enterFullScreen();
 
     _fullController = AliPlayerWidgetController(context);
     _fullController.configure(widget.data);

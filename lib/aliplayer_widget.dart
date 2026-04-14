@@ -6,10 +6,37 @@
 
 part of 'aliplayer_widget_lib.dart';
 
-/// 插槽构建器类型定义
+/// 插槽构建器类型定义（已废弃）
 ///
-/// Slot builder type definition
+/// Slot builder type definition (deprecated)
+///
+/// **已废弃**: 请使用 [SlotWidgetBuilderWithController] 替代。
+/// 新版本提供了 controller 参数，确保在全屏模式下也能正确控制播放器。
+///
+/// **Deprecated**: Use [SlotWidgetBuilderWithController] instead.
+/// The new version provides a controller parameter to ensure correct player control
+/// in fullscreen mode.
+@Deprecated('Use SlotWidgetBuilderWithController instead. '
+    'The new version provides a controller parameter for fullscreen mode support.')
 typedef SlotWidgetBuilder = Widget Function(BuildContext context);
+
+/// 插槽构建器类型定义（带控制器）
+///
+/// Slot builder type definition with controller
+///
+/// [context] 构建上下文
+/// [controller] 播放器控制器，用于控制播放、暂停、跳转等操作
+///
+/// **重要说明**: controller 参数确保在全屏模式下 slotBuilder 也能正确获取当前播放器控制器。
+/// 全屏模式会创建新的控制器实例，通过参数传递可以避免闭包捕获旧控制器的问题。
+///
+/// **Important**: The controller parameter ensures slotBuilders work correctly in fullscreen mode.
+/// When entering fullscreen, a new controller instance is created. By receiving the controller
+/// as a parameter, your slotBuilder will always control the correct player instance.
+typedef SlotWidgetBuilderWithController = Widget Function(
+  BuildContext context,
+  AliPlayerWidgetController controller,
+);
 
 /// 插槽类型枚举
 ///
@@ -74,7 +101,19 @@ class AliPlayerWidget extends StatefulWidget {
   /// 插槽构建器映射，允许自定义各个插槽的构建方式
   ///
   /// Slot builder map, allowing customization of how each slot is built
-  final Map<SlotType, SlotWidgetBuilder?> slotBuilders;
+  ///
+  /// 支持两种签名：
+  /// - [SlotWidgetBuilder] (已废弃): `Widget Function(BuildContext context)`
+  /// - [SlotWidgetBuilderWithController]: `Widget Function(BuildContext context, AliPlayerWidgetController controller)`
+  ///
+  /// Supports two signatures:
+  /// - [SlotWidgetBuilder] (deprecated): `Widget Function(BuildContext context)`
+  /// - [SlotWidgetBuilderWithController]: `Widget Function(BuildContext context, AliPlayerWidgetController controller)`
+  ///
+  /// 推荐使用 [SlotWidgetBuilderWithController] 以确保全屏模式下正常工作。
+  ///
+  /// Recommend using [SlotWidgetBuilderWithController] for fullscreen mode support.
+  final Map<SlotType, Function?> slotBuilders;
 
   /// 控制默认插槽中单个 UI 元素的显示与隐藏。
   ///
@@ -280,6 +319,7 @@ class AliPlayerWidgetState extends State<AliPlayerWidget>
       widget: widget,
       context: context,
       defaultBuilder: (context) => const SizedBox.shrink(),
+      controller: _playController,
     ));
 
     return slots;
@@ -325,6 +365,7 @@ class AliPlayerWidgetState extends State<AliPlayerWidget>
       slotType: slotType,
       context: context,
       defaultBuilder: builder,
+      controller: _playController,
     );
   }
 
@@ -592,21 +633,10 @@ class AliPlayerWidgetState extends State<AliPlayerWidget>
 
   /// 全屏状态切换
   Future<void> _onFullScreenPressed() async {
-    // 切换全屏
-    if (!FullScreenUtil.isFullScreen()) {
-      _playController.getCurrentPosition().then((position) {
-        _playController.enterFullScreen(
-          widget._controller,
-          position,
-          slotBuilders: widget.slotBuilders,
-          hiddenSlotElements: widget.hiddenSlotElements,
-        );
-      });
-    }
-    // 退出全屏
-    else {
-      await _playController.exitFullScreen();
-    }
+    await _playController.toggleFullscreen(
+      slotBuilders: widget.slotBuilders,
+      hiddenSlotElements: widget.hiddenSlotElements,
+    );
   }
 
   /// 拖拽进度更新回调

@@ -227,7 +227,7 @@
             if (!langBtn) return;
 
             const path = window.location.hash.replace('#/', '') || 'README.md';
-            const isEnglish = path.includes('-en');
+            const isEnglish = path.toUpperCase().includes('-EN');
             langBtn.textContent = isEnglish ? '中文' : 'English';
         }
 
@@ -235,10 +235,19 @@
             const currentPath = window.location.hash.replace('#/', '') || 'README.md';
             let newPath;
 
-            if (currentPath.includes('-en')) {
-                newPath = currentPath.replace('-en', '');
+            // 判断是否是英文版本（兼容大小写）
+            const isEnglish = currentPath.toUpperCase().includes('-EN');
+
+            if (isEnglish) {
+                // 英文转中文：移除 -EN 或 -en 后缀
+                newPath = currentPath.replace(/-en\.md$/i, '.md');
             } else {
-                if (currentPath.endsWith('.md')) {
+                // 中文转英文
+                if (currentPath.toUpperCase() === 'README.MD') {
+                    // README.md 特殊处理，转为 README-EN.md
+                    newPath = 'README-EN.md';
+                } else if (currentPath.endsWith('.md')) {
+                    // 其他文件添加 -en 后缀
                     newPath = currentPath.slice(0, -3) + '-en.md';
                 } else {
                     newPath = currentPath + '-en';

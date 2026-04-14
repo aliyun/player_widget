@@ -1316,7 +1316,7 @@ class AliPlayerWidgetController {
   Future<void> enterFullScreen(
     AliPlayerWidgetController controller,
     int currentPosition, {
-    Map<SlotType, SlotWidgetBuilder?>? slotBuilders,
+    Map<SlotType, Function?>? slotBuilders,
     Map<SlotType, Set<String>>? hiddenSlotElements,
   }) async {
     final data = controller._widgetData;
@@ -1351,13 +1351,8 @@ class AliPlayerWidgetController {
 
   /// 播放器退出全屏
   Future<void> exitFullScreen() async {
-    // 恢复状态栏和导航栏
-    await SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
-
-    await SystemChrome.setPreferredOrientations([
-      DeviceOrientation.portraitUp, // 正常竖屏
-      DeviceOrientation.portraitDown, // 倒置竖屏
-    ]);
+    // 使用 FullScreenUtil 统一处理全屏系统 UI 设置
+    await FullScreenUtil.exitFullScreen();
 
     final data = _fullController._widgetData;
 
@@ -1377,6 +1372,45 @@ class AliPlayerWidgetController {
       // 返回竖屏播放器
       Navigator.pop(_context, data);
     });
+  }
+
+  /// 切换全屏状态
+  ///
+  /// 根据当前是否全屏来进入或退出全屏模式。
+  /// 这是一个便捷方法，内部会自动判断当前状态并调用相应的方法。
+  ///
+  /// Toggle fullscreen state.
+  ///
+  /// Automatically enters or exits fullscreen mode based on current state.
+  /// This is a convenience method that internally determines the current state
+  /// and calls the appropriate method.
+  ///
+  /// 参数：
+  /// - [slotBuilders]：插槽构建器映射，用于在全屏模式下自定义插槽内容。
+  ///   如果不提供，将使用空配置。
+  /// - [hiddenSlotElements]：隐藏插槽元素配置，用于在全屏模式下隐藏特定插槽内的 UI 元素。
+  ///   如果不提供，将使用空配置。
+  ///
+  /// Parameters:
+  /// - [slotBuilders]: Slot builder map for customizing slot content in fullscreen mode.
+  ///   If not provided, empty configuration will be used.
+  /// - [hiddenSlotElements]: Hidden slot elements configuration for hiding specific UI elements
+  ///   within slots in fullscreen mode. If not provided, empty configuration will be used.
+  Future<void> toggleFullscreen({
+    Map<SlotType, Function?>? slotBuilders,
+    Map<SlotType, Set<String>>? hiddenSlotElements,
+  }) async {
+    if (FullScreenUtil.isFullScreen()) {
+      await exitFullScreen();
+    } else {
+      final position = await getCurrentPosition();
+      await enterFullScreen(
+        this,
+        position,
+        slotBuilders: slotBuilders,
+        hiddenSlotElements: hiddenSlotElements,
+      );
+    }
   }
 
   /// 同步播放器状态到另一个控制器

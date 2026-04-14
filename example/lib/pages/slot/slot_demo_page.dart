@@ -5,10 +5,10 @@
 // Brief: 插槽系统演示页面
 
 import 'package:aliplayer_widget/slot/slot_elements.dart';
+import 'package:aliplayer_widget/utils/full_screen_util.dart';
 import 'package:aliplayer_widget_example/constants/demo_constants.dart';
 import 'package:aliplayer_widget_example/manager/sp_manager.dart';
 import 'package:aliplayer_widget_example/pages/link/link_constants.dart';
-import 'package:aliplayer_widget_example/utils/toast_utils.dart';
 import 'package:flutter/material.dart';
 import 'package:aliplayer_widget/aliplayer_widget_lib.dart';
 
@@ -39,6 +39,12 @@ enum CustomUIStyle {
 class _SlotDemoPageState extends State<SlotDemoPage>
     with TickerProviderStateMixin {
   /// 播放器组件控制器
+  ///
+  /// 用于页面生命周期管理（初始化、销毁）。
+  /// 注意：slotBuilder 内部的播放控制应使用传入的 controller 参数，而非此控制器。
+  ///
+  /// Page-level controller for lifecycle management.
+  /// Note: Use the controller parameter passed to slotBuilders for playback controls.
   late AliPlayerWidgetController _controller;
 
   /// 是否使用自定义UI
@@ -46,9 +52,6 @@ class _SlotDemoPageState extends State<SlotDemoPage>
 
   /// 自定义UI样式
   CustomUIStyle _uiStyle = CustomUIStyle.modern;
-
-  /// 当前播放速度
-  double _currentSpeed = 1.0;
 
   /// 初始化状态
   /// StatefulWidget 的状态类中第一个被调用的方法，用于初始化状态，可以执行一些一次性的初始化工作
@@ -166,36 +169,34 @@ class _SlotDemoPageState extends State<SlotDemoPage>
   }
 
   /// 构建自定义播放器组件
+  ///
+  /// 重要：slotBuilder 接收 controller 参数，用于全屏模式兼容。
+  /// 在 slotBuilder 内部必须使用传入的 controller，而非 _controller。
   Widget _buildCustomPlayerWidget() {
     return AliPlayerWidget(
       _controller,
-      slotBuilders: {
-        // 自定义顶部栏
-        SlotType.topBar: (context) => _buildCustomTopBar(),
-
-        // 自定义底部栏
-        SlotType.bottomBar: (context) => _buildCustomBottomBar(),
-
-        // 自定义播放控制
-        SlotType.playControl: (context) => _buildCustomPlayControl(),
-      },
+      slotBuilders: _getSlotBuilders(),
     );
   }
 
+  // ============================================================
+  // slotBuilder 相关方法 - 必须使用传入的 controller 参数
+  // ============================================================
+
   /// 构建自定义顶部栏
-  Widget _buildCustomTopBar() {
+  Widget _buildCustomTopBar(AliPlayerWidgetController controller) {
     switch (_uiStyle) {
       case CustomUIStyle.modern:
-        return _buildModernTopBar();
+        return _buildModernTopBar(controller);
       case CustomUIStyle.classic:
-        return _buildClassicTopBar();
+        return _buildClassicTopBar(controller);
       case CustomUIStyle.fineGrained:
         return const SizedBox.shrink(); // 不会被调用
     }
   }
 
   /// 现代风格顶部栏
-  Widget _buildModernTopBar() {
+  Widget _buildModernTopBar(AliPlayerWidgetController controller) {
     return Positioned(
       top: 0,
       left: 0,
@@ -220,7 +221,7 @@ class _SlotDemoPageState extends State<SlotDemoPage>
               ),
               child: IconButton(
                 icon: const Icon(Icons.arrow_back, color: Colors.white),
-                onPressed: () => Navigator.of(context).pop(),
+                onPressed: () => _onBackPressed(controller),
               ),
             ),
             const Text(
@@ -248,7 +249,7 @@ class _SlotDemoPageState extends State<SlotDemoPage>
   }
 
   /// 经典风格顶部栏
-  Widget _buildClassicTopBar() {
+  Widget _buildClassicTopBar(AliPlayerWidgetController controller) {
     return Positioned(
       top: 16,
       left: 16,
@@ -265,7 +266,7 @@ class _SlotDemoPageState extends State<SlotDemoPage>
             ),
             child: IconButton(
               icon: const Icon(Icons.arrow_back, color: Colors.white, size: 20),
-              onPressed: () => Navigator.of(context).pop(),
+              onPressed: () => _onBackPressed(controller),
             ),
           ),
           const Text(
@@ -294,19 +295,22 @@ class _SlotDemoPageState extends State<SlotDemoPage>
   }
 
   /// 构建自定义底部栏
-  Widget _buildCustomBottomBar() {
+  Widget _buildCustomBottomBar(AliPlayerWidgetController controller) {
     switch (_uiStyle) {
       case CustomUIStyle.modern:
-        return _buildModernBottomBar();
+        return _buildModernBottomBar(controller);
       case CustomUIStyle.classic:
-        return _buildClassicBottomBar();
+        return _buildClassicBottomBar(controller);
       case CustomUIStyle.fineGrained:
         return const SizedBox.shrink(); // 不会被调用
     }
   }
 
   /// 现代风格底部栏
-  Widget _buildModernBottomBar() {
+  ///
+  /// 播放控制逻辑直接写在 slotBuilder 内部，使用传入的 controller。
+  /// 这确保了全屏模式下控制正常工作。
+  Widget _buildModernBottomBar(AliPlayerWidgetController controller) {
     return Positioned(
       bottom: 0,
       left: 0,
@@ -324,6 +328,7 @@ class _SlotDemoPageState extends State<SlotDemoPage>
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceAround,
           children: [
+            // 后退10秒按钮
             Container(
               width: 48,
               height: 48,
@@ -333,9 +338,14 @@ class _SlotDemoPageState extends State<SlotDemoPage>
               ),
               child: IconButton(
                 icon: const Icon(Icons.replay_10, color: Colors.white),
-                onPressed: _seekBackward,
+                onPressed: () {
+                  final pos = controller.currentPositionNotifier.value;
+                  final target = pos - const Duration(seconds: 10);
+                  controller.seek(target.isNegative ? Duration.zero : target);
+                },
               ),
             ),
+            // 播放/暂停按钮
             Container(
               width: 56,
               height: 56,
@@ -351,7 +361,7 @@ class _SlotDemoPageState extends State<SlotDemoPage>
                 ],
               ),
               child: ValueListenableBuilder<int>(
-                valueListenable: _controller.playStateNotifier,
+                valueListenable: controller.playStateNotifier,
                 builder: (context, playState, child) {
                   return IconButton(
                     iconSize: 32,
@@ -361,11 +371,12 @@ class _SlotDemoPageState extends State<SlotDemoPage>
                           : Icons.play_arrow,
                       color: Colors.white,
                     ),
-                    onPressed: _controller.togglePlayState,
+                    onPressed: controller.togglePlayState,
                   );
                 },
               ),
             ),
+            // 前进10秒按钮
             Container(
               width: 48,
               height: 48,
@@ -375,7 +386,12 @@ class _SlotDemoPageState extends State<SlotDemoPage>
               ),
               child: IconButton(
                 icon: const Icon(Icons.forward_10, color: Colors.white),
-                onPressed: _seekForward,
+                onPressed: () {
+                  final pos = controller.currentPositionNotifier.value;
+                  final total = controller.totalDurationNotifier.value;
+                  final target = pos + const Duration(seconds: 10);
+                  controller.seek(target > total ? total : target);
+                },
               ),
             ),
           ],
@@ -385,13 +401,13 @@ class _SlotDemoPageState extends State<SlotDemoPage>
   }
 
   /// 经典风格底部栏
-  Widget _buildClassicBottomBar() {
+  Widget _buildClassicBottomBar(AliPlayerWidgetController controller) {
     return Positioned(
       bottom: 0,
       left: 0,
       right: 0,
       child: Container(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
         decoration: BoxDecoration(
           gradient: LinearGradient(
             colors: [Colors.transparent, Colors.black.withOpacity(0.7)],
@@ -400,7 +416,7 @@ class _SlotDemoPageState extends State<SlotDemoPage>
           ),
         ),
         child: ValueListenableBuilder<int>(
-          valueListenable: _controller.playStateNotifier,
+          valueListenable: controller.playStateNotifier,
           builder: (context, playState, child) {
             return Row(
               children: [
@@ -409,13 +425,13 @@ class _SlotDemoPageState extends State<SlotDemoPage>
                   icon: playState == FlutterAvpdef.started
                       ? Icons.pause
                       : Icons.play_arrow,
-                  onPressed: _controller.togglePlayState,
+                  onPressed: controller.togglePlayState,
                 ),
-                const SizedBox(width: 12),
+                const SizedBox(width: 8),
 
                 // 当前时间
                 ValueListenableBuilder<Duration>(
-                  valueListenable: _controller.currentPositionNotifier,
+                  valueListenable: controller.currentPositionNotifier,
                   builder: (context, position, child) {
                     return Text(
                       _formatDuration(position),
@@ -423,21 +439,30 @@ class _SlotDemoPageState extends State<SlotDemoPage>
                     );
                   },
                 ),
-                const SizedBox(width: 12),
+                const SizedBox(width: 8),
 
                 // 进度条
-                Expanded(child: _buildClassicProgressSlider()),
-                const SizedBox(width: 12),
+                Expanded(child: _buildClassicProgressSlider(controller)),
+                const SizedBox(width: 8),
 
                 // 总时长
                 ValueListenableBuilder<Duration>(
-                  valueListenable: _controller.totalDurationNotifier,
+                  valueListenable: controller.totalDurationNotifier,
                   builder: (context, duration, child) {
                     return Text(
                       _formatDuration(duration),
                       style: const TextStyle(color: Colors.white, fontSize: 12),
                     );
                   },
+                ),
+                const SizedBox(width: 8),
+
+                // 全屏按钮
+                _buildClassicControlButton(
+                  icon: Icons.fullscreen,
+                  onPressed: () => controller.toggleFullscreen(
+                    slotBuilders: _getSlotBuilders(),
+                  ),
                 ),
               ],
             );
@@ -468,12 +493,12 @@ class _SlotDemoPageState extends State<SlotDemoPage>
   }
 
   /// 构建经典风格进度条
-  Widget _buildClassicProgressSlider() {
+  Widget _buildClassicProgressSlider(AliPlayerWidgetController controller) {
     return ValueListenableBuilder<Duration>(
-      valueListenable: _controller.currentPositionNotifier,
+      valueListenable: controller.currentPositionNotifier,
       builder: (context, currentPosition, child) {
         return ValueListenableBuilder<Duration>(
-          valueListenable: _controller.totalDurationNotifier,
+          valueListenable: controller.totalDurationNotifier,
           builder: (context, totalDuration, child) {
             final progress = totalDuration.inMilliseconds > 0
                 ? currentPosition.inMilliseconds / totalDuration.inMilliseconds
@@ -496,7 +521,7 @@ class _SlotDemoPageState extends State<SlotDemoPage>
                     milliseconds:
                         (totalDuration.inMilliseconds * value).toInt(),
                   );
-                  _controller.seek(position);
+                  controller.seek(position);
                 },
               ),
             );
@@ -514,9 +539,9 @@ class _SlotDemoPageState extends State<SlotDemoPage>
   }
 
   /// 构建自定义播放控制
-  Widget _buildCustomPlayControl() {
+  Widget _buildCustomPlayControl(AliPlayerWidgetController controller) {
     return GestureDetector(
-      onTap: _controller.togglePlayState,
+      onTap: controller.togglePlayState,
       child: Container(
         color: Colors.transparent,
         child: const SizedBox.expand(),
@@ -524,53 +549,31 @@ class _SlotDemoPageState extends State<SlotDemoPage>
     );
   }
 
-  /// 设置为正常速度
-  void _setNormalSpeed() {
-    setState(() {
-      _currentSpeed = 1.0;
-      _controller.setSpeed();
-    });
-    ToastUtils.showMessage(context, '已恢复为正常速度');
-  }
-
-  /// 后退10秒
-  void _seekBackward() {
-    final currentPosition = _controller.currentPositionNotifier.value;
-    final targetPosition = currentPosition - const Duration(seconds: 10);
-
-    if (targetPosition.isNegative) {
-      _controller.seek(Duration.zero);
+  /// 处理返回按钮点击
+  ///
+  /// 全屏模式下退出全屏，非全屏模式下退出页面
+  void _onBackPressed(AliPlayerWidgetController controller) {
+    if (FullScreenUtil.isFullScreen()) {
+      // 全屏模式：退出全屏
+      controller.exitFullScreen();
     } else {
-      _controller.seek(targetPosition);
+      // 非全屏模式：退出页面
+      Navigator.of(context).pop();
     }
-
-    ToastUtils.showMessage(context, '后退10秒');
   }
 
-  /// 前进10秒
-  void _seekForward() {
-    final currentPosition = _controller.currentPositionNotifier.value;
-    final totalDuration = _controller.totalDurationNotifier.value;
-    final targetPosition = currentPosition + const Duration(seconds: 10);
-
-    if (targetPosition > totalDuration) {
-      _controller.seek(totalDuration);
-    } else {
-      _controller.seek(targetPosition);
-    }
-
-    ToastUtils.showMessage(context, '前进10秒');
+  /// 获取当前样式的 slotBuilders 配置
+  Map<SlotType, Function?> _getSlotBuilders() {
+    return {
+      SlotType.topBar: (context, ctrl) => _buildCustomTopBar(ctrl),
+      SlotType.bottomBar: (context, ctrl) => _buildCustomBottomBar(ctrl),
+      SlotType.playControl: (context, ctrl) => _buildCustomPlayControl(ctrl),
+    };
   }
 
-  /// 设置为二倍速
-  void _setDoubleSpeed() {
-    setState(() {
-      _currentSpeed = 2.0;
-      _controller.setSpeed(speed: 2.0);
-    });
-
-    ToastUtils.showMessage(context, '已设置为2倍速播放');
-  }
+  // ============================================================
+  // 页面级方法 - UI 样式切换等非播放控制功能
+  // ============================================================
 
   /// 切换UI样式
   void _switchUIStyle(CustomUIStyle style) {
@@ -581,6 +584,10 @@ class _SlotDemoPageState extends State<SlotDemoPage>
   }
 
   /// 构建控制面板
+  ///
+  /// 注意：此面板在非全屏时显示。
+  /// 所有播放控制（play/pause/seek）应放在 slotBuilder 内部，
+  /// 这样全屏时才能正常工作。
   Widget _buildControlPanel() {
     return SingleChildScrollView(
       child: Padding(
@@ -599,11 +606,12 @@ class _SlotDemoPageState extends State<SlotDemoPage>
             const Text(
               "• 插槽化设计：播放器界面拆分为多个可组合区域\n"
               "• 灵活自定义：顶部栏、底部栏等插槽支持完全自定义\n"
-              "• 细粒度控制：支持按需隐藏默认插槽中的 UI 元素",
+              "• 细粒度控制：支持按需隐藏默认插槽中的 UI 元素\n"
+              "• 全屏兼容：slotBuilder 使用 controller 参数确保全屏模式正常",
             ),
             const SizedBox(height: 16),
 
-            // UI样式选择（同时控制UI模式）
+            // UI样式选择
             const Text(
               "选择UI样式：",
               style: TextStyle(fontWeight: FontWeight.bold),
@@ -642,78 +650,47 @@ class _SlotDemoPageState extends State<SlotDemoPage>
             ),
             const SizedBox(height: 16),
 
-            // 控制按钮
-            const Text(
-              "播放控制：",
-              style: TextStyle(fontWeight: FontWeight.bold),
-            ),
-            const SizedBox(height: 8),
-            Wrap(
-              spacing: 16,
-              runSpacing: 16,
-              children: [
-                ElevatedButton.icon(
-                  onPressed: _controller.togglePlayState,
-                  icon: ValueListenableBuilder<int>(
-                    valueListenable: _controller.playStateNotifier,
-                    builder: (context, playState, child) {
-                      return Icon(
-                        playState == FlutterAvpdef.started
-                            ? Icons.pause
-                            : Icons.play_arrow,
-                      );
-                    },
-                  ),
-                  label: const Text("播放/暂停"),
-                ),
-                ElevatedButton(
-                  onPressed: () {
-                    _controller.replay();
-                  },
-                  child: const Text("重新播放"),
-                ),
-              ],
-            ),
-            const SizedBox(height: 16),
-
-            // 倍速控制按钮（分开展示）
-            const Text(
-              "播放速度控制：",
-              style: TextStyle(fontWeight: FontWeight.bold),
-            ),
-            const SizedBox(height: 8),
-            Wrap(
-              spacing: 16,
-              runSpacing: 16,
-              children: [
-                ElevatedButton(
-                  onPressed: _setNormalSpeed,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: _currentSpeed == 1.0
-                        ? Colors.orangeAccent
-                        : Colors.grey[300],
-                  ),
-                  child: const Text("正常速度"),
-                ),
-                ElevatedButton(
-                  onPressed: _setDoubleSpeed,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: _currentSpeed == 2.0
-                        ? Colors.orangeAccent
-                        : Colors.grey[300],
-                  ),
-                  child: const Text("二倍速"),
-                ),
-              ],
-            ),
-            const SizedBox(height: 16),
-
             const Text(
               "当前模式：",
               style: TextStyle(fontWeight: FontWeight.bold),
             ),
             Text(_useCustomUI ? "自定义UI模式 ($_uiStyle)" : "默认UI模式"),
-            Text("当前速度: ${_currentSpeed}x"),
+
+            const SizedBox(height: 16),
+
+            // 使用说明
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: Colors.blue.shade50,
+                borderRadius: BorderRadius.circular(8),
+                border: Border.all(color: Colors.blue.shade200),
+              ),
+              child: const Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Icon(Icons.info_outline, size: 18, color: Colors.blue),
+                      SizedBox(width: 8),
+                      Text(
+                        "重要提示",
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          color: Colors.blue,
+                        ),
+                      ),
+                    ],
+                  ),
+                  SizedBox(height: 8),
+                  Text(
+                    "在 slotBuilder 中进行播放控制时，请务必使用传入的 controller 参数，以确保在全屏模式下能够正常工作。\n"
+                    "请避免使用外部捕获的 controller。",
+                    style: TextStyle(fontSize: 12),
+                  ),
+                ],
+              ),
+            ),
           ],
         ),
       ),

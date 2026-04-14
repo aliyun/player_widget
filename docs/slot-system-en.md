@@ -48,7 +48,7 @@ Replace only the slots you want to customize, while keeping others at default:
 AliPlayerWidget(
   controller,
   slotBuilders: {
-    SlotType.topBar: (context) => MyCustomTopBar(),
+    SlotType.topBar: (context, controller) => MyCustomTopBar(controller),
   },
 )
 ```
@@ -62,19 +62,37 @@ AliPlayerWidget(
   controller,
   slotBuilders: {
     // Note: Customizing playerSurface is not recommended
-    SlotType.topBar: (context) => MyCustomTopBar(),
-    SlotType.bottomBar: (context) => MyCustomBottomBar(),
-    SlotType.playControl: (context) => MyPlayControl(),
-    SlotType.coverImage: (context) => MyCoverImage(),
-    SlotType.playState: (context) => MyPlayState(),
-    SlotType.centerDisplay: (context) => MyCenterDisplay(),
-    SlotType.seekThumbnail: (context) => MySeekThumbnail(),
-    SlotType.subtitle: (context) => MySubtitle(),
-    SlotType.settingMenu: (context) => MySettingMenu(),
-    SlotType.overlays: (context) => MyOverlays(),
+    SlotType.topBar: (context, controller) => MyCustomTopBar(controller),
+    SlotType.bottomBar: (context, controller) => MyCustomBottomBar(controller),
+    SlotType.playControl: (context, controller) => MyPlayControl(controller),
+    SlotType.coverImage: (context, controller) => MyCoverImage(controller),
+    SlotType.playState: (context, controller) => MyPlayState(controller),
+    SlotType.centerDisplay: (context, controller) => MyCenterDisplay(controller),
+    SlotType.seekThumbnail: (context, controller) => MySeekThumbnail(controller),
+    SlotType.subtitle: (context, controller) => MySubtitle(controller),
+    SlotType.settingMenu: (context, controller) => MySettingMenu(controller),
+    SlotType.overlays: (context, controller) => MyOverlays(controller),
   },
 )
 ```
+
+#### **SlotWidgetBuilder Types**
+
+The slot system supports two builder signatures for backward compatibility:
+
+```dart
+// New signature (recommended) - ensures fullscreen mode support
+typedef SlotWidgetBuilderWithController = Widget Function(
+  BuildContext context,
+  AliPlayerWidgetController controller,
+);
+
+// Old signature (deprecated) - may not work correctly in fullscreen mode
+@Deprecated('Use SlotWidgetBuilderWithController instead')
+typedef SlotWidgetBuilder = Widget Function(BuildContext context);
+```
+
+> **Important**: The `controller` parameter in the new signature ensures that slotBuilders work correctly in fullscreen mode. When entering fullscreen, a new controller instance is created. By receiving the controller as a parameter, your slotBuilder will always control the correct player instance.
 
 ### **2.3 Hiding Slots**
 
@@ -130,10 +148,12 @@ AliPlayerWidget(
 AliPlayerWidget(
   controller,
   slotBuilders: {
-    SlotType.overlays: (context) => MyOverlayWidget(),
+    SlotType.overlays: (context, controller) => MyOverlayWidget(controller),
   },
 )
 ```
+
+> **Important**: The `controller` parameter ensures that slotBuilders work correctly in fullscreen mode. When entering fullscreen, a new controller instance is created. By receiving the controller as a parameter, your slotBuilder will always control the correct player instance.
 
 ## **3. How It Works**
 
