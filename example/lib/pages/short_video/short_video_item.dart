@@ -91,6 +91,89 @@ class ShortVideoItemState extends State<ShortVideoItem> {
 
   /// 构建播放器组件
   Widget _buildPlayWidget() {
-    return AliPlayerWidget(_controller);
+    return AliPlayerWidget(
+      _controller,
+      slotBuilders: {
+        // 通过 overlay 浮层插槽的方式，构建右侧操作按钮
+        SlotType.overlays: (context, controller) =>
+            _buildRightSideActionsOverlay(context, controller),
+      },
+    );
+  }
+
+  /// 构建右侧操作按钮 overlay
+  Widget _buildRightSideActionsOverlay(
+    BuildContext context,
+    AliPlayerWidgetController controller,
+  ) {
+    return Positioned(
+      right: 12,
+      bottom: 100, // 避免与底部控制栏重叠
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          _buildActionButton(
+            icon: Icons.favorite_border,
+            label: '点赞',
+            onTap: () {
+              // TODO: 实现点赞功能
+            },
+          ),
+          const SizedBox(height: 16),
+          _buildActionButton(
+            icon: Icons.comment_outlined,
+            label: '评论',
+            onTap: () {
+              // TODO: 实现评论功能
+            },
+          ),
+          const SizedBox(height: 16),
+          _buildActionButton(
+            icon: Icons.share_outlined,
+            label: '分享',
+            onTap: () {
+              // TODO: 实现分享功能
+            },
+          ),
+        ],
+      ),
+    );
+  }
+
+  /// 构建单个操作按钮
+  Widget _buildActionButton({
+    required IconData icon,
+    required String label,
+    required VoidCallback onTap,
+  }) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Container(
+            width: 44,
+            height: 44,
+            decoration: BoxDecoration(
+              color: Colors.black.withOpacity(0.3),
+              shape: BoxShape.circle,
+            ),
+            child: Icon(
+              icon,
+              color: Colors.white,
+              size: 24,
+            ),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            label,
+            style: const TextStyle(
+              color: Colors.white,
+              fontSize: 12,
+            ),
+          ),
+        ],
+      ),
+    );
   }
 }
