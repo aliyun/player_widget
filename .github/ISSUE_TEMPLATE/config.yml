@@ -1,0 +1,11 @@
+blank_issues_enabled: false
+contact_links:
+  - name: 📚 官方文档 | Official Documentation
+    url: https://aliyun.github.io/player_widget/
+    about: 请先查阅官方文档，可能已有答案 | Please check the documentation first
+  - name: ❓ 常见问题 | FAQ
+    url: https://help.aliyun.com/zh/vod/support/faq-about-apsaravideo-player/
+    about: 查看播放器常见问题 | Check common player issues
+  - name: 🎫 提交工单 | Open Ticket
+    url: https://smartservice.console.aliyun.com/service/create-ticket
+    about: 阿里云官方技术支持 | Alibaba Cloud official support

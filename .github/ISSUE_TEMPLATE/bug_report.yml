@@ -1,0 +1,132 @@
+name: 🐛 Bug 报告 | Bug Report
+description: 报告一个 Bug | Report a bug
+title: "[BUG] "
+labels: [bug]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        感谢提交 Bug 报告！请填写以下信息。
+        Thanks for reporting! Please fill in the following information.
+
+  - type: input
+    id: aliplayer-widget-version
+    attributes:
+      label: aliplayer_widget Version
+      description: 播放器组件版本
+    validations:
+      required: false
+
+  - type: input
+    id: flutter-aliplayer-version
+    attributes:
+      label: flutter_aliplayer Version
+      description: 播放器 SDK 版本
+    validations:
+      required: false
+
+  - type: input
+    id: flutter-sdk-version
+    attributes:
+      label: Flutter SDK Version
+      description: Flutter SDK 版本
+    validations:
+      required: false
+
+  - type: input
+    id: device-model
+    attributes:
+      label: Device Model
+      description: 设备型号
+    validations:
+      required: false
+
+  - type: input
+    id: os-version
+    attributes:
+      label: OS Version
+      description: 操作系统版本
+    validations:
+      required: false
+
+  - type: checkboxes
+    id: platform
+    attributes:
+      label: 平台 | Platform
+      description: 可多选 | Multiple choice
+      options:
+        - label: Android
+        - label: iOS
+
+  - type: checkboxes
+    id: source-type
+    attributes:
+      label: 播放源类型 | Source Type
+      options:
+        - label: URL
+        - label: VID + Auth
+        - label: VID + STS
+
+  - type: checkboxes
+    id: scene
+    attributes:
+      label: 播放场景 | Scene
+      options:
+        - label: 点播 VOD
+        - label: 直播 Live
+        - label: 列表播放 Playlist
+        - label: 短剧 Short Video
+
+  - type: checkboxes
+    id: reproducibility
+    attributes:
+      label: 复现情况 | Reproducibility
+      description: 问题是否稳定复现
+      options:
+        - label: 必现 Always
+        - label: 偶现 Sometimes
+        - label: 难以复现 Rare
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: 预期行为 | Expected Behavior
+      description: 描述你期望发生什么
+    validations:
+      required: false
+
+  - type: textarea
+    id: actual
+    attributes:
+      label: 实际行为 | Actual Behavior
+      description: 描述实际发生了什么
+    validations:
+      required: false
+
+  - type: textarea
+    id: steps
+    attributes:
+      label: 复现步骤 | Steps
+      description: 请提供清晰的复现路径
+      placeholder: |
+        1.
+        2.
+    validations:
+      required: false
+
+  - type: textarea
+    id: screenshots
+    attributes:
+      label: 截图 / 录屏 | Screenshots
+      description: 如有，请提供截图或录屏（可选）
+    validations:
+      required: false
+
+  - type: textarea
+    id: logs
+    attributes:
+      label: 日志 | Logs
+      description: 可提供：Flutter 报错 / Android Logcat / iOS 控制台 / 播放器日志
+      render: shell
+    validations:
+      required: false

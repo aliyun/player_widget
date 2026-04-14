@@ -1,0 +1,49 @@
+name: ❓ 问题咨询 | Question
+description: 使用问题 | Usage questions
+title: "[QUESTION] "
+labels: [question]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        请描述你遇到的问题。
+        Please describe your issue.
+
+  - type: textarea
+    id: question
+    attributes:
+      label: 问题 | Question
+      description: 请描述你遇到的问题，例如：报错信息、异常行为、期望实现等
+    validations:
+      required: false
+
+  - type: textarea
+    id: tried
+    attributes:
+      label: 已尝试 | Tried
+      description: 你已经尝试过哪些方法？例如：修改配置、查文档、搜索 Issue 等
+    validations:
+      required: false
+
+  - type: input
+    id: aliplayer-widget-version
+    attributes:
+      label: aliplayer_widget Version
+    validations:
+      required: false
+
+  - type: input
+    id: flutter-sdk-version
+    attributes:
+      label: Flutter SDK Version
+    validations:
+      required: false
+
+  - type: textarea
+    id: code
+    attributes:
+      label: 代码 | Code
+      description: 相关代码片段
+      render: dart
+    validations:
+      required: false
