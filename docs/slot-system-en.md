@@ -153,7 +153,10 @@ AliPlayerWidget(
 )
 ```
 
-> **Important**: The `controller` parameter ensures that slotBuilders work correctly in fullscreen mode. When entering fullscreen, a new controller instance is created. By receiving the controller as a parameter, your slotBuilder will always control the correct player instance.
+> **Important:**
+>
+> *   **Mechanism**: Fullscreen mode creates a new controller instance. The `controller` parameter automatically binds to the active instance, ensuring control logic remains effective in fullscreen.
+> *   **Requirement**: Inside `slotBuilder`, you **must** use the `controller` passed via the callback parameter. **Do not** reference the external `_controller`.
 
 ## **3. How It Works**
 
