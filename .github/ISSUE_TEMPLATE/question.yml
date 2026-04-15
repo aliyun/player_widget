@@ -6,44 +6,29 @@ body:
   - type: markdown
     attributes:
       value: |
-        请描述你遇到的问题。
-        Please describe your issue.
+        感谢提问！请描述你遇到的问题。
+        Thanks for asking! Please describe your issue.
 
   - type: textarea
     id: question
     attributes:
-      label: 问题 | Question
-      description: 请描述你遇到的问题，例如：报错信息、异常行为、期望实现等
+      label: 问题描述 | Question
+      placeholder: |
+        - 报错信息 / Error messages
+        - 异常行为 / Unexpected behavior
+        - 期望实现 / Expected outcome
     validations:
-      required: false
+      required: true
 
   - type: textarea
-    id: tried
+    id: additional
     attributes:
-      label: 已尝试 | Tried
-      description: 你已经尝试过哪些方法？例如：修改配置、查文档、搜索 Issue 等
-    validations:
-      required: false
-
-  - type: input
-    id: aliplayer-widget-version
-    attributes:
-      label: aliplayer_widget Version
-    validations:
-      required: false
-
-  - type: input
-    id: flutter-sdk-version
-    attributes:
-      label: Flutter SDK Version
-    validations:
-      required: false
-
-  - type: textarea
-    id: code
-    attributes:
-      label: 代码 | Code
-      description: 相关代码片段
-      render: dart
+      label: 补充信息 | Additional Context
+      placeholder: |
+        - 版本信息 / Version info (aliplayer_widget, Flutter SDK)
+        - 相关代码片段 / Related code snippets
+        - 已尝试的方法 / What you've tried
+        - 报错日志 / Error logs
+      render: shell
     validations:
       required: false

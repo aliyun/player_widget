@@ -2,131 +2,66 @@ name: 🐛 Bug 报告 | Bug Report
 description: 报告一个 Bug | Report a bug
 title: "[BUG] "
 labels: [bug]
+type: "Bug"
 body:
   - type: markdown
     attributes:
       value: |
-        感谢提交 Bug 报告！请填写以下信息。
-        Thanks for reporting! Please fill in the following information.
-
-  - type: input
-    id: aliplayer-widget-version
-    attributes:
-      label: aliplayer_widget Version
-      description: 播放器组件版本
-    validations:
-      required: false
-
-  - type: input
-    id: flutter-aliplayer-version
-    attributes:
-      label: flutter_aliplayer Version
-      description: 播放器 SDK 版本
-    validations:
-      required: false
-
-  - type: input
-    id: flutter-sdk-version
-    attributes:
-      label: Flutter SDK Version
-      description: Flutter SDK 版本
-    validations:
-      required: false
-
-  - type: input
-    id: device-model
-    attributes:
-      label: Device Model
-      description: 设备型号
-    validations:
-      required: false
-
-  - type: input
-    id: os-version
-    attributes:
-      label: OS Version
-      description: 操作系统版本
-    validations:
-      required: false
-
-  - type: checkboxes
-    id: platform
-    attributes:
-      label: 平台 | Platform
-      description: 可多选 | Multiple choice
-      options:
-        - label: Android
-        - label: iOS
-
-  - type: checkboxes
-    id: source-type
-    attributes:
-      label: 播放源类型 | Source Type
-      options:
-        - label: URL
-        - label: VID + Auth
-        - label: VID + STS
-
-  - type: checkboxes
-    id: scene
-    attributes:
-      label: 播放场景 | Scene
-      options:
-        - label: 点播 VOD
-        - label: 直播 Live
-        - label: 列表播放 Playlist
-        - label: 短剧 Short Video
-
-  - type: checkboxes
-    id: reproducibility
-    attributes:
-      label: 复现情况 | Reproducibility
-      description: 问题是否稳定复现
-      options:
-        - label: 必现 Always
-        - label: 偶现 Sometimes
-        - label: 难以复现 Rare
+        感谢提交 Bug 报告！请简要描述问题。
+        Thanks for reporting! Please briefly describe the issue.
 
   - type: textarea
-    id: expected
+    id: description
     attributes:
-      label: 预期行为 | Expected Behavior
-      description: 描述你期望发生什么
+      label: 问题描述 | Description
+      placeholder: |
+        描述你遇到的问题 / Describe the issue:
+        - 预期行为是什么？/ What was expected?
+        - 实际发生了什么？/ What actually happened?
+        - 是否稳定复现？（必现/偶现/难以复现）/ Reproducibility? (Always / Sometimes / Rare)
     validations:
-      required: false
-
-  - type: textarea
-    id: actual
-    attributes:
-      label: 实际行为 | Actual Behavior
-      description: 描述实际发生了什么
-    validations:
-      required: false
+      required: true
 
   - type: textarea
     id: steps
     attributes:
-      label: 复现步骤 | Steps
-      description: 请提供清晰的复现路径
+      label: 复现步骤 | Steps to Reproduce
       placeholder: |
-        1.
-        2.
+        1. 打开播放器 / Open the player
+        2. 点击播放按钮 / Tap play button
+        3. 观察到... / Observed...
     validations:
       required: false
 
   - type: textarea
-    id: screenshots
+    id: environment
     attributes:
-      label: 截图 / 录屏 | Screenshots
-      description: 如有，请提供截图或录屏（可选）
+      label: 环境信息 | Environment
+      value: |
+        ## 1. 版本信息 / Version
+        - aliplayer_widget:
+        - flutter_aliplayer:
+        - Flutter SDK:
+
+        ## 2. 设备信息 / Device
+        - 平台 / Platform (Android/iOS):
+        - 设备型号 / Device model:
+        - 系统版本 / OS version:
+
+        ## 3. 播放信息 / Playback
+        - 播放源类型 / Source type (URL/VID+Auth/VID+STS):
+        - 播放场景 / Scene (VOD / Live / Playlist / Short Video):
     validations:
       required: false
 
   - type: textarea
     id: logs
     attributes:
-      label: 日志 | Logs
-      description: 可提供：Flutter 报错 / Android Logcat / iOS 控制台 / 播放器日志
+      label: 日志 / 截图 | Logs / Screenshots
+      placeholder: |
+        - Flutter 报错 / Flutter errors
+        - Logcat / Console logs
+        - 截图或录屏 / Screenshots or recordings
       render: shell
     validations:
       required: false

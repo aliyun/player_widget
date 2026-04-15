@@ -2,56 +2,32 @@ name: ✨ 功能请求 | Feature Request
 description: 提出新功能建议 | Suggest a new feature
 title: "[FEATURE] "
 labels: [enhancement]
+type: "Feature"
 body:
   - type: markdown
     attributes:
       value: |
-        感谢提出功能建议！请填写以下信息。
-        Thanks for the suggestion! Please fill in the following information.
-
-  - type: input
-    id: feature-name
-    attributes:
-      label: 功能名称 | Feature Name
-    validations:
-      required: false
+        感谢提出功能建议！请描述你的想法。
+        Thanks for the suggestion! Please describe your idea.
 
   - type: textarea
-    id: problem
+    id: description
     attributes:
-      label: 解决问题 | Problem
-      description: 这个功能解决什么问题？
+      label: 功能描述 | Description
+      placeholder: |
+        - 你希望有什么功能？/ What feature do you want?
+        - 它解决什么问题？/ What problem does it solve?
+        - 在什么场景下使用？/ In what scenario would you use it?
     validations:
-      required: false
-
-  - type: textarea
-    id: use-case
-    attributes:
-      label: 使用场景 | Use Case
-      description: 在什么场景下需要这个功能？
-    validations:
-      required: false
-
-  - type: textarea
-    id: expected-implementation
-    attributes:
-      label: 期望实现 | Expected Implementation
-      description: 你期望这个功能如何工作？（可选）
-    validations:
-      required: false
-
-  - type: textarea
-    id: alternatives
-    attributes:
-      label: 替代方案 | Alternatives
-      description: 是否有临时解决方案或替代方案？（可选）
-    validations:
-      required: false
+      required: true
 
   - type: textarea
     id: additional
     attributes:
-      label: 附加信息 | Additional
-      description: 其他补充信息（可选）
+      label: 补充信息 | Additional Context
+      placeholder: |
+        - 期望的实现方式 / Expected implementation
+        - 替代方案 / Alternatives
+        - 参考链接 / Reference links
     validations:
       required: false
