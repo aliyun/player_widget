@@ -175,108 +175,52 @@ flutter run lib/main.dart
 
 ### **1. 点播播放页面（LongVideoPage）**
 
-- **功能描述**：
-  展示如何使用 `AliPlayerWidget` 实现基础的点播视频播放功能。
-- **关键代码**：
-  
-  ```dart
-  @override
-  void initState() {
-    super.initState();
-    _controller = AliPlayerWidgetController(context);
-    final videoSource = VideoSourceFactory.createUrlSource(
-      "https://example.com/sample-video.mp4",
-    );
-    final data = AliPlayerWidgetData(
-      videoSource: videoSource,
-      coverUrl: "https://example.com/sample-cover.jpg",
-      videoTitle: "Sample Video Title",
-    );
-    _controller.configure(data);
-  }
-  
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      body: AliPlayerWidget(_controller),
-    );
-  }
-  ```
-- **运行效果**：
-  页面加载后自动播放指定的点播视频，并显示封面图和标题。用户可以通过控制栏进行暂停、快进、调整音量等操作。
+展示如何使用 `AliPlayerWidget` 实现基础的点播视频播放功能。
+
+- **核心功能**：
+  - 支持 Vid + PlayAuth 播放方式
+  - 支持视频标题显示
+  - 提供完整的播放控制栏（暂停、快进、音量调节等）
+
+- **实现要点**：
+  - 使用 `AliPlayerWidgetController` 创建控制器
+  - 通过 `VideoSourceFactory.createVidAuthSource()` 配置 Vid 视频源
+  - 使用 `AliPlayerWidgetData` 设置播放参数
+
+- **运行效果**：页面加载后自动播放指定的点播视频，用户可以通过控制栏进行各项播放操作。
 
 ### **2. 直播播放页面（LivePage）**
 
-- **功能描述**：
-  
-  展示如何配置 `AliPlayerWidget` 以支持实时直播流媒体播放。
-  
-- **关键代码**：
-  
-  ```dart
-  @override
-  void initState() {
-    super.initState();
-    _controller = AliPlayerWidgetController(context);
-    final videoSource = VideoSourceFactory.createUrlSource(
-      "https://example.com/live-stream.m3u8",
-    );
-    final data = AliPlayerWidgetData(
-      sceneType: SceneType.live,
-      videoSource: videoSource,
-    );
-    _controller.configure(data);
-  }
-  
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      body: Column(
-        children: [
-          Expanded(child: AliPlayerWidget(_controller)),
-          _buildChatArea(),
-          _buildMessageInput(),
-        ],
-      ),
-    );
-  }
-  ```
-  
-- **运行效果**：
-  页面加载后实时播放直播流，支持低延迟播放。用户可以在聊天窗口中查看消息并发送自己的评论。
+展示如何配置 `AliPlayerWidget` 以支持实时直播流媒体播放。
+
+- **核心功能**：
+  - 支持 HLS/FLV 等直播流格式
+  - 支持低延迟播放模式
+  - 可集成聊天、弹幕等互动功能
+
+- **实现要点**：
+  - 设置 `sceneType: SceneType.live` 指定直播场景
+  - 配置直播流 URL 作为视频源
+  - 可扩展聊天区域和消息输入组件
+
+- **运行效果**：页面实时播放直播流，支持流畅的直播观看体验。
 
 ### **3. 短视频列表播放页面（ShortVideoPage）**
 
-- **功能描述**：
-  
-  展示如何在列表中嵌入多个 `AliPlayerWidget` 实例，实现多视频的列表播放功能。
-  
-- **关键代码**：
-  ```dart
-  @override
-  void initState() {
-    super.initState();
-    _pageController = PageController();
-    _loadVideoInfoList();
-    _pageController.addListener(_onPageChanged);
-  }
-  
-  Widget build(BuildContext context) {
-    return Scaffold(
-      body: PageView.builder(
-        controller: _pageController,
-        itemCount: videoInfoList.length,
-        itemBuilder: (context, index) {
-          final videoInfo = videoInfoList[index];
-          return ShortVideoItem(videoInfo: videoInfo);
-        },
-      ),
-    );
-  }
-  ```
-  
-- **运行效果**：
-  页面展示一个视频列表，每个列表项包含一个独立的播放器实例。用户可以通过滑动切换视频，同时支持手势滑动切换视频。
+展示如何在列表中嵌入多个 `AliPlayerWidget` 实例，实现短视频滑动播放功能。
+
+- **核心功能**：
+  - 支持 `PreloadPageView`（预加载）和 `PageView` 两种模式切换
+  - 自动播放当前视频，滑动时暂停其他视频
+  - 支持点赞、评论、分享等互动按钮浮层
+
+- **实现要点**：
+  - 设置 `sceneType: SceneType.listPlayer` 指定列表播放场景
+  - 通过页面变化监听控制播放状态，实现播放互斥
+  - 通过 `AliPlayerPreload` 实现视频预加载，提升滑动流畅度
+  - 利用 `slotBuilders` 插槽构建右侧操作按钮浮层
+
+- **运行效果**：展示可滑动的视频列表，用户上下滑动切换视频，仅当前视频自动播放。
 
 ---
 

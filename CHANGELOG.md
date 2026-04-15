@@ -26,6 +26,27 @@
 - **Documentation Language Switching**
   - Fixed case-insensitive language switching in the documentation site.
 
+### **Documentation Updates**
+
+- **README Simplification**
+  - Removed inline code examples from README.md and README-EN.md, directing users to the Quick Start Guide for complete implementation details.
+  - Improved example READMEs with structured scenario descriptions (core features, implementation points, execution effects).
+
+- **Quick Start Guide Enhancement**
+  - Updated to use recommended `VidAuth` video source instead of URL-based source.
+  - Added `const` constructors for better performance.
+
+- **Core Components Restructure**
+  - Reorganized with numbered sections for improved readability and navigation.
+
+- **Video Source Documentation**
+  - Reordered to highlight `VidAuth` as the recommended playback method.
+  - Clarified the advantages and use cases of each video source type.
+
+- **Global Configuration Clarification**
+  - Emphasized default optimal settings.
+  - Clarified usage notes for custom configuration scenarios.
+
 ---
 
 ## **[7.12.1] - Fine-Grained Slot Element Control**

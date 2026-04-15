@@ -1,79 +1,80 @@
 # **AliPlayerWidget Video Source Support**
 
-The player provides flexible video source configuration methods, supporting multiple video source types. Developers can choose the most suitable video source type based on their actual requirements.
+AliPlayerWidget provides flexible video source configuration, supporting multiple video source types. Developers can choose the most suitable video source type according to actual needs.
 
-## **Supported Video Source Types**
+## **1. Supported Video Source Types**
 
-### **1. URL Mode**
+### **1.1 VidAuth Mode (Recommended)**
 
-Play videos by directly providing the video URL, suitable for publicly accessible video resources.
-
-```dart
-// Example: Create playback data using a URL
-final videoSource = VideoSourceFactory.createUrlSource(
-  "https://example.com/video.mp4",
-);
-final data = AliPlayerWidgetData(
-  videoSource: videoSource,
-);
-```
-
-### **2. VidAuth Mode (Recommended)**
-
-Authorize playback using a Video ID and playback credentials, suitable for scenarios requiring simpler authorization mechanisms.
+Plays videos through video ID and playback credentials, suitable for scenarios requiring a simpler authorization mechanism.
 
 ```dart
 // Example: Create playback data using VidAuth
 final videoSource = VideoSourceFactory.createVidAuthSource(
-  vid: "Video ID",
-  playAuth: "Playback Credentials",
+  vid: "<your-video-id>",
+  playAuth: "<your-play-auth>",
 );
 final data = AliPlayerWidgetData(
   videoSource: videoSource,
 );
 ```
 
-### **3. VidSts Mode**
+### **1.2 VidSts Mode**
 
-Play videos using a Video ID (VID) and Alibaba Cloud STS (Security Token Service) token, providing enhanced security and access control.
+Plays videos through video ID (VID) and Alibaba Cloud STS (Security Token Service) token, providing higher security and access control.
 
 ```dart
 // Example: Create playback data using VidSts
 final videoSource = VideoSourceFactory.createVidStsSource(
-  vid: "Video ID",
-  accessKeyId: "Access Key ID",
-  accessKeySecret: "Access Key Secret",
-  securityToken: "Security Token",
-  region: "Region Information",
+  vid: "<your-video-id>",
+  accessKeyId: "<your-access-key-id>",
+  accessKeySecret: "<your-access-key-secret>",
+  securityToken: "<your-security-token>",
+  region: "<your-region>",
 );
 final data = AliPlayerWidgetData(
   videoSource: videoSource,
 );
 ```
 
-## **Usage**
+### **1.3 URL Mode**
+
+Plays videos by directly providing the video URL, suitable for publicly accessible video resources.
+
+```dart
+// Example: Create playback data using URL
+final videoSource = VideoSourceFactory.createUrlSource(
+  "<your-video-url>",
+);
+final data = AliPlayerWidgetData(
+  videoSource: videoSource,
+);
+```
+
+## **2. Usage**
 
 When configuring the player, set the video source through the [videoSource] property of [AliPlayerWidgetData]:
 
 ```dart
-// 1. Create video source
-final videoSource = VideoSourceFactory.createUrlSource(
-  "https://example.com/video.mp4",
+// 1. Create player video source
+final videoSource = VideoSourceFactory.createVidAuthSource(
+  vid: "<your-video-id>",
+  playAuth: "<your-play-auth>",
 );
 
-// 2. Create playback data
+// 2. Configure player component data
 final data = AliPlayerWidgetData(
   videoSource: videoSource,
-  coverUrl: "https://example.com/cover.jpg",
-  videoTitle: "Sample Video",
+  videoTitle: "<your-video-title>",
 );
 
-// 3. Configure the player
+// 3. Initialize player component controller
+_controller = AliPlayerWidgetController(context);
 _controller.configure(data);
 ```
 
-## **Notes**
+## **3. Notes**
 
-1. Different video source types are suitable for different business scenarios. Please choose according to actual requirements.
-2. VidAuth and VidSts modes provide higher security and are suitable for scenarios requiring authorization verification.
-3. URL mode is suitable for public resources, easy to use but with lower security.
+1. Different video source types are suitable for different business scenarios, please choose according to actual needs.
+2. VidAuth and VidSts modes provide higher security, suitable for scenarios requiring authorization verification.
+3. URL mode is suitable for public resources, simple to use but with lower security.

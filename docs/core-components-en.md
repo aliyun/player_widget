@@ -6,7 +6,7 @@ AliPlayerWidget adopts an MVC-inspired layered design, separating the view (View
 
 `AliPlayerWidget` is the core player component (View) used to embed and play videos within Flutter applications.
 
-### **Constructor**
+### **1.1 Constructor**
 
 ```dart
 AliPlayerWidget(
@@ -23,7 +23,7 @@ AliPlayerWidget(
 - **`slotBuilders`**: Optional slot builder map, allowing customization of how each slot is built. See [Slot System](slot-system-en.md) for details.
 - **`onBackPressed`**: Optional back button press callback. Called when the user presses the back button. Returns `true` to indicate the event was handled and no default action is needed; returns `false` or `null` to execute the default behavior (`Navigator.pop`).
 
-#### **Back Event Handling**
+### **1.2 Back Event Handling (Optional)**
 
 By default, when the user presses the back button:
 1. If currently in fullscreen mode, it will exit fullscreen first
@@ -45,9 +45,9 @@ AliPlayerWidget(
 
 ## **2. AliPlayerWidgetController (Controller)**
 
-`AliPlayerWidgetController` is the controller component that manages initialization, playback, destruction, and other logic of the player component.
+`AliPlayerWidgetController` is the controller component (Controller) that manages initialization, playback, destruction, and other logic of the player component.
 
-### **Primary Methods**
+### **2.1 Primary Methods**
 
 - **`configure(AliPlayerWidgetData data)`**: Configures the data source.
 - **`play()`**: Starts video playback.
@@ -57,62 +57,28 @@ AliPlayerWidget(
 
 ## **3. AliPlayerWidgetData (Data)**
 
-`AliPlayerWidgetData` is the data model (Data) required by the player component, containing video URL, cover image, title, and other information.
+`AliPlayerWidgetData` is the data model (Data) of the player component, containing video URL, cover image, title, and other information.
 
-### **Attributes**
+### **3.1 Attributes**
 
 - **`videoSource`**: Video playback source (required).
 - **`coverUrl`**: Cover image URL (optional).
 - **`videoTitle`**: Video title (optional).
 - **`thumbnailUrl`**: Thumbnail URL (optional).
 - **`sceneType`**: Playback scenario type, defaulting to VOD (`SceneType.vod`).
-- **`onPlayerConfig`**: Player custom configuration callback (optional). Called before `prepare()`, with async support. Suitable for player APIs not directly exposed by AliPlayerWidget (e.g., `setConfig`, etc.).
+- **`onPlayerConfig`**: Player custom configuration callback (optional). Called before `prepare()`, with async support. Suitable for player APIs not directly exposed by AliPlayerWidget (e.g., `setConfig`, `setOption`, etc.).
 
 ## **4. Global Configuration (Optional)**
 
-In addition to the three core components mentioned above, AliPlayerWidget also provides an optional global configuration class `AliPlayerWidgetGlobalSetting` for configuring global player behavior, such as cache settings and storage paths. This configuration item is not part of the core components, but global configuration is usually recommended when using AliPlayerWidget.
+In addition to the three core components mentioned above, AliPlayerWidget also provides an optional global configuration class `AliPlayerWidgetGlobalSetting` for configuring global player behavior, such as cache settings and storage paths.
 
-### **Main Functions**
+### **4.1 Main Functions**
 
 - **Global Configuration Initialization**: Initialize global configuration through the [setupConfig] method
 - **Custom Global Config Callback**: Register a callback via [setOnGlobalInit], called after global initialization. Suitable for global APIs not directly exposed by AliPlayerWidget (e.g., `setOption`, etc.).
 - **Storage Path Setting**: Set cache and file storage paths through the [setStoragePaths] method
 - **Cache Management**: Clear all caches through the [clearCaches] method
 
-### **Usage Example**
+### **4.2 Usage Notes**
 
-Initialize global settings at application startup:
-
-```dart
-/// Initialize aliplayer_widget global settings
-Future<void> initializeGlobalSettings() async {
-  // Initialize global configuration
-  await AliPlayerWidgetGlobalSetting.setupConfig();
-
-  String? cachePath;
-  String? filesPath;
-
-  if (Platform.isAndroid) {
-    // Android: Try to use external storage
-    final externalCacheDirs = await getExternalCacheDirectories();
-    cachePath = externalCacheDirs?.isNotEmpty == true
-        ? externalCacheDirs?.first.path
-        : null;
-
-    final externalStorageDir = await getExternalStorageDirectory();
-    filesPath = externalStorageDir?.path;
-  } else {
-    // iOS / Other platforms: Use standard app sandbox directories
-    final cacheDir = await getApplicationCacheDirectory();
-    final docsDir = await getApplicationDocumentsDirectory();
-    cachePath = cacheDir.path;
-    filesPath = docsDir.path;
-  }
-
-  // Set global storage paths
-  AliPlayerWidgetGlobalSetting.setStoragePaths(
-    cachePath: cachePath,
-    filesPath: filesPath,
-  );
-}
-```
+The component already includes recommended optimal global settings by default; usually no extra setup is needed. If customization is required, refer to `example/lib/main.dart` and configure via [AliPlayerWidgetGlobalSetting] related APIs.
