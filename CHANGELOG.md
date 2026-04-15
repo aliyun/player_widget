@@ -10,6 +10,11 @@
   - The new signature: `Widget Function(BuildContext context, AliPlayerWidgetController controller)`.
   - **Backward Compatible**: Old single-parameter `SlotWidgetBuilder` is still supported but deprecated. Automatic signature detection ensures seamless migration.
 
+- **Custom Configuration Callbacks**
+  - Added `OnGlobalInitCallback` via `AliPlayerWidgetGlobalSetting.setOnGlobalInit`, called after global initialization for custom global settings (e.g., `setOption`).
+  - Added `OnPlayerConfigCallback` via `AliPlayerWidgetData.onPlayerConfig`, called before `prepare()` for per-instance player configuration (e.g., `setConfig`, `setOption`). Supports async operations (`FutureOr<void>`).
+  - Enables customers to configure player APIs not directly exposed by AliPlayerWidget within the best-practice configuration flow.
+
 ### **Improvements**
 
 - **Simplified Fullscreen Toggle Logic**

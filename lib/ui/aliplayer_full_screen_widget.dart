@@ -72,15 +72,15 @@ class AliPlayerScreenFullWidgetState extends State<AliPlayerFullScreenWidget> {
     FullScreenUtil.enterFullScreen();
 
     _fullController = AliPlayerWidgetController(context);
-    _fullController.configure(widget.data);
-
-    widget.controller.syncStateTo(_fullController).then((_) {
-      // 以指定位置起播
-      _fullController._aliPlayer.setStartTime(
-        widget.data.startTime,
-        widget.data.seekMode,
-      );
-      _fullController.play();
+    _fullController.configure(widget.data).then((_) {
+      widget.controller.syncStateTo(_fullController).then((_) {
+        // 以指定位置起播
+        _fullController._aliPlayer.setStartTime(
+          widget.data.startTime,
+          widget.data.seekMode,
+        );
+        _fullController.play();
+      });
     });
 
     // 暂停竖屏页面视频

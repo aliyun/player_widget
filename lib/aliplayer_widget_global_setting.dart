@@ -6,6 +6,27 @@
 
 part of 'aliplayer_widget_lib.dart';
 
+/// 全局初始化自定义配置回调
+///
+/// Global initialization custom configuration callback.
+///
+/// 在 Widget 全局初始化完成后调用，允许用户执行自定义的全局设置操作，
+/// 例如 setOption、mediaLoader 配置等。
+///
+/// 适用于全局级别的配置（如全局 setOption、mediaLoader 等），
+/// 与实例级别的 [OnPlayerConfigCallback] 互补：
+/// - 全局配置 → 使用 [OnGlobalInitCallback]，通过 [AliPlayerWidgetGlobalSetting.setOnGlobalInit] 注册
+/// - 实例配置 → 使用 [OnPlayerConfigCallback]，通过 [AliPlayerWidgetData.onPlayerConfig] 注入
+///
+/// Called after Widget global initialization is complete, allowing users to perform
+/// custom global setup operations such as setOption, mediaLoader configuration, etc.
+///
+/// This callback is designed for global-level configuration and complements
+/// the instance-level [OnPlayerConfigCallback]:
+/// - Global config → Use [OnGlobalInitCallback] via [AliPlayerWidgetGlobalSetting.setOnGlobalInit]
+/// - Instance config → Use [OnPlayerConfigCallback] via [AliPlayerWidgetData.onPlayerConfig]
+typedef OnGlobalInitCallback = void Function();
+
 /// AliPlayer Widget Global Setting
 ///
 /// AliPlayer Widget 全局配置
@@ -16,8 +37,10 @@ class AliPlayerWidgetGlobalSetting {
   static const String kWidgetVersion = '7.12.2';
 
   /// extra data for global settings
-  ///
   /// 业务场景信息的 JSON 字符串
+  ///
+  /// used by AliPlayerWidget for capability recognition, please do not override
+  /// 用于 AliPlayerWidget 能力识别，请勿覆盖
   static const String _extraData =
       "{\"scene\":\"flutter-widget\", \"version\":\"$kWidgetVersion\"}";
 
@@ -54,6 +77,40 @@ class AliPlayerWidgetGlobalSetting {
   /// 标志变量，用于确保全局配置只执行一次
   static bool _isInitialized = false;
 
+  /// 全局初始化自定义配置回调
+  ///
+  /// Global initialization custom configuration callback
+  static OnGlobalInitCallback? _onGlobalInitCallback;
+
+  /// 注册全局初始化自定义配置回调
+  ///
+  /// Register a callback for custom global initialization configuration.
+  ///
+  /// 该回调会在 Widget 内部全局初始化完成后被调用，允许用户执行额外的全局设置操作。
+  /// 建议在 Widget 使用前调用此方法（如 main() 中），确保全局配置在播放器创建前生效。
+  ///
+  /// 对于未通过 [AliPlayerWidgetGlobalSetting] 直接透出的全局接口
+  /// （如自定义 setOption 等），建议在此回调中自行调用实现。
+  ///
+  /// The callback is invoked after the Widget's internal global initialization is complete,
+  /// allowing users to perform additional global setup operations.
+  /// It is recommended to call this method before using the Widget (e.g., in main())
+  /// to ensure global configuration takes effect before any player is created.
+  ///
+  /// For global APIs not directly exposed by [AliPlayerWidgetGlobalSetting]
+  /// (e.g., custom setOption etc.), it is recommended to call them
+  /// within this callback.
+  ///
+  /// 使用示例 / Usage example:
+  /// ```dart
+  /// AliPlayerWidgetGlobalSetting.setOnGlobalInit(() {
+  ///   // 其他全局配置...
+  /// });
+  /// ```
+  static void setOnGlobalInit(OnGlobalInitCallback? callback) {
+    _onGlobalInitCallback = callback;
+  }
+
   /// Setup global configuration.
   /// Internally set, no need to call externally again.
   ///
@@ -68,13 +125,16 @@ class AliPlayerWidgetGlobalSetting {
 
     // 设置业务标识
     _setupExtraData();
+
+    // 调用客户自定义全局配置回调
+    _onGlobalInitCallback?.call();
   }
 
   /// Setup extra data for global settings.
   ///
   /// 配置全局缓存设置的额外数据
   static void _setupExtraData() {
-    // 设置业务标识
+    // 设置业务标识（用于 AliPlayerWidget 能力识别，请勿覆盖）
     FlutterAliPlayerGlobalSettings.setOption(
       AliPlayerGlobalSettings.SET_EXTRA_DATA,
       _extraData,

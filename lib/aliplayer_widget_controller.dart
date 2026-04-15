@@ -600,7 +600,7 @@ class AliPlayerWidgetController {
   /// Configure the player controller with the given data.
   ///
   /// [data] The configuration data for the player, including video URL and other settings.
-  void configure(AliPlayerWidgetData data) {
+  Future<void> configure(AliPlayerWidgetData data) async {
     logi("[api][configure]: $data");
 
     _widgetData = data;
@@ -624,6 +624,9 @@ class AliPlayerWidgetController {
     _aliPlayer.setStartTime(data.startTime, data.seekMode);
 
     _aliPlayer.setAutoPlay(data.autoPlay);
+
+    // 调用客户自定义播放器配置回调（prepare 前）
+    await data.onPlayerConfig?.call(_aliPlayer);
 
     // 准备播放
     prepare();

@@ -66,6 +66,7 @@ AliPlayerWidget(
 - **`videoTitle`**: Video title (optional).
 - **`thumbnailUrl`**: Thumbnail URL (optional).
 - **`sceneType`**: Playback scenario type, defaulting to VOD (`SceneType.vod`).
+- **`onPlayerConfig`**: Player custom configuration callback (optional). Called before `prepare()`, with async support. Suitable for player APIs not directly exposed by AliPlayerWidget (e.g., `setConfig`, etc.).
 
 ## **4. Global Configuration (Optional)**
 
@@ -74,6 +75,7 @@ In addition to the three core components mentioned above, AliPlayerWidget also p
 ### **Main Functions**
 
 - **Global Configuration Initialization**: Initialize global configuration through the [setupConfig] method
+- **Custom Global Config Callback**: Register a callback via [setOnGlobalInit], called after global initialization. Suitable for global APIs not directly exposed by AliPlayerWidget (e.g., `setOption`, etc.).
 - **Storage Path Setting**: Set cache and file storage paths through the [setStoragePaths] method
 - **Cache Management**: Clear all caches through the [clearCaches] method
 

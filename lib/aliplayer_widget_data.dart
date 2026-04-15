@@ -6,6 +6,31 @@
 
 part of 'aliplayer_widget_lib.dart';
 
+/// 实例级别播放器自定义配置回调
+///
+/// Instance-level player custom configuration callback.
+///
+/// 在播放器 prepare() 之前调用，允许用户对播放器实例进行自定义配置，
+/// 例如 setConfig（设置缓冲、refer 等）、setOption 等。
+/// 支持异步操作（如 getConfig/setConfig），Widget 会等待回调完成后再执行 prepare()。
+///
+/// 适用于实例级别的播放器配置，与全局级别的 [OnGlobalInitCallback] 互补：
+/// - 实例配置 → 使用 [OnPlayerConfigCallback]，通过 [AliPlayerWidgetData.onPlayerConfig] 注入
+/// - 全局配置 → 使用 [OnGlobalInitCallback]，通过 [AliPlayerWidgetGlobalSetting.setOnGlobalInit] 注册
+///
+/// Called before player prepare(), allowing users to customize the player instance,
+/// such as setConfig (buffer, referer, etc.), setOption, etc.
+/// Supports async operations (e.g., getConfig/setConfig). The Widget will await
+/// the callback completion before calling prepare().
+///
+/// This callback is designed for instance-level player configuration and complements
+/// the global-level [OnGlobalInitCallback]:
+/// - Instance config → Use [OnPlayerConfigCallback] via [AliPlayerWidgetData.onPlayerConfig]
+/// - Global config → Use [OnGlobalInitCallback] via [AliPlayerWidgetGlobalSetting.setOnGlobalInit]
+typedef OnPlayerConfigCallback = FutureOr<void> Function(
+  FlutterAliplayer player,
+);
+
 /// 播放场景类型
 ///
 /// Playback scene type
@@ -471,6 +496,44 @@ class AliPlayerWidgetData {
   /// External Subtitle Position Configuration
   SubtitlePositionConfig? subtitlePositionConfig;
 
+  /// 播放器自定义配置回调
+  ///
+  /// Player custom configuration callback.
+  ///
+  /// 在播放器 prepare() 之前调用，允许用户对播放器实例进行自定义配置，
+  /// 例如通过 setPlayConfig 设置缓冲策略、refer 等。
+  /// 支持异步操作（如 getConfig/setConfig），Widget 会等待回调完成后再执行 prepare()。
+  ///
+  /// 对于未通过 [AliPlayerWidgetController] 直接透出的播放器接口
+  /// （如 setConfig、setOption、setFilterConfig 等），建议在此回调中自行调用实现。
+  ///
+  /// Called before player prepare(), allowing users to customize the player instance,
+  /// such as setting buffer strategy, referer via setPlayConfig, etc.
+  /// Supports async operations (e.g., getConfig/setConfig). The Widget will await
+  /// the callback completion before calling prepare().
+  ///
+  /// For player APIs not directly exposed by [AliPlayerWidgetController]
+  /// (e.g., setConfig, setOption, setFilterConfig, etc.), it is recommended
+  /// to call them within this callback.
+  ///
+  /// 使用示例 / Usage example:
+  /// ```dart
+  /// AliPlayerWidgetData(
+  ///   videoSource: ...,
+  ///   onPlayerConfig: (player) async {
+  ///     // 设置缓冲策略和 Referer
+  ///     var config = await player.getConfig();
+  ///     config.maxBufferDuration = 2000;
+  ///     config.referer = "your referer";
+  ///     await player.setConfig(config);
+  ///
+  ///     // 设置其他选项
+  ///     player.setOption(FlutterAvpdef.ALLOW_PRE_RENDER, 1);
+  ///   },
+  /// );
+  /// ```
+  final OnPlayerConfigCallback? onPlayerConfig;
+
   /// 构造函数，用于创建 [AliPlayerWidgetData] 实例。
   ///
   /// Constructor to create an instance of [AliPlayerWidgetData].
@@ -490,6 +553,7 @@ class AliPlayerWidgetData {
   /// - [isHardWareDecode]：是否开启硬解码，默认为true。
   /// - [subtitleConfig]：字幕配置，默认为默认配置。
   /// - [subtitleBuilder]：字幕构建器，可以为空。
+  /// - [onPlayerConfig]：播放器自定义配置回调，在 prepare() 前调用，可以为空。
   ///
   /// Parameters:
   /// - [sceneType]: The type of video scene, defaulting to Video On Demand (VOD).
@@ -507,6 +571,7 @@ class AliPlayerWidgetData {
   /// - [isHardWareDecode]: Whether to enable hardwareDecoder , default is true.
   /// - [subtitleConfig]: Subtitle configuration, default is default configuration.
   /// - [subtitleBuilder]: Subtitle builder, can be null.
+  /// - [onPlayerConfig]: Player custom configuration callback, called before prepare(), can be null.
   AliPlayerWidgetData({
     this.sceneType = SceneType.vod,
     VideoSource? videoSource,
@@ -524,6 +589,7 @@ class AliPlayerWidgetData {
     this.subtitleConfig = const SubtitleConfig(),
     this.subtitleBuilder,
     this.subtitlePositionConfig,
+    this.onPlayerConfig,
   }) : assert(startTime >= 0, "Start time must be non-negative") {
     // 初始化 videoSource：
     // 1. 如果提供了 videoSource，则直接使用
@@ -583,6 +649,6 @@ class AliPlayerWidgetData {
   /// Convert [AliPlayerWidgetData] instance to string.
   @override
   String toString() {
-    return 'AliPlayerWidgetData{sceneType: $sceneType, videoSource: $videoSource, coverUrl: $coverUrl, videoTitle: $videoTitle, thumbnailUrl: $thumbnailUrl, externalSubtitleUrl: $externalSubtitleUrl, autoPlay: $autoPlay, traceId: $traceId, startTime: $startTime, seekMode: $seekMode, isHardWareDecode: $isHardWareDecode, allowedScreenSleep: $allowedScreenSleep, subtitleConfig: $subtitleConfig, subtitleBuilder: $subtitleBuilder}';
+    return 'AliPlayerWidgetData{sceneType: $sceneType, videoSource: $videoSource, coverUrl: $coverUrl, videoTitle: $videoTitle, thumbnailUrl: $thumbnailUrl, externalSubtitleUrl: $externalSubtitleUrl, autoPlay: $autoPlay, traceId: $traceId, startTime: $startTime, seekMode: $seekMode, isHardWareDecode: $isHardWareDecode, allowedScreenSleep: $allowedScreenSleep, subtitleConfig: $subtitleConfig, subtitleBuilder: $subtitleBuilder, subtitlePositionConfig: $subtitlePositionConfig, onPlayerConfig: $onPlayerConfig}';
   }
 }

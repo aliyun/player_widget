@@ -66,6 +66,7 @@ AliPlayerWidget(
 - **`videoTitle`**: 视频标题（可选）。
 - **`thumbnailUrl`**: 缩略图地址（可选）。
 - **`sceneType`**: 播放场景类型，默认为点播（`SceneType.vod`）。
+- **`onPlayerConfig`**: 播放器自定义配置回调（可选）。在 `prepare()` 前调用，支持异步操作。适用于 AliPlayerWidget 未直接透出的播放器接口（如 `setConfig`、`setOption` 等），可在回调中自行调用实现。
 
 ## **4. 全局配置项（可选）**
 
@@ -74,6 +75,7 @@ AliPlayerWidget(
 ### **主要功能**
 
 - **全局配置初始化**: 通过 [setupConfig] 方法初始化全局配置
+- **自定义全局配置回调**: 通过 [setOnGlobalInit] 方法注册回调，在全局初始化完成后调用。适用于 AliPlayerWidget 未直接透出的全局接口（如 `setOption` 等），可在回调中自行调用实现。
 - **存储路径设置**: 通过 [setStoragePaths] 方法设置缓存和文件存储路径
 - **缓存管理**: 通过 [clearCaches] 方法清除所有缓存
 
