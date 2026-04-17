@@ -82,13 +82,14 @@ class _AliPlayerCustomSwitchWidgetState
           widget.text,
           style: const TextStyle(
             fontSize: 12,
-            color: Colors.black,
+            color: Colors.white,
           ),
         ),
         const SizedBox(width: 4),
         Icon(
           widget.startIcon,
           size: 16,
+          color: Colors.white,
         ),
         const SizedBox(width: 4),
         // 开关

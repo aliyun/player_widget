@@ -169,7 +169,7 @@ class _AliPlayerSettingMenuPanelState extends State<AliPlayerSettingMenuPanel>
     return Container(
       width: MediaQuery.of(context).size.width * 0.6,
       height: double.infinity,
-      color: Colors.white.withOpacity(0.3),
+      color: Colors.black.withOpacity(0.3),
       child: SafeArea(
         child: SingleChildScrollView(
           padding: const EdgeInsets.symmetric(horizontal: 8.0),
