@@ -20,6 +20,16 @@ class DebugPage extends StatefulWidget {
 }
 
 class _DebugPageState extends State<DebugPage> with WidgetsBindingObserver {
+  /// 描述 VOD 组件的功能和特点
+  ///
+  /// A detailed description of the VOD component's features and capabilities.
+  static const String _vodComponentDescription =
+      'A powerful and flexible VOD component for Flutter applications.\n'
+      'It integrates with flutter_aliplayer to provide high-quality video playback, seamless streaming, '
+      'and a rich set of features for both live and on-demand video content.\n'
+      'Whether you are building a video playback solution for education, entertainment, or any other application, '
+      'it makes it easy to deliver an engaging video experience.\n';
+
   /// 播放器组件控制器
   late AliPlayerWidgetController _controller;
 
@@ -28,37 +38,19 @@ class _DebugPageState extends State<DebugPage> with WidgetsBindingObserver {
   /// Builds the UI of the demo page, including an AppBar and the AliPlayer widget.
   @override
   Widget build(BuildContext context) {
-    return OrientationBuilder(
-      builder: (context, orientation) {
-        return Scaffold(
-          appBar: _buildAppBar(orientation),
-          body: _buildContentBody(orientation),
-          backgroundColor: Colors.black,
-        );
-      },
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text("Debug Page"),
+      ),
+      body: Column(
+        children: [
+          _buildDescriptionText(),
+          _buildPlayWidget(),
+          _buildBottomContainer(),
+        ],
+      ),
+      backgroundColor: Colors.black,
     );
-  }
-
-  /// 构建 AppBar，横屏模式下不显示
-  AppBar? _buildAppBar(Orientation orientation) {
-    return orientation == Orientation.portrait
-        ? AppBar(
-            title: const Text("Debug Page"),
-          )
-        : null;
-  }
-
-  /// 构建主体内容
-  Widget _buildContentBody(Orientation orientation) {
-    return orientation == Orientation.portrait
-        ? Column(
-            children: [
-              _buildDescriptionText(),
-              _buildPlayWidget(),
-              _buildBottomContainer(),
-            ],
-          )
-        : _buildPlayWidget();
   }
 
   /// 构建播放器组件
@@ -77,7 +69,7 @@ class _DebugPageState extends State<DebugPage> with WidgetsBindingObserver {
             horizontal: 20,
           ),
           child: Text(
-            DemoConstants.vodComponentDescription,
+            _vodComponentDescription,
             style: TextStyle(
               color: Colors.white,
               fontSize: 18,
@@ -105,20 +97,16 @@ class _DebugPageState extends State<DebugPage> with WidgetsBindingObserver {
   void initState() {
     super.initState();
 
-    // 添加观察者
-    WidgetsBinding.instance.addObserver(this);
-
     // 初始化播放器组件控制器
     _controller = AliPlayerWidgetController(context);
 
     // 设置播放器视频源
-    final videoSource = VideoSourceFactory.createUrlSource(
-      DemoConstants.sampleVideoUrl,
+    final videoSource = VideoSourceFactory.createVidAuthSource(
+      vid: DemoConstants.sampleVid,
+      playAuth: DemoConstants.samplePlayAuth,
     );
     // 设置播放器组件数据
-    final data = AliPlayerWidgetData(
-      videoSource: videoSource,
-    );
+    final data = AliPlayerWidgetData(videoSource: videoSource);
     _controller.configure(data);
   }
 
@@ -128,9 +116,6 @@ class _DebugPageState extends State<DebugPage> with WidgetsBindingObserver {
   /// Called when the widget is removed from the tree permanently. Used to release resources.
   @override
   void dispose() {
-    // 移除观察者
-    WidgetsBinding.instance.removeObserver(this);
-
     // 销毁播放控制器
     _controller.destroy();
 

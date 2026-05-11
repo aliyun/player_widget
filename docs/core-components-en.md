@@ -12,14 +12,12 @@ AliPlayerWidget adopts an MVC-inspired layered design, separating the view (View
 AliPlayerWidget(
   AliPlayerWidgetController controller, {
   Key? key,
-  List<Widget> overlays = const [],
   Map<SlotType, SlotWidgetBuilder?> slotBuilders = const {},
   OnBackPressedCallback? onBackPressed,
 });
 ```
 
 - **`controller`**: The player controller used to manage playback logic.
-- **`overlays`**: Optional list of overlay components to stack custom UI elements over the player component (deprecated, use `slotBuilders` instead).
 - **`slotBuilders`**: Optional slot builder map, allowing customization of how each slot is built. See [Slot System](slot-system-en.md) for details.
 - **`onBackPressed`**: Optional back button press callback. Called when the user presses the back button. Returns `true` to indicate the event was handled and no default action is needed; returns `false` or `null` to execute the default behavior (`Navigator.pop`).
 
@@ -66,7 +64,7 @@ AliPlayerWidget(
 - **`videoTitle`**: Video title (optional).
 - **`thumbnailUrl`**: Thumbnail URL (optional).
 - **`sceneType`**: Playback scenario type, defaulting to VOD (`SceneType.vod`).
-- **`onPlayerConfig`**: Player custom configuration callback (optional). Called before `prepare()`, with async support. Suitable for player APIs not directly exposed by AliPlayerWidget (e.g., `setConfig`, `setOption`, etc.).
+- **`onPlayerConfig`**: Player custom configuration callback (optional). See [Custom Configuration](./advanced/custom-config-en.md) for details.
 
 ## **4. Global Configuration (Optional)**
 
@@ -75,10 +73,10 @@ In addition to the three core components mentioned above, AliPlayerWidget also p
 ### **4.1 Main Functions**
 
 - **Global Configuration Initialization**: Initialize global configuration through the [setupConfig] method
-- **Custom Global Config Callback**: Register a callback via [setOnGlobalInit], called after global initialization. Suitable for global APIs not directly exposed by AliPlayerWidget (e.g., `setOption`, etc.).
 - **Storage Path Setting**: Set cache and file storage paths through the [setStoragePaths] method
 - **Cache Management**: Clear all caches through the [clearCaches] method
+- **Custom Configuration**: Supports global-level and instance-level custom configuration. See [Custom Configuration](./advanced/custom-config-en.md) for details.
 
 ### **4.2 Usage Notes**
 
-The component already includes recommended optimal global settings by default; usually no extra setup is needed. If customization is required, refer to `example/lib/main.dart` and configure via [AliPlayerWidgetGlobalSetting] related APIs.
+The component already includes recommended optimal global settings by default; usually no extra setup is needed. If customization is required, refer to the [Custom Configuration](./advanced/custom-config-en.md) documentation.

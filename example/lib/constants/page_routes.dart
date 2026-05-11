@@ -5,7 +5,6 @@
 // Brief: 页面路由常量
 
 import 'package:aliplayer_widget_example/pages/home/home_page_item.dart';
-import 'package:aliplayer_widget_example/pages/slot/slot_demo_page.dart';
 import 'package:flutter/material.dart';
 
 /// 页面路由常量
@@ -27,11 +26,8 @@ class PageRoutes {
   /// 短视频页面（支持预加载）
   static const String preloadShortVideo = '/preload_short_video';
 
-  /// 直播播放页面（横屏）
-  static const String liveLandscape = '/live/landscape';
-
-  /// 直播播放页面（竖屏）
-  static const String livePortrait = '/live/portrait';
+  /// 直播播放页面
+  static const String live = '/live';
 
   /// 外挂字幕演示页面
   static const String externalSubtitle = '/external_subtitle';
@@ -48,6 +44,12 @@ class PageRoutes {
   /// 插槽系统演示页面
   static const String slotDemo = '/slot_demo';
 
+  /// 策略系统演示页面
+  static const String strategyDemo = '/strategy_demo';
+
+  /// 国际化自定义演示页面
+  static const String i18nDemo = '/i18n_demo';
+
   /// 首页按钮配置
   ///
   /// A static list of home item configurations
@@ -58,14 +60,9 @@ class PageRoutes {
       pageRoute: longVideo,
     ),
     const HomePageItemConfig(
-      name: '直播播放（横屏）',
+      name: '直播播放',
       icon: Icons.live_tv_rounded,
-      pageRoute: liveLandscape,
-    ),
-    const HomePageItemConfig(
-      name: '直播播放（竖屏）',
-      icon: Icons.interpreter_mode_rounded,
-      pageRoute: livePortrait,
+      pageRoute: live,
     ),
     const HomePageItemConfig(
       name: '短视频',
@@ -86,6 +83,16 @@ class PageRoutes {
       name: '插槽系统演示',
       icon: Icons.extension,
       pageRoute: slotDemo,
+    ),
+    const HomePageItemConfig(
+      name: '策略系统演示',
+      icon: Icons.analytics_outlined,
+      pageRoute: strategyDemo,
+    ),
+    const HomePageItemConfig(
+      name: '国际化自定义',
+      icon: Icons.translate,
+      pageRoute: i18nDemo,
     ),
     const HomePageItemConfig(
       name: '设置页',

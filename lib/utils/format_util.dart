@@ -4,11 +4,13 @@
 // Date: 2025/2/11
 // Brief: 格式化工具类
 
+import 'package:aliplayer_widget/i18n/player_i18n.dart';
+import 'package:aliplayer_widget/i18n/player_i18n_keys.dart';
 import 'package:flutter_aliplayer/flutter_avpdef.dart';
 
 /// 格式化工具类
 ///
-/// format util
+/// Format util
 class FormatUtil {
   // 私有构造函数，防止实例化
   FormatUtil._();
@@ -41,33 +43,86 @@ class FormatUtil {
 
   /// 格式化渲染填充模式
   ///
+  /// Format scale mode with i18n support.
+  ///
   /// [scaleMode] 渲染填充模式
   static String formatScaleMode(int scaleMode) {
     switch (scaleMode) {
       case ScaleMode.SCALE_TO_FILL:
-        return 'ScaleToFill';
+        return PlayerI18n.t(PlayerI18nKeys.scaleFill);
       case ScaleMode.SCALE_ASPECT_FIT:
-        return 'ScaleAspectFit';
+        return PlayerI18n.t(PlayerI18nKeys.scaleFit);
       case ScaleMode.SCALE_ASPECT_FILL:
-        return 'ScaleAspectFill';
+        return PlayerI18n.t(PlayerI18nKeys.scaleCrop);
       default:
-        return 'Unknown';
+        return PlayerI18n.t(PlayerI18nKeys.qualityUnknown);
     }
   }
 
   /// 格式化镜像模式
   ///
+  /// Format mirror mode with i18n support.
+  ///
   /// [mirrorMode] 镜像模式
   static String formatMirrorMode(int mirrorMode) {
     switch (mirrorMode) {
       case MirrorMode.MIRROR_MODE_NONE:
-        return 'None';
+        return PlayerI18n.t(PlayerI18nKeys.mirrorNone);
       case MirrorMode.MIRROR_MODE_HORIZONTAL:
-        return 'Horizontal';
+        return PlayerI18n.t(PlayerI18nKeys.mirrorHorizontal);
       case MirrorMode.MIRROR_MODE_VERTICAL:
-        return 'Vertical';
+        return PlayerI18n.t(PlayerI18nKeys.mirrorVertical);
       default:
-        return 'Unknown';
+        return PlayerI18n.t(PlayerI18nKeys.mirrorNone);
+    }
+  }
+
+  /// 格式化倍速显示
+  ///
+  /// Format speed with i18n support.
+  ///
+  /// Examples:
+  /// - Chinese: "1.5倍速"
+  /// - English: "1.5x Speed"
+  ///
+  /// [speed] 播放速度
+  static String formatSpeed(double speed) {
+    return PlayerI18n.t(
+      PlayerI18nKeys.speedFormat,
+      {'speed': speed.toString()},
+    );
+  }
+
+  /// 格式化旋转角度
+  ///
+  /// Format rotation degree.
+  ///
+  /// [degree] 旋转角度
+  static String formatRotate(int degree) {
+    return PlayerI18n.t(
+      PlayerI18nKeys.rotateFormat,
+      {'degree': degree.toString()},
+    );
+  }
+
+  /// 格式化网络速度
+  ///
+  /// Format net speed
+  static String formatBps(int bps) {
+    if (bps < 0) return '0 bps'; // 处理负数情况
+
+    if (bps < 1000) {
+      // 小于 1000，显示 bps
+      return '${bps.toStringAsFixed(0)} bps';
+    } else if (bps < 1000 * 1000) {
+      // 1,000 ~ 999,999 -> kbps
+      return '${(bps / 1000).toStringAsFixed(2)} kbps';
+    } else if (bps < 1000 * 1000 * 1000) {
+      // 1,000,000 ~ 999,999,999 -> Mbps
+      return '${(bps / 1000 / 1000).toStringAsFixed(2)} Mbps';
+    } else {
+      // >= 1,000,000,000 -> Gbps
+      return '${(bps / 1000 / 1000 / 1000).toStringAsFixed(2)} Gbps';
     }
   }
 }

@@ -7,6 +7,7 @@
 import 'package:aliplayer_widget/aliplayer_widget_lib.dart';
 
 import 'slot_config.dart';
+import 'slot_elements.dart';
 
 /// 插槽常量定义类。
 ///
@@ -14,30 +15,6 @@ import 'slot_config.dart';
 class SlotConstants {
   // 私有构造函数，防止实例化
   SlotConstants._();
-
-  /// 播放器可用的所有插槽类型列表。
-  ///
-  /// List of all available slot types in the player.
-  ///
-  /// 插槽（Slot）用于承载播放器的不同 UI 组件，例如字幕、封面图、
-  /// 播放控制栏、顶部栏和底部栏等。此列表定义播放器初始化时默认
-  /// 会加载的全部插槽。
-  ///
-  /// Slots are used to host different UI components of the player such as
-  /// subtitles, cover images, playback controls, top bar, bottom bar, etc.
-  /// This list defines all default slots that are initialized with the player.
-  static const List<SlotType> slotTypes = <SlotType>[
-    SlotType.playerSurface,
-    SlotType.subtitle,
-    SlotType.coverImage,
-    SlotType.playControl,
-    SlotType.topBar,
-    SlotType.bottomBar,
-    SlotType.seekThumbnail,
-    SlotType.centerDisplay,
-    SlotType.playState,
-    SlotType.settingMenu,
-  ];
 
   /// 插槽配置映射。
   ///
@@ -165,6 +142,45 @@ class SlotConstants {
     SlotType.subtitle: SlotConfig(
       excludedScenes: {
         SceneType.minimal,
+      },
+    ),
+  };
+
+  /// 设置菜单元素级别的场景配置映射。
+  ///
+  /// Setting menu element-level scene configuration map.
+  ///
+  /// Key 为 [SettingMenuElements] 常量，Value 为该元素的 [SlotConfig]。
+  /// 用于定义设置面板中各设置项在不同播放场景下的可见性，
+  /// 与插槽级别的 [slotConfigs] 保持一致的配置模式。
+  ///
+  /// The key is a [SettingMenuElements] constant, and the value is the
+  /// corresponding [SlotConfig]. Used to define visibility of individual
+  /// setting items under different playback scenes.
+  static const Map<String, SlotConfig> settingElementConfigs =
+      <String, SlotConfig>{
+    /// 倍速：直播和受限场景不可用
+    /// Speed: unavailable in live and restricted scenes
+    SettingMenuElements.speed: SlotConfig(
+      excludedScenes: {
+        SceneType.live,
+        SceneType.restricted,
+      },
+    ),
+
+    /// 循环播放：直播场景不可用
+    /// Loop: unavailable in live scene
+    SettingMenuElements.loop: SlotConfig(
+      excludedScenes: {
+        SceneType.live,
+      },
+    ),
+
+    /// 字幕开关：直播场景不可用
+    /// Subtitle: unavailable in live scene
+    SettingMenuElements.subtitle: SlotConfig(
+      excludedScenes: {
+        SceneType.live,
       },
     ),
   };

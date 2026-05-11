@@ -58,6 +58,11 @@ class SettingConstants {
   /// Default mute state.
   static const bool defaultIsMute = false;
 
+  /// 默认的镜像模式
+  ///
+  /// Default mirror mode.
+  static const int defaultMirrorMode = MirrorMode.MIRROR_MODE_NONE;
+
   /// 可选的镜像模式
   ///
   /// Available mirror mode options.
@@ -66,11 +71,6 @@ class SettingConstants {
     MirrorMode.MIRROR_MODE_HORIZONTAL,
     MirrorMode.MIRROR_MODE_VERTICAL,
   ];
-
-  /// 默认的镜像模式
-  ///
-  /// Default mirror mode.
-  static const int defaultMirrorMode = MirrorMode.MIRROR_MODE_NONE;
 
   /// 可选的旋转角度
   ///
@@ -99,5 +99,5 @@ class SettingConstants {
   /// 默认的渲染填充模式
   ///
   /// Default scale mode.
-  static const int defaultScaleMode = ScaleMode.SCALE_ASPECT_FILL;
+  static const int defaultScaleMode = ScaleMode.SCALE_ASPECT_FIT;
 }

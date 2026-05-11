@@ -6,18 +6,6 @@
 
 import 'package:flutter/material.dart';
 
-class SubtitlePositionConfig {
-  final double? bottom;
-  final double? left;
-  final double? right;
-
-  const SubtitlePositionConfig({
-    this.bottom = 0,
-    this.left = 0,
-    this.right = 0,
-  });
-}
-
 /// 字幕样式配置
 class SubtitleStyleConfig {
   final TextStyle textStyle;
@@ -70,12 +58,21 @@ class SubtitleStyleConfig {
 /// 完整的字幕配置
 class SubtitleConfig {
   final SubtitleStyleConfig styleConfig;
+
+  /// 字幕位置偏移
+  ///
+  /// Subtitle position offset within the player area.
+  /// Uses [EdgeInsets] to define the offset from each edge.
+  /// Only [bottom], [left], and [right] are used by the subtitle widget.
+  final EdgeInsets position;
+
   final bool enableAnimation;
   final Duration animationDuration;
   final Curve animationCurve;
 
   const SubtitleConfig({
     this.styleConfig = const SubtitleStyleConfig(),
+    this.position = const EdgeInsets.only(bottom: 0),
     this.enableAnimation = false,
     this.animationDuration = const Duration(milliseconds: 300),
     this.animationCurve = Curves.easeInOut,
@@ -83,12 +80,14 @@ class SubtitleConfig {
 
   SubtitleConfig copyWith({
     SubtitleStyleConfig? styleConfig,
+    EdgeInsets? position,
     bool? enableAnimation,
     Duration? animationDuration,
     Curve? animationCurve,
   }) {
     return SubtitleConfig(
       styleConfig: styleConfig ?? this.styleConfig,
+      position: position ?? this.position,
       enableAnimation: enableAnimation ?? this.enableAnimation,
       animationDuration: animationDuration ?? this.animationDuration,
       animationCurve: animationCurve ?? this.animationCurve,

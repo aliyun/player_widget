@@ -41,6 +41,8 @@
 
 ## **二、添加依赖**
 
+`aliplayer_widget` 内部已依赖 `flutter_aliplayer`。大多数场景下，您只需添加 `aliplayer_widget` 即可。如果您需要直接使用底层 API（如 MediaLoader 预加载），可额外显式声明 `flutter_aliplayer`。
+
 您可以通过以下任一方式添加依赖：
 
 ### **方式一：使用命令行添加（推荐）**
@@ -48,7 +50,10 @@
 在项目根目录下执行以下命令：
 
 ```bash
+# 必须
 flutter pub add aliplayer_widget
+
+# 可选：仅当您需要直接使用 flutter_aliplayer 底层 API 时添加
 flutter pub add flutter_aliplayer
 ```
 
@@ -58,7 +63,10 @@ flutter pub add flutter_aliplayer
 
 ```yaml
 dependencies:
+  # 必须
   aliplayer_widget: <latest_version>
+
+  # 可选：仅当您需要直接使用 flutter_aliplayer 底层 API 时添加
   flutter_aliplayer: <latest_version>
 ```
 

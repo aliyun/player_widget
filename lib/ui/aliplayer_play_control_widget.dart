@@ -107,6 +107,11 @@ class _AliPlayerPlayControlWidgetState
   /// Cached flag for whether right vertical drag gesture is enabled.
   bool? _isRightVerticalDragEnabled;
 
+  /// 缓存的隐藏元素配置，避免重复遍历 widget tree
+  ///
+  /// Cached hidden elements configuration to avoid repeated widget tree traversal.
+  Set<String> _cachedHiddenElements = const <String>{};
+
   /// 滑动灵敏度阈值（像素）
   ///
   /// Minimum distance (in pixels) required to trigger a drag update.
@@ -193,10 +198,11 @@ class _AliPlayerPlayControlWidgetState
   Widget build(BuildContext context) {
     // 一次性获取隐藏配置，避免重复遍历 widget tree
     // Get hidden config once to avoid repeated widget tree traversal
-    final hiddenElements = SlotManager.getHiddenElements(
+    _cachedHiddenElements = SlotManager.getHiddenElements(
       context,
       SlotType.playControl,
     );
+    final hiddenElements = _cachedHiddenElements;
 
     // 检查各个手势是否被禁用
     final singleTapDisabled =
@@ -315,16 +321,12 @@ class _AliPlayerPlayControlWidgetState
     double screenWidth = MediaQuery.of(context).size.width;
     _isLeftSide = details.globalPosition.dx < screenWidth / 2;
 
-    // 缓存手势启用状态，避免在拖动更新过程中重复检查
-    // Cache gesture enabled states to avoid repeated checks during drag updates
-    final hiddenElements = SlotManager.getHiddenElements(
-      context,
-      SlotType.playControl,
-    );
-    _isLeftVerticalDragEnabled =
-        hiddenElements.isElementVisible(PlayControlElements.leftVerticalDrag);
-    _isRightVerticalDragEnabled =
-        hiddenElements.isElementVisible(PlayControlElements.rightVerticalDrag);
+    // 缓存手势启用状态，复用 build 中已获取的配置，避免在拖动更新过程中重复检查
+    // Cache gesture enabled states, reusing config obtained in build() to avoid repeated checks during drag updates
+    _isLeftVerticalDragEnabled = _cachedHiddenElements
+        .isElementVisible(PlayControlElements.leftVerticalDrag);
+    _isRightVerticalDragEnabled = _cachedHiddenElements
+        .isElementVisible(PlayControlElements.rightVerticalDrag);
 
     // 重置左侧和右侧上次值
     _lastLeftVerticalValue = null;

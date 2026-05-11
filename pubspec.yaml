@@ -3,7 +3,7 @@ description: A high-performance video playback component specifically designed f
 
 # NOTE: Please synchronize and modify the version number here:
 # static const String kWidgetVersion = 'x.y.z';
-version: 7.12.2
+version: 7.14.0
 repository: https://github.com/aliyun/player_widget
 issue_tracker: https://github.com/aliyun/player_widget/issues
 homepage: https://aliyun.github.io/player_widget/
@@ -23,7 +23,7 @@ dependencies:
     sdk: flutter
 
   # The following adds the flutter aliplayer package
-  flutter_aliplayer: ^7.12.0
+  flutter_aliplayer: ^7.14.0
   #  flutter_aliplayer:
   #    path: ../../FlutterSDK/flutter_aliplayer
 
@@ -42,10 +42,10 @@ dev_dependencies:
 flutter:
   uses-material-design: true
 
-  # To add assets to your package, add an assets section, like this:
-  # assets:
-  #   - images/a_dot_burr.jpeg
-  #   - images/a_dot_ham.jpeg
+  assets:
+    # 图标资源（自动包含子目录 2.0x/、3.0x/ 作为分辨率变体）
+    - assets/icons/
+
   #
   # For details regarding assets in packages, see
   # https://flutter.dev/assets-and-images/#from-packages

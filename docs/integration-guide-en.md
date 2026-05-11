@@ -38,6 +38,8 @@ For more initialization configurations, refer to the `aliplayer_widget_example` 
 
 ## **2. Add Dependencies**
 
+`aliplayer_widget` already depends on `flutter_aliplayer` internally. For most users, you only need to add `aliplayer_widget`. If you need direct access to low-level APIs (e.g., MediaLoader for preloading), you can additionally declare `flutter_aliplayer` explicitly.
+
 You can add dependencies using either of the following methods:
 
 ### **Method 1: Command Line Addition (Recommended)**
@@ -45,7 +47,10 @@ You can add dependencies using either of the following methods:
 Execute the following commands in the project root directory:
 
 ```bash
+# Required
 flutter pub add aliplayer_widget
+
+# Optional: only if you need direct access to low-level flutter_aliplayer APIs
 flutter pub add flutter_aliplayer
 ```
 
@@ -55,7 +60,10 @@ Add the following content to the `dependencies` section of your `pubspec.yaml` f
 
 ```yaml
 dependencies:
+  # Required
   aliplayer_widget: <latest_version>
+
+  # Optional: only if you need direct access to low-level flutter_aliplayer APIs
   flutter_aliplayer: <latest_version>
 ```
 

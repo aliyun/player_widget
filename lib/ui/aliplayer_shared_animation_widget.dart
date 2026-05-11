@@ -23,6 +23,11 @@ abstract class AliPlayerSharedAnimationWidget extends StatefulWidget {
   /// 子类需要实现的方法：构建主体内容
   Widget buildContent(BuildContext context);
 
+  /// 子类可重写此方法，为动画内容提供外层包装（如 Positioned 定位）
+  ///
+  /// Subclasses can override to wrap animated content (e.g., with Positioned).
+  Widget buildWrapper(BuildContext context, Widget child) => child;
+
   @override
   State<AliPlayerSharedAnimationWidget> createState() =>
       _AliPlayerSharedAnimationWidgetState();
@@ -32,7 +37,7 @@ class _AliPlayerSharedAnimationWidgetState
     extends State<AliPlayerSharedAnimationWidget> {
   @override
   Widget build(BuildContext context) {
-    return _buildAnimatedContent(context);
+    return widget.buildWrapper(context, _buildAnimatedContent(context));
   }
 
   /// 构建带有透明度动画的内容

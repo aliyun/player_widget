@@ -49,6 +49,13 @@ android {
             keyAlias "animoji"
             keyPassword "123456"
         }
+
+        debug {
+            storeFile file("$rootDir/release.keystore")
+            storePassword "123456"
+            keyAlias "animoji"
+            keyPassword "123456"
+        }
     }
 
     buildTypes {

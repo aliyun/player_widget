@@ -19,7 +19,7 @@ import 'package:aliplayer_widget/aliplayer_widget_lib.dart';
 void main() {
   // === 0. Initialize global configuration for the player component ===
   // Optional: The component already includes recommended optimal global settings by default; usually no extra setup is needed.
-  // If customization is required, refer to example/lib/main.dart
+  // If customization is required, refer to the "Custom Configuration" documentation
   // Usage: Configure globally via [AliPlayerWidgetGlobalSetting] related APIs
   runApp(const MyApp());
 }

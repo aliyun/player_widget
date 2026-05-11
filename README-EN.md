@@ -10,7 +10,7 @@ Language: [Simplified Chinese](README.md) | English
 
 **AliPlayerWidget** is a high-performance video playback component specifically designed for Flutter applications, built on top of the AliCloud Player SDK `flutter_aliplayer`. It supports multi-scenario adaptation such as Video-on-Demand (VOD), live streaming, playlist playback, and short drama scenes. Additionally, it offers a rich set of features and highly flexible UI customization capabilities, meeting video playback needs across various fields like education, entertainment, e-commerce, and short drama applications.
 
-With a minimalist API design, AliPlayerWidget achieves low-code integration, allowing developers to quickly implement complex video playback functionalities with just a few lines of code, significantly reducing development costs. Whether it's basic playback control or complex interactive scenarios (such as gesture adjustments and overlay stacking), AliPlayerWidget can handle them effortlessly, helping developers build smooth and efficient user experiences.
+With a minimalist API design, AliPlayerWidget achieves low-code integration, allowing developers to quickly implement complex video playback functionalities with just a few lines of code, significantly reducing development costs. Whether it's basic playback control or complex interactive scenarios (such as gesture adjustments and custom UI insertion), AliPlayerWidget can handle them effortlessly, helping developers build smooth and efficient user experiences.
 
 ---
 
@@ -25,12 +25,12 @@ With a minimalist API design, AliPlayerWidget achieves low-code integration, all
   - **Support for Multiple Playback Sources**: Compatible with various video source types, including direct URL playback, VID+STS token playback, and VID+Auth authentication playback, meeting the playback requirements of different scenarios.
 
 - **Flexible UI Customization**:
-  - **Slot System**: Provides a powerful slot-based architecture that enables customization of all parts of the player UI, including the top bar, bottom bar, playback controls, cover image, subtitles, and more. Supports full slot customization, as well as fine-grained control over the visibility and gesture interactions of UI elements within default slots.
-  - **Overlay Support**: Allows custom overlay components with strong extensibility, enabling developers to implement complex features like advertisements and bullet chats.
+  - **Slot System**: Provides a powerful slot-based architecture that enables customization of all parts of the player UI, including the top bar, bottom bar, playback controls, cover image, subtitles, and more. Supports full slot customization, fine-grained control over the visibility and gesture interactions of UI elements within default slots, and inserting custom UI components (such as ads, bullet comments, watermarks, etc.) at any layer of the player.
   - **Modular Design**: Includes reusable UI components such as top bars, bottom bars, and settings panels, making it easy for developers to customize according to their needs.
   - **Full-Screen Adaptation**: Automatically adapts to landscape and portrait orientations, ensuring optimal display across different devices.
 
-- **Event and State Management**:
+- **Extensible Playback Management:**
+  - **Strategy System**: Includes built-in first-frame timing and stutter detection strategies, with support for custom strategy extensions, providing an independent unit for encapsulating individual business logic.
   - **Real-Time Status Monitoring**: Offers real-time updates on playback status, video dimensions, buffering progress, etc., facilitating dynamic interactions.
   - **Event Callback Mechanism**: Provides comprehensive player event listeners, including play start, pause, completion, and other state management tools, making it convenient for developers to handle various playback scenarios.
   - **Logging and Debugging Support**: Equipped with a detailed logging system to aid in troubleshooting and performance optimization.
@@ -82,17 +82,21 @@ For more usage and code examples, please refer to the [Quick Start Guide](./docs
 
 ### **1. Slot System**
 
-Slot is the basic building block of the player UI, supporting customization of all parts of the player interface, including the top bar, bottom bar, playback controls, cover image, subtitles, and more. You can choose to fully customize slots or use fine-grained control to hide specific UI elements within default slots. For detailed information, please refer to [Slot System Documentation](./docs/slot-system-en.md)
+Slot is the basic building block of the player UI. The component ships with a well-designed default UI that works out of the box with zero configuration. It also provides flexible customization options: fully replace any slot, hide specific UI elements within default slots with fine-grained control, or insert custom UI components (such as ads, bullet comments, watermarks, etc.) at any layer of the player. For detailed information, please refer to [Slot System Documentation](./docs/advanced/slot-system-en.md)
 
-### **2. Video Source Support**
+### **2. Strategy System**
 
-The player provides flexible video source configuration methods, supporting multiple video source types. For detailed information, please refer to [Video Source Support Documentation](./docs/video-source-support-en.md)
+Strategy is the basic organizational unit for player behavior logic. Built-in recommended strategies such as first-frame timing and stutter detection work out of the box. Custom strategy development is also supported, allowing you to easily implement playback quality monitoring, event tracking, and more without modifying the player's core code. For detailed information, please refer to [Strategy System Documentation](./docs/advanced/strategy-system-en.md)
 
-### **3. Overlay Components**
+### **3. Video Source Support**
 
-Using the `overlays` parameter, you can easily overlay custom UI components onto the player. For detailed information, please refer to [Slot System Documentation](./docs/slot-system-en.md)
+AliPlayerWidget provides flexible video source configuration methods, supporting multiple video source types. For detailed information, please refer to [Video Source Support Documentation](./docs/video-source-support-en.md)
 
-### **4. API Reference**
+### **4. UI Theme**
+
+AliPlayerWidget provides a unified UI design specification, supporting quick skin replacement. Simply pass the icon resource path to achieve brand customization. For detailed information, please refer to [UI Theme Documentation](./docs/ui-theme-en.md)
+
+### **5. API Reference**
 
 `AliPlayerWidget` provides a series of external interfaces that allow developers to directly control player behavior. For detailed information, please refer to [API Reference Documentation](./docs/api-reference-en.md)
 
@@ -167,7 +171,8 @@ AliPlayerWidget is built on Alibaba Cloud audio and video capabilities. We recom
 ## **10. Contact Us**
 
 - 📘 **Official Documentation**: [Player Help Center](https://www.alibabacloud.com/help/en/vod/)
-- 💬 **GitHub Issues**: [Feedback and Suggestions Welcome](https://github.com/aliyun/player_widget/issues)
 - 🔍 **Console**: [VOD Console](https://vod.console.alibabacloud.com)
+- 📝 **Open Ticket**: [Alibaba Cloud Official Support](https://smartservice.console.alibabacloud.com/service/create-ticket)
+- 💬 **GitHub Issues**: [Feedback and Suggestions Welcome](https://github.com/aliyun/player_widget/issues)
 
 For more common issues and resolution suggestions related to the use of Alibaba Cloud Player SDK, please refer to [FAQ about ApsaraVideo Player](https://www.alibabacloud.com/help/en/vod/support/faq-about-apsaravideo-player/).

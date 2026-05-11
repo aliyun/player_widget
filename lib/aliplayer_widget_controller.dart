@@ -31,11 +31,14 @@ class AliPlayerWidgetController {
   /// 播放器唯一标识符
   late String _playerUniqueId;
 
-  /// 是否已准备播放
-  bool _isPrepared = false;
-
-  /// 播放数据源准备开始时间
-  int _prepareStartTime = 0;
+  /// 策略管理器，管理已注册策略的生命周期
+  ///
+  /// 默认内置推荐策略（首帧统计、卡顿检测），开箱即用。
+  /// 可通过 [StrategyManager.register] / [StrategyManager.unregister] 动态管理策略。
+  ///
+  /// Strategy manager with built-in recommended strategies.
+  /// Use [StrategyManager.register] / [StrategyManager.unregister] to customize.
+  final StrategyManager strategyManager = StrategyManager();
 
   /// 外挂字幕
   late Subtitles subtitles;
@@ -48,6 +51,19 @@ class AliPlayerWidgetController {
 
   /// 获取字幕构建器
   SubtitleBuilder? get subtitleBuilder => _widgetData?.subtitleBuilder;
+
+  /// prepare 事件通知器
+  ///
+  /// 每次 prepare() 调用时触发，监听者自行决定是否记录时间戳。
+  ///
+  /// Fires on each prepare() call. Listeners decide
+  /// whether to capture a timestamp themselves.
+  final SafeValueNotifier<int> prepareNotifier = SafeValueNotifier(0);
+
+  /// 播放器准备状态通知器
+  ///
+  /// Value notifier for player prepared status
+  final SafeValueNotifier<bool> isPreparedNotifier = SafeValueNotifier(false);
 
   /// 渲染状态变化通知器
   ///
@@ -168,6 +184,20 @@ class AliPlayerWidgetController {
   final SafeValueNotifier<int?> subtitleTrackIndexNotifier =
       SafeValueNotifier(null);
 
+  /// 外挂字幕是否可用通知器（已成功添加）
+  ///
+  /// Value notifier for external subtitle availability
+  final SafeValueNotifier<bool> externalSubtitleAvailableNotifier =
+      SafeValueNotifier(false);
+
+  /// 外挂字幕显示控制通知器
+  ///
+  /// Value notifier for external subtitle visibility control.
+  /// External clients can modify this notifier to control whether
+  /// external subtitles should be displayed.
+  final SafeValueNotifier<bool> showExternalSubtitleNotifier =
+      SafeValueNotifier(true);
+
   /// 当前显示的字幕状态
   ///
   /// The current displayed subtitle status
@@ -180,17 +210,77 @@ class AliPlayerWidgetController {
   final SafeValueNotifier<String?> snapFileStateNotifier =
       SafeValueNotifier(null);
 
+  /// 全屏状态通知器
+  ///
+  /// Value notifier for fullscreen state
+  final SafeValueNotifier<bool> isFullScreenNotifier =
+      SafeValueNotifier<bool>(false);
+
   /// 当前下载状态
   ///
   ///
   final SafeValueNotifier<DownloadState> downloadStateNotifier =
       SafeValueNotifier(const UnknownState());
 
+  /// 当前加载状态
+  ///
+  ///
+  final SafeValueNotifier<bool> isLoadingStateNotifier =
+      SafeValueNotifier(false);
+
+  /// 设置面板显示请求通知器
+  ///
+  /// **仅用于自定义 settingMenu slotBuilder 场景。**
+  ///
+  /// 当用户通过 [AliPlayerWidget.slotBuilders] 自定义 `SlotType.settingMenu` 插槽时，
+  /// 应监听此 notifier 来触发自定义面板的显示。
+  ///
+  /// 使用流程：
+  /// 1. 用户传入 `slotBuilders: { SlotType.settingMenu: (ctx) => MyCustomPanel() }`
+  /// 2. 点击顶部栏设置按钮时，此 notifier 值变为 `true`
+  /// 3. 自定义插槽构建器检测到此变化，显示自定义面板
+  /// 4. 面板关闭后，用户应将此值重置为 `false`
+  ///
+  /// **注意：**
+  /// - 如果使用默认设置面板（未自定义 settingMenu），此 notifier 不会被使用
+  /// - 面板关闭后必须重置为 `false`，否则下次点击无法再次触发
+  ///
+  /// Settings panel display request notifier.
+  ///
+  /// **Only used when customizing settingMenu slotBuilder.**
+  ///
+  /// When customizing `SlotType.settingMenu` via [AliPlayerWidget.slotBuilders],
+  /// listen to this notifier to trigger custom panel display.
+  ///
+  /// Usage flow:
+  /// 1. User passes `slotBuilders: { SlotType.settingMenu: (ctx) => MyCustomPanel() }`
+  /// 2. On settings button click, this notifier value becomes `true`
+  /// 3. Custom slot builder detects this change and shows custom panel
+  /// 4. After panel closes, user should reset this value to `false`
+  ///
+  /// **Note:**
+  /// - If using default settings panel (no custom settingMenu), this notifier is unused
+  /// - Must reset to `false` after panel closes for subsequent clicks to trigger
+  final SafeValueNotifier<bool> settingsPanelRequestNotifier =
+      SafeValueNotifier(false);
+
   /// 缩略图是否获取成功
   bool _thumbnailSuccess = false;
 
   /// 播放数据源
   AliPlayerWidgetData? _widgetData;
+
+  /// 获取当前播放配置数据（只读）
+  ///
+  /// 供策略或外部逻辑读取视频源等配置信息，例如 `widgetData?.videoSource?.mediaId`。
+  /// 注意：此属性仅用于读取，请勿直接修改其内部字段，否则可能导致播放器状态不一致。
+  ///
+  /// Returns the current player configuration data (read-only).
+  ///
+  /// Intended for strategies or external logic to read configuration such as
+  /// video source info. Do NOT mutate its fields directly, as this may cause
+  /// inconsistent player state.
+  AliPlayerWidgetData? get widgetData => _widgetData;
 
   /// 播放器组件控制器构造函数，用于创建 [AliPlayerWidgetController] 实例。
   ///
@@ -235,6 +325,9 @@ class AliPlayerWidgetController {
     // 销毁下载器实例
     Future.microtask(() => _destroyDownloader());
 
+    // 停止并销毁策略系统
+    strategyManager.dispose();
+
     // 销毁值监听器
     Future.microtask(() => _disposeValueNotifiers());
   }
@@ -253,12 +346,13 @@ class AliPlayerWidgetController {
     /// 2、设置播放器事件回调
     // 设置播放器事件回调，准备完成事件
     _aliPlayer.setOnPrepared((String playerId) {
+      _playerLog("[cbk][onPrepared]");
+
+      // 更新准备状态
+      isPreparedNotifier.value = true;
+
       // 创建外挂字幕（方式1）
       Future.microtask(() => _createExternalSubtitleWhenPrepared());
-      _isPrepared = true;
-
-      int cost = DateTime.now().millisecondsSinceEpoch - _prepareStartTime;
-      _playerLog("[cbk][onPrepared]: costTime: $cost");
 
       // 创建清晰度信息
       Future.microtask(() => _createTrackInfoWhenPrepared());
@@ -269,8 +363,7 @@ class AliPlayerWidgetController {
 
     // 设置播放器事件回调，首帧显示事件
     _aliPlayer.setOnRenderingStart((String playerId) async {
-      int cost = DateTime.now().millisecondsSinceEpoch - _prepareStartTime;
-      _playerLog("[cbk][renderingStart]: costTime: $cost");
+      _playerLog("[cbk][renderingStart]");
 
       // 更新渲染状态
       isRenderedNotifier.value = true;
@@ -285,8 +378,7 @@ class AliPlayerWidgetController {
 
     // 设置播放器事件回调，播放完成事件
     _aliPlayer.setOnCompletion((String playerId) {
-      _isPrepared = false;
-      _prepareStartTime = 0;
+      isPreparedNotifier.value = false;
     });
 
     // 设置视频大小变化回调
@@ -350,8 +442,26 @@ class AliPlayerWidgetController {
 
       // 显示提示信息
       String quality = TrackInfoUtil.getQuality(selectedTrackInfo);
-      SnackBarUtil.success(_context, "selectTrack: $quality");
+      String qualityLabel = PlayerI18n.t(PlayerI18nKeys.statusQuality);
+
+      PlayStateShowUtil.success(
+        _context,
+        message: "$qualityLabel: $quality",
+      );
     });
+
+    // 监听当前加载状态
+    _aliPlayer.setOnLoadingStatusListener(
+      loadingBegin: (playerId) {
+        // 准备加载
+        isLoadingStateNotifier.value = true;
+      },
+      loadingProgress: (int percent, double? netSpeed, String playerId) {},
+      loadingEnd: (playerId) {
+        // 加载完成
+        isLoadingStateNotifier.value = false;
+      },
+    );
 
     // 设置错误代理回调
     _aliPlayer.setOnError((
@@ -361,7 +471,7 @@ class AliPlayerWidgetController {
       String playerId,
     ) {
       _playerLog("[cbk][error]: errorCode: $errorCode, errorMsg: $errorMsg");
-
+      playStateNotifier.value = FlutterAvpdef.error;
       playErrorNotifier.value = {errorCode: errorMsg};
 
       // If occurs error, update video size as default.
@@ -405,9 +515,13 @@ class AliPlayerWidgetController {
     _aliPlayer.setOnSubtitleExtAdded(
       (trackIndex, String url, playerId) async {
         if (trackIndex < 0) {
-          debugPrint('外挂字幕添加失败');
+          logi('Failed to add external subtitle: $url', tag: _logTag);
+          externalSubtitleAvailableNotifier.value = false;
+        } else {
+          logi('External subtitle added: $trackIndex, $url', tag: _logTag);
+          externalSubtitleAvailableNotifier.value = true;
+          await _aliPlayer.selectExtSubtitle(trackIndex, true);
         }
-        await _aliPlayer.selectExtSubtitle(trackIndex, true);
       },
     );
 
@@ -437,12 +551,18 @@ class AliPlayerWidgetController {
 
     /// 截图代理回调
     _aliPlayer.setOnSnapShot((path, playerId) {
-      SnackBarUtil.success(_context, "Snapshot taken: $path");
+      PlayStateShowUtil.success(
+        _context,
+        message: PlayerI18n.t(
+          PlayerI18nKeys.statusSnapSaved,
+        ),
+      );
       snapFileStateNotifier.value = path;
     });
 
     /// 3. 其它配置
-    _aliPlayer.setScalingMode(1);
+    /// 设置播放器缩放模式为保持比例填充，需裁剪
+    _aliPlayer.setScalingMode(SettingConstants.defaultScaleMode);
 
     logi("Player initialization completed.");
   }
@@ -483,8 +603,7 @@ class AliPlayerWidgetController {
     _aliPlayer.releaseAsync();
 
     // 重置播放状态
-    _isPrepared = false;
-    _prepareStartTime = 0;
+    isPreparedNotifier.value = false;
 
     // 重置渲染状态
     isRenderedNotifier.value = false;
@@ -494,6 +613,8 @@ class AliPlayerWidgetController {
 
   /// 销毁 ValueNotifier
   void _disposeValueNotifiers() {
+    prepareNotifier.dispose();
+    isPreparedNotifier.dispose();
     isRenderedNotifier.dispose();
 
     videoSizeNotifier.dispose();
@@ -521,8 +642,16 @@ class AliPlayerWidgetController {
     thumbnailNotifier.dispose();
     subtitleNotifier.dispose();
     subtitleTrackIndexNotifier.dispose();
+    externalSubtitleAvailableNotifier.dispose();
+    showExternalSubtitleNotifier.dispose();
 
     snapFileStateNotifier.dispose();
+
+    isFullScreenNotifier.dispose();
+
+    isLoadingStateNotifier.dispose();
+
+    settingsPanelRequestNotifier.dispose();
   }
 
   void _initializeDownloader() {
@@ -559,7 +688,6 @@ class AliPlayerWidgetController {
 
     // 非核心任务
     Future(() async {
-      // TODO keria: brightness feature to be implemented
       double brightness = SettingConstants.defaultBrightness;
       brightnessNotifier.value = brightness;
 
@@ -605,6 +733,9 @@ class AliPlayerWidgetController {
 
     _widgetData = data;
 
+    // 初始化/重启策略系统
+    strategyManager.initialize(this);
+
     // 可选：推荐使用`播放器单点追查`功能，当使用阿里云播放器 SDK 播放视频发生异常时，可借助单点追查功能针对具体某个用户或某次播放会话的异常播放行为进行全链路追踪，以便您能快速诊断问题原因，可有效改善播放体验治理效率。
     // traceId 值由您自行定义，需为您的用户或用户设备的唯一标识符，例如传入您业务的 userid 或者 IMEI、IDFA 等您业务用户的设备 ID。
     // 传入 traceId 后，埋点日志上报功能开启，后续可以使用播放质量监控、单点追查和视频播放统计功能。
@@ -615,6 +746,9 @@ class AliPlayerWidgetController {
 
     // 配置预渲染
     _configureAllowPreRender();
+
+    // 设置场景标识
+    _setupScenarioFlag(data);
 
     // 配置播放源
     _configurePlayerSource(data);
@@ -695,6 +829,25 @@ class AliPlayerWidgetController {
     }
   }
 
+  /// 设置场景标识
+  ///
+  /// Setup scenario flag for playback experience optimization.
+  void _setupScenarioFlag(AliPlayerWidgetData data) {
+    final sceneType = data.sceneType;
+    final sourceType = data.videoSource?.sourceType;
+    if (sourceType == null) {
+      return;
+    }
+
+    final scenarioFlag = ScenarioManager.buildScenarioFlag(
+      sceneType: sceneType,
+      sourceType: sourceType,
+    );
+
+    _playerLog("[api][scenario] $scenarioFlag");
+    _aliPlayer.setOption(FlutterAvpdef.SCENARIO_FLAG, scenarioFlag);
+  }
+
   /// 准备播放
   ///
   /// Prepare the player for playback.
@@ -702,8 +855,8 @@ class AliPlayerWidgetController {
     _playerLog("[api][prepare]");
     _aliPlayer.prepare();
 
-    // 记录准备开始时间
-    _prepareStartTime = DateTime.now().millisecondsSinceEpoch;
+    // 触发 prepare 事件（供策略系统监听）
+    prepareNotifier.notifyListeners();
   }
 
   /// 继续播放
@@ -741,7 +894,9 @@ class AliPlayerWidgetController {
       pause();
     } else if (playState == FlutterAvpdef.completion) {
       replay();
-    } else if (_isPrepared) {
+    } else if (playState == FlutterAvpdef.paused) {
+      play();
+    } else if (isPreparedNotifier.value) {
       play();
     }
   }
@@ -791,15 +946,10 @@ class AliPlayerWidgetController {
   /// [brightness] The target brightness value, clamped between 0 and 1.
   void setBrightness(double brightness) {
     final value = clampDouble(brightness, 0, 1);
-    /**
-     * TODO: 亮度调节功能需由使用方自行实现
-     * aliplayer_widget 当前仅提供亮度状态管理（brightnessNotifier），未内置实际的屏幕亮度调节逻辑。
-     * 原因：Flutter 官方尚未提供统一的系统级亮度控制 API，实现该功能需依赖平台特定的原生插件（如 screen_brightness），
-     * 而此类插件可能引入版本兼容性问题（如 Flutter、JDK、CocoaPods 等环境差异），影响组件的跨平台稳定性。
-     * 建议：请根据您的项目环境，自行集成合适的亮度控制插件，并在此处调用其 API 完成实际亮度设置。
-     * 您可通过插件 README 中“开源与源码获取”部分提供的源码依赖方式，对本组件进行二次扩展。
-     */
     logi("setBrightness: ${brightnessNotifier.value} -> $value");
+
+    // 亮度设置
+    FlutterAliPlayerGlobalSettings.setSystemBrightness(value);
 
     brightnessNotifier.value = value;
   }
@@ -982,10 +1132,6 @@ class AliPlayerWidgetController {
       trackInfo.trackIndex!,
       accurate: 1,
     );
-
-    // 显示清晰度信息
-    String quality = TrackInfoUtil.getQuality(trackInfo);
-    SnackBarUtil.show(_context, "selectTrack: $quality");
   }
 
   /// 创建缩略图（方式1）
@@ -1082,12 +1228,13 @@ class AliPlayerWidgetController {
   /// 更新字幕位置配置
   ///
   /// Update the subtitle position configuration.
-  /// [positionConfig] The subtitle position configuration to be updated
-  void updateSubtitlePosition(SubtitlePositionConfig positionConfig) {
+  void updateSubtitlePosition(EdgeInsets position) {
     if (_widgetData == null) {
       return;
     }
-    _widgetData!.subtitlePositionConfig = positionConfig;
+    _widgetData!.subtitleConfig = _widgetData!.subtitleConfig.copyWith(
+      position: position,
+    );
   }
 
   /// Player log information with a consistent format.
@@ -1129,9 +1276,9 @@ class AliPlayerWidgetController {
 
     // 检查下载保存目录是否存在
     if (downloadSavePath == null || downloadSavePath!.isEmpty) {
-      SnackBarUtil.error(
+      PlayStateShowUtil.error(
         _context,
-        "Please set AliPlayerWidgetGlobalSetting.setStoragePaths first.",
+        message: PlayerI18n.t(PlayerI18nKeys.downloadStoragePathNotSet),
       );
       return;
     }
@@ -1140,8 +1287,13 @@ class AliPlayerWidgetController {
     if (downloadStateNotifier.value is DownloadCompletedState) {
       final DownloadCompletedState state =
           downloadStateNotifier.value as DownloadCompletedState;
-      SnackBarUtil.success(_context,
-          "This video has already been downloaded. SavePath: ${state.downloadFile}");
+      PlayStateShowUtil.success(
+        _context,
+        message: PlayerI18n.t(
+          PlayerI18nKeys.downloadAlreadySaved,
+          {"path": state.downloadFile},
+        ),
+      );
       return;
     } else if (downloadStateNotifier.value is DownloadingState) {
       // 如果处于加载状态，直接return
@@ -1285,96 +1437,18 @@ class AliPlayerWidgetController {
         videoSource is VidAuthVideoSource;
   }
 
-  /// 获取 Flutter Widget 版本号
+  /// 进入全屏模式
   ///
-  /// Get Flutter Widget version
-  ///
-  /// Deprecated:
-  /// Use [AliPlayerWidgetGlobalSetting.kWidgetVersion] directly instead.
-  ///
-  /// This method will be removed in a future release.
-  @Deprecated('Use AliPlayerWidgetGlobalSetting.kWidgetVersion directly.')
-  static String getWidgetVersion() =>
-      AliPlayerWidgetGlobalSetting.kWidgetVersion;
-
-  /// 清除 Widget 缓存
-  ///
-  /// Clear widget cache.
-  ///
-  /// Deprecated:
-  /// Use [AliPlayerWidgetGlobalSetting.clearCaches] instead.
-  ///
-  /// This method will be removed in a future release.
-  @Deprecated('Use AliPlayerWidgetGlobalSetting.clearCaches instead.')
-  static Future<void> clearCaches() =>
-      AliPlayerWidgetGlobalSetting.clearCaches();
-
-  /// 播放器横竖屏切换
-  ///
-  /// [controller] 播放器控制器
-  /// [currentPosition] 当前播放位置
-  /// [slotBuilders] 插槽构建器映射，用于自定义插槽内容
-  /// [hiddenSlotElements] 隐藏插槽元素配置，用于在全屏模式下隐藏特定插槽内的UI元素
-  ///   Key为插槽类型[SlotType]，Value为要隐藏的元素标识符集合
-  Future<void> enterFullScreen(
-    AliPlayerWidgetController controller,
-    int currentPosition, {
-    Map<SlotType, Function?>? slotBuilders,
-    Map<SlotType, Set<String>>? hiddenSlotElements,
-  }) async {
-    final data = controller._widgetData;
-    if (data == null) return;
-    data.startTime = currentPosition;
-
-    // 进入全屏播放器
-    AliPlayerWidgetData result = await Navigator.of(_context).push(
-      PageRouteBuilder(
-        transitionDuration: const Duration(milliseconds: 100), // 动画持续时间
-        pageBuilder: (context, animation, secondaryAnimation) {
-          return AliPlayerFullScreenWidget(
-            controller,
-            data,
-            slotBuilders: slotBuilders ?? const {},
-            hiddenSlotElements: hiddenSlotElements ?? const {},
-          );
-        },
-        transitionsBuilder: (context, animation, secondaryAnimation, child) {
-          // 淡入淡出动画
-          return FadeTransition(
-            opacity: animation,
-            child: child,
-          );
-        },
-      ),
-    );
-    final int fullScreenPosition = result.startTime;
-    await _aliPlayer.seekTo(fullScreenPosition, result.seekMode);
-    controller.play();
+  /// Enter fullscreen mode.
+  void enterFullScreen() {
+    isFullScreenNotifier.value = true;
   }
 
-  /// 播放器退出全屏
-  Future<void> exitFullScreen() async {
-    // 使用 FullScreenUtil 统一处理全屏系统 UI 设置
-    await FullScreenUtil.exitFullScreen();
-
-    final data = _fullController._widgetData;
-
-    if (data == null) return;
-
-    _fullController.getCurrentPosition().then((position) {
-      data.startTime = position;
-
-      _fullController.syncStateTo(_fullController);
-
-      // 先暂停播放器
-      _fullController.stop();
-
-      // 销毁全屏播放器
-      _fullController.destroy();
-
-      // 返回竖屏播放器
-      Navigator.pop(_context, data);
-    });
+  /// 退出全屏模式
+  ///
+  /// Exit fullscreen mode.
+  void exitFullScreen() {
+    isFullScreenNotifier.value = false;
   }
 
   /// 切换全屏状态
@@ -1387,57 +1461,7 @@ class AliPlayerWidgetController {
   /// Automatically enters or exits fullscreen mode based on current state.
   /// This is a convenience method that internally determines the current state
   /// and calls the appropriate method.
-  ///
-  /// 参数：
-  /// - [slotBuilders]：插槽构建器映射，用于在全屏模式下自定义插槽内容。
-  ///   如果不提供，将使用空配置。
-  /// - [hiddenSlotElements]：隐藏插槽元素配置，用于在全屏模式下隐藏特定插槽内的 UI 元素。
-  ///   如果不提供，将使用空配置。
-  ///
-  /// Parameters:
-  /// - [slotBuilders]: Slot builder map for customizing slot content in fullscreen mode.
-  ///   If not provided, empty configuration will be used.
-  /// - [hiddenSlotElements]: Hidden slot elements configuration for hiding specific UI elements
-  ///   within slots in fullscreen mode. If not provided, empty configuration will be used.
-  Future<void> toggleFullscreen({
-    Map<SlotType, Function?>? slotBuilders,
-    Map<SlotType, Set<String>>? hiddenSlotElements,
-  }) async {
-    if (FullScreenUtil.isFullScreen()) {
-      await exitFullScreen();
-    } else {
-      final position = await getCurrentPosition();
-      await enterFullScreen(
-        this,
-        position,
-        slotBuilders: slotBuilders,
-        hiddenSlotElements: hiddenSlotElements,
-      );
-    }
-  }
-
-  /// 同步播放器状态到另一个控制器
-  ///
-  /// Sync player state to another controller
-  Future<void> syncStateTo(AliPlayerWidgetController targetController) async {
-    // 同步循环播放
-    await targetController.setLoop(isLoopNotifier.value);
-
-    // 同步静音状态
-    await targetController.setMute(isMuteNotifier.value);
-
-    // 同步镜像模式
-    await targetController.setMirrorMode(mirrorModeNotifier.value);
-
-    // 同步旋转角度
-    await targetController.setRotateMode(rotateModeNotifier.value);
-
-    // 同步渲染填充模式
-    await targetController.setScaleMode(scaleModeNotifier.value);
-
-    // 同步亮度（如果需要）
-    // targetController.setBrightness(brightnessNotifier.value);
-
-    logi("Player state synced successfully");
+  void toggleFullscreen() {
+    isFullScreenNotifier.value = !isFullScreenNotifier.value;
   }
 }

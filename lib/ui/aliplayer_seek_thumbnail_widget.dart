@@ -7,6 +7,7 @@
 import 'package:aliplayer_widget/aliplayer_widget_lib.dart';
 import 'package:aliplayer_widget/slot/slot_elements.dart';
 import 'package:aliplayer_widget/slot/slot_manager.dart';
+import 'package:aliplayer_widget/theme/player_styles.dart';
 import 'package:aliplayer_widget/utils/format_util.dart';
 import 'package:flutter/material.dart';
 
@@ -34,11 +35,23 @@ class AliPlayerSeekThumbnailWidget extends StatefulWidget {
   /// Visibility of the widget
   final bool isVisible;
 
+  /// 获取播放器视图宽高
+  final Size? videoSize;
+
+  /// 是否启用底部边距
+  final bool hasBottomMargin;
+
+  /// 是否是横竖屏
+  final Orientation orientation;
+
   const AliPlayerSeekThumbnailWidget({
     required this.isVisible,
     required this.currentSeekTime,
     required this.totalDuration,
+    required this.orientation,
     this.thumbnail,
+    this.videoSize,
+    this.hasBottomMargin = false,
     super.key,
   });
 
@@ -76,16 +89,30 @@ class _AliPlayerSeekThumbnailWidgetState
       return const SizedBox.shrink();
     }
 
-    return Center(
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          if (showThumbnail) _buildThumbnailImage(),
-          // 只有当缩略图和时间文本都显示时才添加间距
-          // Only add spacing when both thumbnail and time text are visible
-          if (showThumbnail && showTimeText) const SizedBox(height: 8.0),
-          if (showTimeText) _buildTimeText(),
-        ],
+    return Positioned(
+      bottom: PlayerStyles.kSeekThumbnailBottomOffset,
+      left: 0,
+      right: 0,
+      child: Center(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            if (showThumbnail) _buildThumbnailImage(),
+            // 只有当缩略图和时间文本都显示时才添加间距
+            // Only add spacing when both thumbnail and time text are visible
+            if (showThumbnail && showTimeText)
+              const SizedBox(height: PlayerStyles.kThumbnailTimeSpacing),
+            if (showTimeText) _buildTimeText(),
+
+            // 底部边距要求，适配 BottomBar 显示/隐藏
+            // Add bottom margin for BottomBar show/hide adaptation
+            if ((widget.orientation == Orientation.landscape) &&
+                widget.hasBottomMargin)
+              const SizedBox(
+                height: PlayerStyles.kBottomBarHeight,
+              )
+          ],
+        ),
       ),
     );
   }
@@ -94,14 +121,30 @@ class _AliPlayerSeekThumbnailWidgetState
   ///
   /// Build the thumbnail image
   Widget _buildThumbnailImage() {
-    return widget.thumbnail != null
-        ? Image(
-            width: 90,
-            height: 160,
+    double aspectRatio = PlayerStyles.kDefaultThumbnailAspectRatio;
+    final size = widget.videoSize;
+    if (size != null && size.width > 0 && size.height > 0) {
+      aspectRatio = size.width / size.height;
+    }
+
+    if (widget.thumbnail == null) {
+      return const SizedBox.shrink();
+    }
+
+    // 3. 构建带圆角的缩略图
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(PlayerStyles.kThumbnailBorderRadius),
+      child: SizedBox(
+        width: PlayerStyles.kThumbnailWidth,
+        child: AspectRatio(
+          aspectRatio: aspectRatio,
+          child: Image(
             image: widget.thumbnail!,
             fit: BoxFit.cover,
-          )
-        : const SizedBox.shrink();
+          ),
+        ),
+      ),
+    );
   }
 
   /// 构建时间文本
@@ -111,7 +154,7 @@ class _AliPlayerSeekThumbnailWidgetState
     return Text(
       '${FormatUtil.formatDuration(widget.currentSeekTime)} / ${FormatUtil.formatDuration(widget.totalDuration)}',
       style: const TextStyle(
-        fontSize: 16,
+        fontSize: PlayerStyles.kSeekThumbnailTimeFontSize,
         color: Colors.white,
         fontWeight: FontWeight.bold,
       ),

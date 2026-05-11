@@ -26,10 +26,14 @@ This document describes the content and purpose of each document in the AliPlaye
 ### **4. Advanced Feature Documents**
 
 | Document Name | Document Link | Detailed Description | Purpose |
-|---------------|---------------|---------------------|---------|
-| Slot System | [slot-system-en.md](./slot-system-en.md) | Detailed guide on using the slot system | Helping developers customize the player interface |
-| Scene Types | [scene-type-en.md](./scene-type-en.md) | Explains how `sceneType` behaves across business scenarios and how to configure it | Guiding developers to pick the right playback scene and slot combo |
-| Video Source Support | [video-source-support-en.md](./video-source-support-en.md) | Explains the various video source types supported by AliPlayerWidget and their configuration methods | Helping developers configure different video sources |
+|---------------|---------------|---------------------|----------|
+| Slot System | [slot-system-en.md](./advanced/slot-system-en.md) | Detailed guide on using the slot system | Helping developers customize the player interface |
+| Strategy System | [strategy-system-en.md](./advanced/strategy-system-en.md) | Detailed guide on using and developing custom strategies | Helping developers extend player behavior logic |
+| Scene Types | [scene-type-en.md](./advanced/scene-type-en.md) | Explains how `sceneType` behaves across business scenarios and how to configure it | Guiding developers to pick the right playback scene and slot combo |
+| Video Source Support | [video-source-support-en.md](./advanced/video-source-support-en.md) | Explains the various video source types supported and their configuration methods | Helping developers configure different video sources |
+| Custom Configuration | [custom-config-en.md](./advanced/custom-config-en.md) | Explains how to customize player behavior via global and instance configurations | Helping developers implement buffering strategies, Referer anti-hotlinking, etc. |
+| UI Theme | [ui-theme-en.md](./advanced/ui-theme-en.md) | Introduces how to customize the player UI theme style | Helping developers customize the player appearance |
+| Internationalization (i18n) | [i18n-en.md](./advanced/i18n-en.md) | Introduces multi-language support and internationalization configuration | Helping developers implement multi-language adaptation |
 
 ## **Notes**
 

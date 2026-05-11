@@ -1,104 +1,133 @@
-// Copyright © 2025 Alibaba Cloud. All rights reserved.
+// Copyright © 2026 Alibaba Cloud. All rights reserved.
 //
-// Author: keria
-// Date: 2025/2/11
+// Author: Aqi
+// Date: 2026/4/28
 // Brief: 播放状态控件
 
 import 'package:aliplayer_widget/aliplayer_widget_lib.dart';
-import 'package:aliplayer_widget/slot/slot_elements.dart';
-import 'package:aliplayer_widget/slot/slot_manager.dart';
+import 'package:aliplayer_widget/theme/player_icons.dart';
+import 'package:aliplayer_widget/theme/player_styles.dart';
+import 'package:aliplayer_widget/ui/aliplayer_custom_button.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
-/// 播放状态控件
-///
-/// A widget that displays the current player state.
-class AliPlayerPlayStateWidget extends StatelessWidget {
-  /// 错误码
-  ///
-  /// Error code, if any
-  final int? errorCode;
+/// 播放状态
+enum PlayStatus {
+  loading,
+  error,
+  success,
+  info,
+}
 
-  /// 错误信息
-  ///
-  /// Error message, if any
-  final String? errorMsg;
+class AliPlayerPlayStateWidget extends StatefulWidget {
+  final PlayStatus widgetStatus;
+  final String? statusMessage;
+  final String? statusCode;
 
-  const AliPlayerPlayStateWidget({
-    super.key,
-    this.errorCode,
-    this.errorMsg,
-  });
+  const AliPlayerPlayStateWidget(
+      {super.key,
+      required this.widgetStatus,
+      this.statusCode,
+      this.statusMessage});
 
   @override
+  State<StatefulWidget> createState() {
+    return _AliPlayerPlayStateWidgetState();
+  }
+}
+
+class _AliPlayerPlayStateWidgetState extends State<AliPlayerPlayStateWidget> {
+  @override
   Widget build(BuildContext context) {
-    return _buildContentArea(context);
-  }
-
-  /// 构建核心内容区域
-  ///
-  /// Build the core content area
-  Widget _buildContentArea(BuildContext context) {
-    return Container(
-      color: Colors.black.withOpacity(0.5),
-      alignment: Alignment.center,
-      child: _buildErrorState(context),
+    return Center(
+      child: Container(
+          constraints: BoxConstraints(
+            maxWidth: MediaQuery.of(context).size.width * 0.6,
+          ),
+          decoration: BoxDecoration(
+            color: PlayerStyles.kControlWidgetColor,
+            borderRadius: BorderRadius.circular(
+              PlayerStyles.kStatusWidgetRadius,
+            ),
+          ),
+          child: IntrinsicHeight(
+            child: Padding(
+              padding: const EdgeInsets.symmetric(
+                horizontal: PlayerStyles.kStatusWidgetPadding,
+                vertical: PlayerStyles.kStatusWidgetPadding,
+              ),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.spaceAround,
+                children: [
+                  CustomIconButton(
+                    iconName: _getIconName(),
+                  ),
+                  Column(
+                    children: [
+                      if (widget.statusCode != null)
+                        Text(
+                          _getStatusCode() ?? "",
+                          textAlign: TextAlign.center,
+                          style: _textStyle, // 引用下方的静态样式
+                        ),
+                      if (widget.statusMessage != null)
+                        Text(
+                          _getStatusMsg() ?? "",
+                          textAlign: TextAlign.center,
+                          overflow: TextOverflow.ellipsis,
+                          maxLines: 2, // 建议限制最大行数，配合 ellipsis 使用
+                          style: _textStyle, // 引用下方的静态样式
+                        ),
+                    ],
+                  )
+                ],
+              ),
+            ),
+          )),
     );
   }
 
-  /// 构建错误状态的 UI
-  /// 包括一个红色的错误图标和错误信息文本
-  ///
-  /// Build UI for error state
-  Widget _buildErrorState(BuildContext context) {
-    // 一次性获取隐藏配置，避免重复遍历 widget tree
-    // Get hidden config once to avoid repeated widget tree traversal
-    final hiddenElements = SlotManager.getHiddenElements(
-      context,
-      SlotType.playState,
-    );
-
-    // 检查元素是否可见
-    final showIcon = hiddenElements.isElementVisible(
-      PlayStateElements.errorIcon,
-    );
-    final showMessage = hiddenElements.isElementVisible(
-      PlayStateElements.errorMessage,
-    );
-
-    // 当所有元素都被隐藏时，返回空容器
-    if (!showIcon && !showMessage) {
-      return const SizedBox.shrink();
+  /// 获取状态码
+  String? _getStatusCode() {
+    String? result = widget.statusCode;
+    if (widget.widgetStatus == PlayStatus.error && widget.statusCode != null) {
+      result =
+          "${PlayerI18n.t(PlayerI18nKeys.statusErrorCode)} ${widget.statusCode}";
     }
 
-    return Column(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: [
-        if (showIcon)
-          const Icon(
-            Icons.error,
-            color: Colors.red,
-            size: _playStateIconSize,
-          ),
-        if (showIcon && showMessage) const SizedBox(height: 16),
-        if (showMessage)
-          Text(
-            _buildErrorMessage(),
-            style: _errorMessageStyle,
-            textAlign: TextAlign.center,
-            overflow: TextOverflow.ellipsis,
-            maxLines: 3,
-          ),
-      ],
-    );
+    return result;
   }
 
-  /// 构建错误信息文本
-  /// 包括错误码和错误描述
-  ///
-  /// Build error message text
-  String _buildErrorMessage() {
-    return 'Error Code: ${errorCode ?? "Unknown"}\n'
-        'Error Message: ${errorMsg ?? "An unexpected error occurred."}';
+  /// 获取状态信息
+  String? _getStatusMsg() {
+    String? result = widget.statusMessage;
+    if (widget.widgetStatus == PlayStatus.error &&
+        widget.statusMessage != null) {
+      result =
+          "${PlayerI18n.t(PlayerI18nKeys.statusErrorMsg)} ${widget.statusMessage}";
+    }
+    return result;
+  }
+
+  /// 通用文字样式
+  TextStyle get _textStyle => const TextStyle(
+        fontSize: PlayerStyles.commonTextSize,
+        fontWeight: FontWeight.normal,
+        color: PlayerStyles.colorOnPrimary,
+      );
+
+  /// 根据状态获取图标
+  String _getIconName() {
+    switch (widget.widgetStatus) {
+      case PlayStatus.loading:
+        return PlayerIcons.statusLoading;
+      case PlayStatus.error:
+        return PlayerIcons.statusError;
+      case PlayStatus.success:
+        return PlayerIcons.statusSuccess;
+      case PlayStatus.info:
+        return PlayerIcons.statusInfo;
+    }
   }
 }
 
@@ -109,18 +138,5 @@ extension PlayStateHelper on int {
   /// 扩展方法：判断是否需要构建 Widget
   ///
   /// Extension method: determine whether to build the widget
-  bool get shouldBuildWidget => this == FlutterAvpdef.error;
+  bool get shouldBuildErrorWidget => this == FlutterAvpdef.error;
 }
-
-/// 播放状态图标大小
-///
-/// Play state icon size
-const double _playStateIconSize = 64;
-
-/// 错误信息样式
-///
-/// Error message text style
-const TextStyle _errorMessageStyle = TextStyle(
-  color: Colors.white,
-  fontSize: 14,
-);

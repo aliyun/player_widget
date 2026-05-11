@@ -10,19 +10,21 @@ AliPlayerWidget 插槽系统允许开发者灵活自定义播放器界面的各�
 
 系统提供了以下几种插槽类型，**按层级从底到顶排列**：
 
-| 插槽类型 | 功能描述 | 默认显示 |
-|---------|---------|---------|
-| **playerSurface** | 播放器视图插槽，用于显示视频内容（不建议自定义） | 是 |
-| **subtitle** | 字幕插槽，用于显示视频字幕 | 是（有条件） |
-| **coverImage** | 封面图插槽，在视频加载前显示封面图片 | 是（有条件） |
-| **playControl** | 播放控制插槽，处理播放器的手势控制 | 是 |
-| **topBar** | 顶部栏插槽，通常包含返回按钮、标题和设置按钮 | 是 |
-| **bottomBar** | 底部栏插槽，通常包含播放控制、进度条和全屏按钮 | 是 |
-| **seekThumbnail** | Seek 缩略图插槽，在拖动进度条时显示预览缩略图 | 是（有条件） |
-| **centerDisplay** | 中心显示插槽，在手势操作时显示音量、亮度等信息 | 是（有条件） |
-| **playState** | 播放状态插槽，显示播放错误等状态信息 | 是（有条件） |
-| **settingMenu** | 设置菜单插槽，包含播放器设置选项 | 是（minimal 场景除外） |
-| **overlays** | 浮层插槽，位于最顶层，用于添加点赞、评论、分享等自定义覆盖内容 | 否 |
+| 插槽类型 | 默认层级 | 功能描述 | 默认显示 |
+|---------|:-------:|---------|:-------:|
+| **playerSurface** | 10 | 播放器视图插槽，用于显示视频内容（不建议自定义） | 是 |
+| **subtitle** | 20 | 字幕插槽，用于显示视频字幕 | 是（有条件） |
+| **coverImage** | 30 | 封面图插槽，在视频加载前显示封面图片 | 是（有条件） |
+| **playControl** | 40 | 播放控制插槽，处理播放器的手势控制 | 是 |
+| **topBar** | 50 | 顶部栏插槽，通常包含返回按钮、标题和设置按钮 | 是 |
+| **bottomBar** | 60 | 底部栏插槽，通常包含播放控制、进度条和全屏按钮 | 是 |
+| **seekThumbnail** | 70 | Seek 缩略图插槽，在拖动进度条时显示预览缩略图 | 是（有条件） |
+| **centerDisplay** | 80 | 中心显示插槽，在手势操作时显示音量、亮度等信息 | 是（有条件） |
+| **playState** | 90 | 播放状态插槽，显示播放错误等状态信息 | 是（有条件） |
+| **settingMenu** | 100 | 设置菜单插槽，包含播放器设置选项 | 是（有条件） |
+| **overlays** | 110 | 浮层插槽，位于最顶层，用于添加点赞、评论、分享等自定义覆盖内容 | 否 |
+
+> **默认层级**：数值越小越靠底层。内置插槽间距为 10，为自定义插槽预留了充足的插入空间。
 
 > **注意**：`playerSurface` 插槽负责视频内容的渲染显示，修改此插槽可能导致播放器无法正常工作，因此不建议自定义该插槽。
 
@@ -48,7 +50,7 @@ AliPlayerWidget(controller)
 AliPlayerWidget(
   controller,
   slotBuilders: {
-    SlotType.topBar: (context, controller) => MyCustomTopBar(controller),
+    SlotType.topBar: (context) => MyCustomTopBar(),
   },
 )
 ```
@@ -62,19 +64,40 @@ AliPlayerWidget(
   controller,
   slotBuilders: {
     // 注意：不建议自定义 playerSurface
-    SlotType.topBar: (context, controller) => MyCustomTopBar(controller),
-    SlotType.bottomBar: (context, controller) => MyCustomBottomBar(controller),
-    SlotType.playControl: (context, controller) => MyPlayControl(controller),
-    SlotType.coverImage: (context, controller) => MyCoverImage(controller),
-    SlotType.playState: (context, controller) => MyPlayState(controller),
-    SlotType.centerDisplay: (context, controller) => MyCenterDisplay(controller),
-    SlotType.seekThumbnail: (context, controller) => MySeekThumbnail(controller),
-    SlotType.subtitle: (context, controller) => MySubtitle(controller),
-    SlotType.settingMenu: (context, controller) => MySettingMenu(controller),
-    SlotType.overlays: (context, controller) => MyOverlays(controller),
+    SlotType.topBar: (context) => MyCustomTopBar(),
+    SlotType.bottomBar: (context) => MyCustomBottomBar(),
+    SlotType.playControl: (context) => MyPlayControl(),
+    SlotType.coverImage: (context) => MyCoverImage(),
+    SlotType.playState: (context) => MyPlayState(),
+    SlotType.centerDisplay: (context) => MyCenterDisplay(),
+    SlotType.seekThumbnail: (context) => MySeekThumbnail(),
+    SlotType.subtitle: (context) => MySubtitle(),
+    SlotType.settingMenu: (context) => MySettingMenu(),
+    SlotType.overlays: (context) => MyOverlays(),
   },
 )
 ```
+
+#### **SlotWidgetBuilder 类型**
+
+插槽系统当前使用简洁的构建器签名：
+
+```dart
+// 当前签名（推荐）
+typedef SlotWidgetBuilder = Widget Function(BuildContext context);
+
+// 旧签名（已弃用）
+@Deprecated('请改用 SlotWidgetBuilder')
+typedef SlotWidgetBuilderWithController = Widget Function(
+  BuildContext context,
+  AliPlayerWidgetController controller,
+);
+```
+
+**说明**：
+
+* 当前采用单一共享 Controller 模式，全屏与普通模式共享同一个 Controller 实例，无需通过 builder 参数传递。
+* 如需在自定义插槽中访问 Controller，可直接通过外部引用获取。
 
 ### **2.3 隐藏插槽**
 
@@ -115,30 +138,26 @@ AliPlayerWidget(
 
 > **注意**：`hiddenSlotElements` 仅对默认插槽生效。如果通过 `slotBuilders` 自定义了某个插槽，该插槽的 `hiddenSlotElements` 配置将被忽略。
 
-### **2.5 向后兼容**
+### **2.5 自定义 UI 插入与层级控制**
 
-旧版本的 `overlays` 参数已废弃，请迁移至新的插槽系统：
+与传统的浮层（overlays）方案不同，插槽系统允许您在播放器的**任意层级**插入自定义 UI 组件，而不仅仅是最顶层。通过 `defaultOrder` 精确控制渲染顺序，实现如水印、弹幕、广告等组件的精确层级插入：
+
+`SlotType` 是一个可扩展的类，您可以创建自定义插槽类型并通过 `defaultOrder` 控制其层级位置：
 
 ```dart
-// 旧版本（已废弃）
-AliPlayerWidget(
-  controller,
-  overlays: [MyOverlayWidget()],
-)
+// 创建自定义插槽类型，层级位于 coverImage(30) 和 playControl(40) 之间
+const myWatermark = SlotType('watermark', defaultOrder: 35);
 
-// 新版本（推荐）
 AliPlayerWidget(
   controller,
   slotBuilders: {
-    SlotType.overlays: (context, controller) => MyOverlayWidget(controller),
+    myWatermark: (context) => MyWatermarkWidget(),
   },
+  // 所有插槽按 defaultOrder 自动排序，无需手动枚举
 )
 ```
 
-> **重要提示**：
->
-> * **机制说明**：全屏模式会创建新的控制器实例。参数中的 `controller` 会自动绑定当前生效的实例，确保控制逻辑在全屏下依然有效。
-> * **开发规范**：在 `slotBuilder` 中，**必须**使用回调参数传入的 `controller`，**严禁**引用外部定义的 `_controller`。
+> **提示**：系统会自动将所有内置插槽和自定义插槽按 `defaultOrder` 排序。
 
 ## **3. 插槽系统工作原理**
 
