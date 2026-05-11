@@ -18,7 +18,7 @@ import 'package:aliplayer_widget/aliplayer_widget_lib.dart';
 
 void main() {
   // === 0. 初始化播放器组件全局配置 ===
-  // 可选调用：组件已内置推荐的最优全局配置，通常无需额外设置；如需自定义，可参考 example/lib/main.dart
+  // 可选调用：组件已内置推荐的最优全局配置，通常无需额外设置；如需自定义，可参考 「自定义配置」文档
   // 调用方式：通过 [AliPlayerWidgetGlobalSetting] 相关接口进行全局配置
   runApp(const MyApp());
 }

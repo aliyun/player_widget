@@ -90,6 +90,16 @@ class BottomBarElements {
   ///
   /// Fullscreen toggle button
   static const String fullscreen = 'fullscreen';
+
+  /// 倍速按钮（横屏）
+  ///
+  /// Speed button (landscape)
+  static const String speed = 'speed';
+
+  /// 清晰度按钮（横屏）
+  ///
+  /// Quality button (landscape)
+  static const String quality = 'quality';
 }
 
 /// 设置菜单元素 key 常量
@@ -97,6 +107,11 @@ class BottomBarElements {
 /// Setting menu element key constants.
 class SettingMenuElements {
   SettingMenuElements._();
+
+  /// 设置按钮
+  ///
+  /// Settings button
+  static const String settingsButton = 'settingsButton';
 
   /// 声音
   ///
@@ -142,6 +157,11 @@ class SettingMenuElements {
   ///
   /// Scale mode
   static const String scaleMode = 'scaleMode';
+
+  /// 字幕开关
+  ///
+  /// Subtitle toggle
+  static const String subtitle = 'subtitle';
 }
 
 /// 中心显示元素 key 常量

@@ -13,15 +13,16 @@ class DemoConstants {
   // 私有构造函数，防止实例化
   DemoConstants._();
 
-  /// 描述 VOD 组件的功能和特点
+  /// 示例横屏VID
   ///
-  /// A detailed description of the VOD component's features and capabilities.
-  static const String vodComponentDescription =
-      'A powerful and flexible VOD component for Flutter applications.\n'
-      'It integrates with flutter_aliplayer to provide high-quality video playback, seamless streaming, '
-      'and a rich set of features for both live and on-demand video content.\n'
-      'Whether you are building a video playback solution for education, entertainment, or any other application, '
-      'it makes it easy to deliver an engaging video experience.\n';
+  /// VID of the sample landscape video file
+  static const String sampleVid = "004fc90fd71d71f0bf184531958c0402";
+
+  /// 示例横屏播放凭证
+  ///
+  /// PLAY auth of the sample landscape video file
+  static const String samplePlayAuth =
+      "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhcHBJZCI6ImFwcC0xMDAwMDAwIiwidmlkZW9JZCI6IjAwNGZjOTBmZDcxZDcxZjBiZjE4NDUzMTk1OGMwNDAyIiwiY3VycmVudFRpbWVTdGFtcCI6MTc2NjEzMTE5MTYxMywiZXhwaXJlVGltZVN0YW1wIjoxOTIzODExMTkxNjEzLCJyZWdpb25JZCI6ImNuLXNoYW5naGFpIiwicGxheUNvbnRlbnRJbmZvIjp7ImZvcm1hdHMiOiJtM3U4Iiwic3RyZWFtVHlwZSI6InZpZGVvIiwiYXV0aFRpbWVvdXQiOjE4MDB9fQ.CjqZA-6okJb2PxOZr0Jjai9gWwvaNdG-bk3LWBMzhdc";
 
   /// 示例视频地址
   ///
@@ -29,15 +30,16 @@ class DemoConstants {
   static const String sampleVideoUrl =
       "https://alivc-demo-vod.aliyuncs.com/6b357371ef3c45f4a06e2536fd534380/53733986bce75cfc367d7554a47638c0-fd.mp4";
 
-  /// 示例播放凭证
+  /// 示例竖屏VID
   ///
-  /// PLAY auth of the sample video file
-  static const String samplePlayAuth = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhcHBJZCI6ImFwcC0xMDAwMDAwIiwidmlkZW9JZCI6IjAwNGZjOTBmZDcxZDcxZjBiZjE4NDUzMTk1OGMwNDAyIiwiY3VycmVudFRpbWVTdGFtcCI6MTc2NjEzMTE5MTYxMywiZXhwaXJlVGltZVN0YW1wIjoxOTIzODExMTkxNjEzLCJyZWdpb25JZCI6ImNuLXNoYW5naGFpIiwicGxheUNvbnRlbnRJbmZvIjp7ImZvcm1hdHMiOiJtM3U4Iiwic3RyZWFtVHlwZSI6InZpZGVvIiwiYXV0aFRpbWVvdXQiOjE4MDB9fQ.CjqZA-6okJb2PxOZr0Jjai9gWwvaNdG-bk3LWBMzhdc";
+  /// VID of the sample portrait video file
+  static const String sampleVidPortrait = "00e9b526d0d671f085715017f1e90402";
 
-  /// 示例Vid
+  /// 示例竖屏播放凭证
   ///
-  /// VID of the sample video file
-  static const String sampleVid = "004fc90fd71d71f0bf184531958c0402";
+  /// PLAY auth of the sample portrait video file
+  static const String samplePlayAuthPortrait =
+      "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhcHBJZCI6ImFwcC0xMDAwMDAwIiwidmlkZW9JZCI6IjAwZTliNTI2ZDBkNjcxZjA4NTcxNTAxN2YxZTkwNDAyIiwiY3VycmVudFRpbWVTdGFtcCI6MTc2ODE4ODIzNzAwNiwiZXhwaXJlVGltZVN0YW1wIjoxOTI1ODY4MjM3MDA2LCJyZWdpb25JZCI6ImNuLXNoYW5naGFpIiwicGxheUNvbnRlbnRJbmZvIjp7ImZvcm1hdHMiOiJtM3U4Iiwic3RyZWFtVHlwZSI6InZpZGVvIiwiYXV0aFRpbWVvdXQiOjE4MDB9fQ.AwXM5c8EsLJbhTPoNbEiB3uFVkl7heukuFbntHmC7no";
 
   /// Sample video info list URL - network video source (default)
   ///

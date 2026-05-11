@@ -39,8 +39,7 @@ class LinkConstants {
   static const String url = '视频 Direct URL 地址';
   static const String thumbnail = '缩略图地址';
   static const String externalSubtitle = '外挂字幕地址';
-  static const String liveLandscape = '横屏直播地址';
-  static const String livePortrait = '竖屏直播地址';
+  static const String live = '直播地址';
   static const String shortVideo = '短视频地址';
 
   static List<LinkItem> linkItems = [
@@ -61,12 +60,8 @@ class LinkConstants {
       route: PageRoutes.externalSubtitle,
     ),
     LinkItem(
-      name: liveLandscape,
-      route: PageRoutes.liveLandscape,
-    ),
-    LinkItem(
-      name: livePortrait,
-      route: PageRoutes.livePortrait,
+      name: live,
+      route: PageRoutes.live,
     ),
     LinkItem(
       name: shortVideo,

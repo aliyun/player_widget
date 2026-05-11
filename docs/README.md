@@ -26,10 +26,14 @@
 ### **4. 高级功能文档**
 
 | 文档名称 | 文档链接 | 详细描述 | 用途说明 |
-|---------|---------|---------|---------|
-| 插槽系统 | [slot-system.md](./slot-system.md) | 详细介绍插槽系统的使用方法 | 帮助开发者自定义播放器界面 |
-| 场景类型 | [scene-type.md](./scene-type.md) | 解读 `sceneType` 在不同业务场景下的能力与配置方式 | 指导如何选择合适的播放场景并联动插槽 |
-| 视频源支持 | [video-source-support.md](./video-source-support.md) | 说明 AliPlayerWidget 支持的各种视频源类型及其配置方法 | 帮助开发者配置不同的视频源 |
+|---------|---------|---------|----------|
+| 插槽系统 | [slot-system.md](./advanced/slot-system.md) | 详细介绍插槽系统的使用方法 | 帮助开发者自定义播放器界面 |
+| 策略系统 | [strategy-system.md](./advanced/strategy-system.md) | 详细介绍策略系统的使用方法和自定义开发 | 帮助开发者扩展播放器行为逻辑 |
+| 场景类型 | [scene-type.md](./advanced/scene-type.md) | 解读 `sceneType` 在不同业务场景下的能力与配置方式 | 指导如何选择合适的播放场景并联动插槽 |
+| 多视频源支持 | [video-source-support.md](./advanced/video-source-support.md) | 说明支持的各种视频源类型及其配置方法 | 帮助开发者配置不同的视频源 |
+| 自定义配置 | [custom-config.md](./advanced/custom-config.md) | 介绍如何通过全局配置和实例配置自定义播放器行为 | 帮助开发者实现缓冲策略、Referer 防盗链等自定义需求 |
+| UI 主题 | [ui-theme.md](./advanced/ui-theme.md) | 介绍如何自定义播放器 UI 主题风格 | 帮助开发者定制播放器外观 |
+| 国际化 (i18n) | [i18n.md](./advanced/i18n.md) | 介绍多语言支持和国际化配置方法 | 帮助开发者实现多语言适配 |
 
 ## **注意事项**
 

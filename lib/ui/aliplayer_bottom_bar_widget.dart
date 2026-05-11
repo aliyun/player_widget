@@ -7,14 +7,21 @@
 import 'package:aliplayer_widget/aliplayer_widget_lib.dart';
 import 'package:aliplayer_widget/slot/slot_elements.dart';
 import 'package:aliplayer_widget/slot/slot_manager.dart';
+import 'package:aliplayer_widget/theme/player_styles.dart';
 import 'package:aliplayer_widget/utils/scene_util.dart';
 import 'package:flutter/material.dart';
 
+import '../theme/player_icons.dart';
+import 'aliplayer_custom_button.dart';
 import 'aliplayer_shared_animation_widget.dart';
+import '../manager/aliplayer_settings_panel_manager.dart';
 import 'aliplayer_video_slider.dart';
 
 /// 播放器自定义底部栏组件
 class AliPlayerBottomBarWidget extends AliPlayerSharedAnimationWidget {
+  /// 播放器控制器
+  final AliPlayerWidgetController controller;
+
   /// 播放器场景类型
   final SceneType sceneType;
 
@@ -57,10 +64,14 @@ class AliPlayerBottomBarWidget extends AliPlayerSharedAnimationWidget {
   /// seek 结束时触发的回调
   final ValueChanged<Duration>? onSeekEnd;
 
+  /// orientation
+  final Orientation orientation;
+
   /// 构造函数
   const AliPlayerBottomBarWidget({
     super.key,
     required super.animationManager,
+    required this.controller,
     required this.sceneType,
     required this.isPlaying,
     required this.isShowExternalSubtitle,
@@ -75,7 +86,13 @@ class AliPlayerBottomBarWidget extends AliPlayerSharedAnimationWidget {
     this.onDragEnd,
     this.onSeekEnd,
     required this.isShowExternalSubtitleBtn,
+    this.orientation = Orientation.portrait,
   });
+
+  @override
+  Widget buildWrapper(BuildContext context, Widget child) {
+    return Positioned(bottom: 0, left: 0, right: 0, child: child);
+  }
 
   @override
   Widget buildContent(BuildContext context) {
@@ -86,87 +103,237 @@ class AliPlayerBottomBarWidget extends AliPlayerSharedAnimationWidget {
       SlotType.bottomBar,
     );
 
-    // 根据配置构建可见元素，避免过早创建 Widget
-    // Build visible elements based on config, avoiding premature Widget creation
-    final slotElements = <Widget>[];
+    return orientation == Orientation.portrait
+        ? _buildPortraitWidget(hiddenElements)
+        : _buildLandscapeWidget(context, hiddenElements);
+  }
 
-    // 左边：播放/暂停按钮
-    if (hiddenElements.isElementVisible(BottomBarElements.play)) {
-      slotElements.add(IconButton(
-        icon: Icon(
-          isPlaying ? Icons.pause : Icons.play_arrow,
-          color: Colors.white,
-          size: 30,
+  Widget _buildPortraitWidget(Set<String> hiddenElements) {
+    return SizedBox(
+      height: PlayerStyles.kBottomBarHeight,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(
+          horizontal: PlayerStyles.kBottomBarPortraitHorizontalPadding,
+          vertical: PlayerStyles.kBottomBarPortraitVerticalPadding,
         ),
-        onPressed: onPlayIconPressed,
-      ));
-    }
-
-    // 中间：刷新按钮（可选：直播场景）
-    if (isSceneType(sceneType, [SceneType.live]) &&
-        hiddenElements.isElementVisible(BottomBarElements.refresh)) {
-      slotElements.add(IconButton(
-        onPressed: onReplayIconPressed,
-        icon: const Icon(
-          Icons.refresh,
-          color: Colors.white,
-          size: 30,
+        child: Row(
+          children: [
+            if (hiddenElements.isElementVisible(BottomBarElements.play))
+              _buildIconButton(
+                iconAssetName: isPlaying
+                    ? PlayerIcons.pausePortrait
+                    : PlayerIcons.playPortrait,
+                onTap: onPlayIconPressed,
+              ),
+            _buildSlider(hiddenElements),
+            if (hiddenElements.isElementVisible(BottomBarElements.fullscreen) &&
+                !isSceneType(sceneType, [SceneType.listPlayer]))
+              _buildIconButton(
+                  iconAssetName: PlayerIcons.fullScreen,
+                  onTap: onFullScreenPressed),
+          ],
         ),
-      ));
-    }
+      ),
+    );
+  }
 
-    // 中间：自定义进度条组件
-    if (hiddenElements.isElementVisible(BottomBarElements.progress)) {
-      slotElements.add(Expanded(
+  Widget _buildLandscapeWidget(
+      BuildContext context, Set<String> hiddenElements) {
+    return SafeArea(
+      bottom: false, // tips: 防止 iOS 端侧底部出现额外边距
+      child: SizedBox(
+        height: PlayerStyles.kLandscapeBottomBarHeight,
         child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 8.0),
-          child: AliPlayerVideoSlider(
-            currentPosition: currentPosition,
-            totalDuration: totalDuration,
-            bufferedPosition: bufferedPosition,
-            onDragUpdate: onDragUpdate,
-            onDragEnd: onDragEnd,
-            onSeekEnd: onSeekEnd,
+          padding: const EdgeInsets.symmetric(
+            horizontal: PlayerStyles.kLandscapeBottomBarPadding,
+          ),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.start,
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              _buildSlider(hiddenElements),
+              _buildControlButtons(context, hiddenElements),
+            ],
           ),
         ),
+      ),
+    );
+  }
+
+  /// 自定义进度条组件
+  Widget _buildSlider(Set<String> hiddenElements) {
+    return (!isSceneType(sceneType, [SceneType.live])) &&
+            (hiddenElements.isElementVisible(BottomBarElements.progress))
+        ? Expanded(
+            child: AliPlayerVideoSlider(
+              currentPosition: currentPosition,
+              totalDuration: totalDuration,
+              bufferedPosition: bufferedPosition,
+              onDragUpdate: onDragUpdate,
+              onDragEnd: onDragEnd,
+              onSeekEnd: onSeekEnd,
+              orientation: orientation,
+            ),
+          )
+        : const Expanded(child: SizedBox.shrink());
+  }
+
+  /// 横屏进度条组件，底部Button 栏
+  Widget _buildControlButtons(
+      BuildContext context, Set<String> hiddenElements) {
+    // 1. 提取状态判断，避免重复计算和魔法字符串/枚举比较
+    final bool isLiveOrRestricted = isSceneType(sceneType, [
+      SceneType.live,
+      SceneType.restricted,
+    ]);
+    final bool isLiveOnly = isSceneType(sceneType, [SceneType.live]);
+
+    // 2. 提取左侧按钮列表，使主结构更清晰
+    final List<Widget> leftButtons = [];
+
+    // Play/Pause Button
+    if (hiddenElements.isElementVisible(BottomBarElements.play)) {
+      leftButtons.add(_buildIconButton(
+        iconAssetName: isPlaying ? PlayerIcons.pause : PlayerIcons.play,
+        iconAssetSize: const Size(
+          PlayerStyles.kBottomBarIconSize,
+          PlayerStyles.kBottomBarIconSize,
+        ),
+        onTap: onPlayIconPressed,
       ));
-    } else {
-      // 隐藏时仍需保持弹性布局
-      // Must maintain flex layout when hidden
-      slotElements.add(const Expanded(child: SizedBox.shrink()));
     }
 
-    // 右边: 外挂字幕显示控制
+    // Refresh Button (Live only)
+    if (isLiveOnly &&
+        hiddenElements.isElementVisible(BottomBarElements.refresh)) {
+      leftButtons.add(_buildIconButton(
+        iconAssetName: PlayerIcons.refresh,
+        onTap: onReplayIconPressed,
+      ));
+    }
+
+    // Subtitle Button
     if (isShowExternalSubtitleBtn &&
         hiddenElements.isElementVisible(BottomBarElements.subtitle)) {
-      slotElements.add(IconButton(
-        icon: Icon(
-          isShowExternalSubtitle ? Icons.subtitles : Icons.subtitles_off,
-          color: Colors.white,
-          size: 30,
-        ),
-        onPressed: onSubtitlePressed,
+      leftButtons.add(_buildIconButton(
+        iconAssetName: isShowExternalSubtitle
+            ? PlayerIcons.subtitleOpen
+            : PlayerIcons.subtitleClose,
+        onTap: onSubtitlePressed,
       ));
     }
 
-    // 右边：全屏切换按钮
-    if (hiddenElements.isElementVisible(BottomBarElements.fullscreen)) {
-      slotElements.add(IconButton(
-        icon: const Icon(
-          Icons.fullscreen,
-          color: Colors.white,
-          size: 30,
+    // 3. 提取右侧按钮列表
+    final List<Widget> rightButtons = [];
+
+    // Speed Button (Not Live/Restricted)
+    if (!isLiveOrRestricted &&
+        hiddenElements.isElementVisible(BottomBarElements.speed)) {
+      rightButtons.add(_buildControlButton(
+        text: PlayerI18n.t(PlayerI18nKeys.speed),
+        onTap: () => AliPlayerSettingsPanelManager.showSpeedPanel(
+          context: context,
+          controller: controller,
         ),
-        onPressed: onFullScreenPressed,
+        padding: const EdgeInsets.symmetric(
+          horizontal: PlayerStyles.kBottomBarButtonPadding,
+          vertical: PlayerStyles.kBottomBarControlBtnPadding,
+        ),
       ));
     }
 
-    return Container(
-      height: kBottomNavigationBarHeight,
-      color: Colors.black.withOpacity(0.3),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-        children: slotElements,
+    // Quality Button (Not Live/Restricted)
+    if (!isLiveOrRestricted &&
+        hiddenElements.isElementVisible(BottomBarElements.quality)) {
+      rightButtons.add(_buildControlButton(
+        text: PlayerI18n.t(PlayerI18nKeys.quality),
+        onTap: () => AliPlayerSettingsPanelManager.showQualityPanel(
+          context: context,
+          controller: controller,
+        ),
+        padding: const EdgeInsets.only(
+          top: PlayerStyles.kBottomBarControlBtnPadding,
+          left: PlayerStyles.kBottomBarControlBtnPadding,
+          bottom: PlayerStyles.kBottomBarControlBtnPadding,
+        ),
+      ));
+    }
+
+    // 4. 构建最终布局
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.start,
+      crossAxisAlignment: CrossAxisAlignment.center,
+      children: [
+        // 左侧容器
+        leftButtons.isEmpty
+            ? const SizedBox.shrink()
+            : Container(
+                padding: (isLiveOrRestricted
+                    ? const EdgeInsets.symmetric(
+                        vertical: PlayerStyles.kBottomBarControlBtnPadding)
+                    : null),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: leftButtons,
+                ),
+              ),
+        const Spacer(),
+        // 右侧按钮组
+        Row(
+          mainAxisSize: MainAxisSize.min,
+          children: rightButtons,
+        ),
+      ],
+    );
+  }
+
+  Widget _buildIconButton({
+    required String iconAssetName,
+    VoidCallback? onTap,
+    EdgeInsets? margin,
+    Size? iconAssetSize,
+  }) {
+    return GestureDetector(
+      onTap: onTap,
+      behavior: HitTestBehavior.opaque,
+      child: SizedBox(
+        width: PlayerStyles.commonIconSize,
+        height: PlayerStyles.commonIconSize,
+        child: CustomIconButton(
+          iconName: iconAssetName,
+          iconSize: iconAssetSize ??
+              const Size(
+                PlayerStyles.commonIconSize,
+                PlayerStyles.commonIconSize,
+              ),
+          margin: margin ??
+              const EdgeInsets.symmetric(
+                horizontal: 0,
+              ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildControlButton({
+    required String text,
+    VoidCallback? onTap,
+    EdgeInsetsGeometry? padding,
+  }) {
+    return GestureDetector(
+      onTap: onTap,
+      behavior: HitTestBehavior.opaque, // 确保点击区域完整
+      child: Container(
+        padding: padding,
+        alignment: Alignment.center,
+        // 如果需要背景色
+        child: Text(
+          text,
+          style: const TextStyle(
+            color: Colors.white,
+            fontSize: PlayerStyles.commonTextSize,
+          ),
+        ),
       ),
     );
   }

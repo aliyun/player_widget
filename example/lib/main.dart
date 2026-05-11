@@ -16,8 +16,11 @@ import 'package:aliplayer_widget_example/pages/live/live_page.dart';
 import 'package:aliplayer_widget_example/pages/long_video/long_video_page.dart';
 import 'package:aliplayer_widget_example/pages/settings/settings_page.dart';
 import 'package:aliplayer_widget_example/pages/short_video/short_video_page.dart';
+import 'package:aliplayer_widget_example/pages/i18n/i18n_demo_page.dart';
 import 'package:aliplayer_widget_example/pages/slot/slot_demo_page.dart';
+import 'package:aliplayer_widget_example/pages/strategy/strategy_demo_page.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:path_provider/path_provider.dart';
 
 void main() {
@@ -79,6 +82,13 @@ Future<void> initializeGlobalSettings() async {
     cachePath: cachePath,
     filesPath: filesPath,
   );
+
+  // 初始化安全下载
+  var bytes = await rootBundle.load((Platform.isAndroid)
+      ? "assets/encryptedApp_android.dat"
+      : "assets/encryptedApp_ios.dat");
+  // getExternalStorageDirectories
+  FlutterAliPlayerFactory.initService(bytes.buffer.asUint8List());
 }
 
 /// 主应用入口
@@ -102,12 +112,13 @@ class MyApp extends StatelessWidget {
         PageRoutes.externalSubtitle: (_) => const ExternalSubtitlePage(),
         PageRoutes.shortVideo: (_) => const ShortVideoPage(preload: false),
         PageRoutes.preloadShortVideo: (_) => const ShortVideoPage(),
-        PageRoutes.liveLandscape: (_) => const LivePage(),
-        PageRoutes.livePortrait: (_) => const LivePage(isPortrait: true),
+        PageRoutes.live: (_) => const LivePage(),
         PageRoutes.debug: (_) => const DebugPage(),
         PageRoutes.settings: (_) => const SettingsPage(),
         PageRoutes.link: (_) => const LinkPage(),
         PageRoutes.slotDemo: (_) => const SlotDemoPage(),
+        PageRoutes.strategyDemo: (_) => const StrategyDemoPage(),
+        PageRoutes.i18nDemo: (_) => const I18nDemoPage(),
       },
     );
   }

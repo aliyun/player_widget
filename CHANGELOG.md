@@ -1,5 +1,55 @@
 # **AliPlayerWidget Changelog**
 
+> Language: [Simplified Chinese](CHANGELOG-CN.md) | English
+
+## **[7.14.0] - Strategy System, i18n, UI Theme & Slot System Enhancement**
+
+### **New Features**
+
+- **Strategy System**
+  - Pluggable strategy architecture with custom strategy registration for playback behavior control.
+  - Built-in first frame optimization and stutter detection strategies, ready to use out of the box.
+  - Built-in resume play strategy that automatically resumes playback when the app returns to foreground.
+- **Internationalization (i18n) System**
+  - Built-in Chinese and English support, auto-syncs with system language.
+  - Runtime language switching without restart.
+  - Custom language pack registration (e.g., Japanese, Korean) by implementing `PlayerTranslations` interface.
+  - Translation override mechanism to modify built-in text.
+  - Integrates with Flutter's `LocalizationsDelegate` for seamless MaterialApp integration.
+- **UI Theme System**
+  - Production-ready UI design with unified design tokens (colors, fonts, sizes, spacing via `PlayerStyles`).
+  - Custom skin support via `assetsPath` parameter — replace all player icons with your own assets.
+- **UI Enhancements**
+  - Redesigned player UI with production-ready visuals, no additional UI restoration needed.
+- **Player Configuration**
+  - Android view type configuration support (`AndroidViewType`).
+  - Optimized playback experience for different scenarios.
+
+### **Improvements**
+
+- **Fullscreen Optimization**
+  - Refactored fullscreen to single-instance architecture for better stability and resource management.
+  - Simplified fullscreen toggle logic with landscape top bar layout optimization.
+- **Slot System**
+  - Slots now support custom ordering and insertion at any level, making UI orchestration more flexible.
+  - Slot builder signature simplified to single parameter `(BuildContext context)`.
+  - `overlays` parameter deprecated, unified migration to slot system.
+
+### **Documentation Updates**
+
+- Added custom configuration guide.
+- Clarified `flutter_aliplayer` dependency version requirements.
+- Added strategy system documentation.
+
+### **Example Updates**
+
+- Added internationalization (i18n) demo page.
+- Added short-video right-side action buttons overlay example.
+- Added watermark slot example.
+- Added resume play strategy example.
+
+---
+
 ## **[7.12.2] - Slot Builder Controller Parameter & Fullscreen Improvements**
 
 ### **New Features**
@@ -12,7 +62,7 @@
 
 - **Custom Configuration Callbacks**
   - Added `OnGlobalInitCallback` via `AliPlayerWidgetGlobalSetting.setOnGlobalInit`, called after global initialization for custom global settings (e.g., `setOption`).
-  - Added `OnPlayerConfigCallback` via `AliPlayerWidgetData.onPlayerConfig`, called before `prepare()` for per-instance player configuration (e.g., `setConfig`, `setOption`). Supports async operations (`FutureOr<void>`).
+  - Added `OnPlayerConfigCallback` via `AliPlayerWidgetData.onPlayerConfig`, called before `prepare()` for per-instance player configuration (e.g., `setPlayConfig`, `setOption`). Supports async operations (`FutureOr<void>`).
   - Enables customers to configure player APIs not directly exposed by AliPlayerWidget within the best-practice configuration flow.
 
 ### **Improvements**

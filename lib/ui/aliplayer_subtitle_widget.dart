@@ -1,7 +1,13 @@
+// Copyright © 2025 Alibaba Cloud. All rights reserved.
+//
+// @author junHuiYe
+// @date 2025/7/15 10:29
+// Brief: 播放器字幕插槽组件
+
 import 'package:flutter/material.dart';
 import 'package:aliplayer_widget/constants/subtitle_model.dart';
-import 'package:aliplayer_widget/utils/subtitle_builder_utils.dart';
-import 'package:aliplayer_widget/utils/subtitle_config_utils.dart';
+import 'package:aliplayer_widget/subtitle/subtitle_builder.dart';
+import 'package:aliplayer_widget/subtitle/subtitle_config.dart';
 
 class AliPlayerSubtitleWidget extends StatefulWidget {
   /// 外挂字幕显示
@@ -57,11 +63,11 @@ class _AliPlayerSubtitleWidgetState extends State<AliPlayerSubtitleWidget> {
   @override
   Widget build(BuildContext context) {
     if (!widget.subtitleOn) {
-      return const SizedBox();
+      return const SizedBox.shrink();
     }
 
     if (widget.trackIndex == null || widget.trackIndex! < 0) {
-      return const SizedBox();
+      return const SizedBox.shrink();
     }
 
     final currentSubtitles =
@@ -71,7 +77,12 @@ class _AliPlayerSubtitleWidgetState extends State<AliPlayerSubtitleWidget> {
       return const SizedBox();
     }
 
-    return _buildAllSubtitles(currentSubtitles);
+    return Positioned(
+      bottom: widget.config.position.bottom,
+      left: widget.config.position.left,
+      right: widget.config.position.right,
+      child: _buildAllSubtitles(currentSubtitles),
+    );
   }
 
   /// 构建所有字幕的显示

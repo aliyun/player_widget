@@ -12,14 +12,12 @@ AliPlayerWidget 采用类似 MVC 的分层设计，将视图（View）、控制�
 AliPlayerWidget(
   AliPlayerWidgetController controller, {
   Key? key,
-  List<Widget> overlays = const [],
   Map<SlotType, SlotWidgetBuilder?> slotBuilders = const {},
   OnBackPressedCallback? onBackPressed,
 });
 ```
 
 - **`controller`**: 播放器控制器，用于管理播放逻辑。
-- **`overlays`**: 可选的浮层组件列表，用于在播放器组件上叠加自定义 UI（已废弃，建议使用 `slotBuilders`）。
 - **`slotBuilders`**: 可选的插槽构建器映射，允许自定义各个插槽的构建方式。详见 [插槽系统](slot-system.md)。
 - **`onBackPressed`**: 可选的返回按钮点击回调。当用户按下返回键时调用。返回 `true` 表示已处理返回事件，不再执行默认行为；返回 `false` 或 `null` 将执行默认行为（`Navigator.pop`）。
 
@@ -66,7 +64,7 @@ AliPlayerWidget(
 - **`videoTitle`**: 视频标题（可选）。
 - **`thumbnailUrl`**: 缩略图地址（可选）。
 - **`sceneType`**: 播放场景类型，默认为点播（`SceneType.vod`）。
-- **`onPlayerConfig`**: 播放器自定义配置回调（可选）。在 `prepare()` 前调用，支持异步操作。适用于 AliPlayerWidget 未直接透出的播放器接口（如 `setConfig`、`setOption` 等），可在回调中自行调用实现。
+- **`onPlayerConfig`**: 播放器自定义配置回调（可选）。详见[自定义配置](./advanced/custom-config.md)。
 
 ## **4. 全局配置项（可选）**
 
@@ -75,10 +73,10 @@ AliPlayerWidget(
 ### **4.1 主要功能**
 
 - **全局配置初始化**: 通过 [setupConfig] 方法初始化全局配置
-- **自定义全局配置回调**: 通过 [setOnGlobalInit] 方法注册回调，在全局初始化完成后调用。适用于 AliPlayerWidget 未直接透出的全局接口（如 `setOption` 等），可在回调中自行调用实现。
 - **存储路径设置**: 通过 [setStoragePaths] 方法设置缓存和文件存储路径
 - **缓存管理**: 通过 [clearCaches] 方法清除所有缓存
+- **自定义配置**: 支持全局级别和实例级别的自定义配置，详见[自定义配置](./advanced/custom-config.md)
 
 ### **4.2 使用说明**
 
-组件已内置推荐的最优全局配置，通常无需额外设置。如需自定义，可参考 `example/lib/main.dart`，通过 [AliPlayerWidgetGlobalSetting] 相关接口进行配置。
+组件已内置推荐的最优全局配置，通常无需额外设置。如需自定义，可参考[自定义配置](./advanced/custom-config.md)文档。

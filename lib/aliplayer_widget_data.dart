@@ -11,16 +11,16 @@ part of 'aliplayer_widget_lib.dart';
 /// Instance-level player custom configuration callback.
 ///
 /// 在播放器 prepare() 之前调用，允许用户对播放器实例进行自定义配置，
-/// 例如 setConfig（设置缓冲、refer 等）、setOption 等。
-/// 支持异步操作（如 getConfig/setConfig），Widget 会等待回调完成后再执行 prepare()。
+/// 例如 setPlayConfig（设置缓冲、referer 等）、setOption 等。
+/// 支持异步操作（如 getPlayConfig/setPlayConfig），Widget 会等待回调完成后再执行 prepare()。
 ///
 /// 适用于实例级别的播放器配置，与全局级别的 [OnGlobalInitCallback] 互补：
 /// - 实例配置 → 使用 [OnPlayerConfigCallback]，通过 [AliPlayerWidgetData.onPlayerConfig] 注入
 /// - 全局配置 → 使用 [OnGlobalInitCallback]，通过 [AliPlayerWidgetGlobalSetting.setOnGlobalInit] 注册
 ///
 /// Called before player prepare(), allowing users to customize the player instance,
-/// such as setConfig (buffer, referer, etc.), setOption, etc.
-/// Supports async operations (e.g., getConfig/setConfig). The Widget will await
+/// such as setPlayConfig (buffer, referer, etc.), setOption, etc.
+/// Supports async operations (e.g., getPlayConfig/setPlayConfig). The Widget will await
 /// the callback completion before calling prepare().
 ///
 /// This callback is designed for instance-level player configuration and complements
@@ -148,6 +148,15 @@ abstract class VideoSource {
   /// Get the source type of the video
   SourceType get sourceType;
 
+  /// 获取媒体唯一标识
+  ///
+  /// 用于在播放器池中标识和复用播放器实例，相同 mediaId 的视频源会复用同一播放器实例。
+  /// 规则：“类型前缀:关键标识”，例如 "url:https://..." 或 "vidsts:abc123"。
+  ///
+  /// Unique media identifier for player pool reuse.
+  /// Format: "type_prefix:key_identifier", e.g. "url:https://..." or "vidsts:abc123".
+  String get mediaId;
+
   /// 转换为可用于播放器的配置映射
   ///
   /// Convert to a configuration map that can be used by the player
@@ -179,6 +188,9 @@ class UrlVideoSource extends VideoSource {
 
   @override
   SourceType get sourceType => SourceType.url;
+
+  @override
+  String get mediaId => 'url:$url';
 
   @override
   Map<String, dynamic> toJson() {
@@ -242,6 +254,9 @@ class VidStsVideoSource extends VideoSource {
   SourceType get sourceType => SourceType.vidSts;
 
   @override
+  String get mediaId => 'vidsts:$vid';
+
+  @override
   Map<String, dynamic> toJson() {
     return {
       'sourceType': sourceType.toString(),
@@ -290,6 +305,9 @@ class VidAuthVideoSource extends VideoSource {
 
   @override
   SourceType get sourceType => SourceType.vidAuth;
+
+  @override
+  String get mediaId => 'vidauth:$vid';
 
   @override
   Map<String, dynamic> toJson() {
@@ -392,6 +410,51 @@ class DownloadErrorState extends DownloadState {
   });
 }
 
+/// Android 播放器视图类型
+///
+/// Android player view type
+///
+/// 仅对 Android 平台生效，iOS 平台会忽略此配置。
+/// Only takes effect on Android; iOS ignores this configuration.
+enum AndroidViewType {
+  /// SurfaceView 渲染
+  ///
+  /// 性能更优，但不支持动画变换和透明背景。
+  ///
+  /// Better performance, but does not support animated transitions or transparent backgrounds.
+  surfaceView,
+
+  /// TextureView 渲染
+  ///
+  /// 支持动画变换和透明背景，兼容性更好。
+  ///
+  /// Supports animated transitions and transparent backgrounds with better compatibility.
+  textureView,
+
+  /// DisplayView 渲染
+  ///
+  /// 基于 AliDisplayView 的视图类型。
+  ///
+  /// View type based on AliDisplayView.
+  displayView;
+
+  /// 默认视图类型
+  ///
+  /// Default view type
+  static const AndroidViewType defaultValue = textureView;
+
+  /// 转换为底层 SDK 的视图类型
+  ///
+  /// Convert to the underlying SDK view type
+  AliPlayerViewTypeForAndroid toPlayerViewType() {
+    return switch (this) {
+      AndroidViewType.surfaceView => AliPlayerViewTypeForAndroid.surfaceview,
+      AndroidViewType.textureView => AliPlayerViewTypeForAndroid.textureview,
+      AndroidViewType.displayView => AliPlayerViewTypeForAndroid.displayview,
+    };
+  }
+}
+
 /// 播放器组件数据，用于存储播放器所需的视频数据
 ///
 /// Player Widget data, used to store the video data required by the player
@@ -406,30 +469,13 @@ class AliPlayerWidgetData {
   /// Video source object, used to define the playback source
   VideoSource? videoSource;
 
-  /// 视频URL地址
+  /// Android 播放器视图类型，默认为 [AndroidViewType.defaultValue]
   ///
-  /// 此属性已过时，请使用 [videoSource] 代替。
-  /// 例如: 使用 `VideoSourceFactory.createUrlSource(url)` 创建视频源。
-  /// 为了向后兼容而保留。
+  /// Android player view type, defaults to [AndroidViewType.defaultValue]
   ///
-  /// Video URL address
-  ///
-  /// This property is deprecated. Please use [videoSource] instead.
-  /// For example: use `VideoSourceFactory.createUrlSource(url)` to create a video source.
-  /// Kept for backward compatibility.
-  ///
-  /// This method will be removed in a future release.
-  @Deprecated('Use videoSource instead.')
-  String get videoUrl => videoSource?.sourceType == SourceType.url
-      ? (videoSource as UrlVideoSource).url
-      : '';
-
-  @Deprecated('Use videoSource instead.')
-  set videoUrl(String value) {
-    if (value.isNotEmpty) {
-      videoSource = VideoSourceFactory.createUrlSource(value);
-    }
-  }
+  /// 仅对 Android 平台生效，iOS 平台会忽略此配置。
+  /// Only takes effect on Android; iOS ignores this configuration.
+  AndroidViewType androidViewType;
 
   /// 封面图地址，可以为空
   ///
@@ -491,29 +537,24 @@ class AliPlayerWidgetData {
   /// External subtitle builder
   SubtitleBuilder? subtitleBuilder;
 
-  /// 外挂字幕位置配置
-  ///
-  /// External Subtitle Position Configuration
-  SubtitlePositionConfig? subtitlePositionConfig;
-
   /// 播放器自定义配置回调
   ///
   /// Player custom configuration callback.
   ///
   /// 在播放器 prepare() 之前调用，允许用户对播放器实例进行自定义配置，
   /// 例如通过 setPlayConfig 设置缓冲策略、refer 等。
-  /// 支持异步操作（如 getConfig/setConfig），Widget 会等待回调完成后再执行 prepare()。
+  /// 支持异步操作（如 getPlayConfig/setPlayConfig），Widget 会等待回调完成后再执行 prepare()。
   ///
   /// 对于未通过 [AliPlayerWidgetController] 直接透出的播放器接口
-  /// （如 setConfig、setOption、setFilterConfig 等），建议在此回调中自行调用实现。
+  /// （如 setPlayConfig、setOption、setFilterConfig 等），建议在此回调中自行调用实现。
   ///
   /// Called before player prepare(), allowing users to customize the player instance,
   /// such as setting buffer strategy, referer via setPlayConfig, etc.
-  /// Supports async operations (e.g., getConfig/setConfig). The Widget will await
+  /// Supports async operations (e.g., getPlayConfig/setPlayConfig). The Widget will await
   /// the callback completion before calling prepare().
   ///
   /// For player APIs not directly exposed by [AliPlayerWidgetController]
-  /// (e.g., setConfig, setOption, setFilterConfig, etc.), it is recommended
+  /// (e.g., setPlayConfig, setOption, setFilterConfig, etc.), it is recommended
   /// to call them within this callback.
   ///
   /// 使用示例 / Usage example:
@@ -522,10 +563,10 @@ class AliPlayerWidgetData {
   ///   videoSource: ...,
   ///   onPlayerConfig: (player) async {
   ///     // 设置缓冲策略和 Referer
-  ///     var config = await player.getConfig();
+  ///     var config = await player.getPlayConfig();
   ///     config.maxBufferDuration = 2000;
   ///     config.referer = "your referer";
-  ///     await player.setConfig(config);
+  ///     await player.setPlayConfig(config);
   ///
   ///     // 设置其他选项
   ///     player.setOption(FlutterAvpdef.ALLOW_PRE_RENDER, 1);
@@ -540,8 +581,8 @@ class AliPlayerWidgetData {
   ///
   /// 参数：
   /// - [sceneType]：视频场景类型，默认为点播（VOD）。
-  /// - [videoSource]: 视频资源对象，定义播放源（推荐使用）。
-  /// - [videoUrl]：视频播放地址，已过时，建议使用 videoSource 代替。
+  /// - [videoSource]: 视频资源对象，定义播放源（必填）。
+  /// - [androidViewType]：Android 播放器视图类型，默认为 [AndroidViewType.defaultValue]。
   /// - [coverUrl]：视频封面图片地址，默认为空字符串。
   /// - [videoTitle]：视频标题，默认为空字符串。
   /// - [thumbnailUrl]：视频缩略图地址，默认为空字符串。
@@ -557,8 +598,8 @@ class AliPlayerWidgetData {
   ///
   /// Parameters:
   /// - [sceneType]: The type of video scene, defaulting to Video On Demand (VOD).
-  /// - [videoSource]: Video source object defining the playback source (recommended).
-  /// - [videoUrl]: The URL of the video to be played, deprecated, use videoSource instead.
+  /// - [videoSource]: Video source object defining the playback source (required).
+  /// - [androidViewType]: Android player view type, defaults to [AndroidViewType.defaultValue].
   /// - [coverUrl]: The URL of the cover image for the video, defaulting to an empty string.
   /// - [videoTitle]: The title of the video, defaulting to an empty string.
   /// - [thumbnailUrl]: The URL of the thumbnail image for the video, defaulting to an empty string.
@@ -574,8 +615,8 @@ class AliPlayerWidgetData {
   /// - [onPlayerConfig]: Player custom configuration callback, called before prepare(), can be null.
   AliPlayerWidgetData({
     this.sceneType = SceneType.vod,
-    VideoSource? videoSource,
-    @Deprecated('Use videoSource instead.') String videoUrl = "", // 标记参数为过时
+    required this.videoSource,
+    this.androidViewType = AndroidViewType.defaultValue,
     this.coverUrl = "",
     this.videoTitle = "",
     this.thumbnailUrl = "",
@@ -588,67 +629,14 @@ class AliPlayerWidgetData {
     this.isHardWareDecode = true,
     this.subtitleConfig = const SubtitleConfig(),
     this.subtitleBuilder,
-    this.subtitlePositionConfig,
     this.onPlayerConfig,
-  }) : assert(startTime >= 0, "Start time must be non-negative") {
-    // 初始化 videoSource：
-    // 1. 如果提供了 videoSource，则直接使用
-    // 2. 如果提供了 videoUrl，则创建 URL 类型的 videoSource
-    // 3. 如果两者都没提供，则抛出异常
-    if (videoSource != null) {
-      this.videoSource = videoSource;
-    } else if (videoUrl.isNotEmpty) {
-      this.videoSource = VideoSourceFactory.createUrlSource(videoUrl);
-    } else {
-      throw ArgumentError("Either videoSource or videoUrl must be provided");
-    }
-  }
-
-  /// 使用URL创建播放器数据的便捷构造函数
-  ///
-  /// Convenience constructor to create player data using a URL
-  ///
-  /// This method will be removed in a future release.
-  @Deprecated('Use videoSource instead.')
-  factory AliPlayerWidgetData.fromUrl({
-    required String videoUrl,
-    SceneType sceneType = SceneType.vod,
-    String coverUrl = "",
-    String videoTitle = "",
-    String thumbnailUrl = "",
-    bool autoPlay = true,
-    String traceId = "",
-    int startTime = 0,
-    int seekMode = FlutterAvpdef.ACCURATE,
-    bool allowedScreenSleep = false,
-    bool isHardWareDecode = true,
-    SubtitleConfig subtitleConfig = const SubtitleConfig(),
-    SubtitleBuilder? subtitleBuilder,
-    SubtitlePositionConfig? subtitlePositionConfig,
-  }) {
-    return AliPlayerWidgetData(
-      videoSource: VideoSourceFactory.createUrlSource(videoUrl),
-      sceneType: sceneType,
-      coverUrl: coverUrl,
-      videoTitle: videoTitle,
-      thumbnailUrl: thumbnailUrl,
-      autoPlay: autoPlay,
-      traceId: traceId,
-      startTime: startTime,
-      seekMode: seekMode,
-      allowedScreenSleep: allowedScreenSleep,
-      isHardWareDecode: isHardWareDecode,
-      subtitleConfig: subtitleConfig,
-      subtitleBuilder: subtitleBuilder,
-      subtitlePositionConfig: subtitlePositionConfig,
-    );
-  }
+  }) : assert(startTime >= 0, "Start time must be non-negative");
 
   /// 将 [AliPlayerWidgetData] 实例转换为字符串。
   ///
   /// Convert [AliPlayerWidgetData] instance to string.
   @override
   String toString() {
-    return 'AliPlayerWidgetData{sceneType: $sceneType, videoSource: $videoSource, coverUrl: $coverUrl, videoTitle: $videoTitle, thumbnailUrl: $thumbnailUrl, externalSubtitleUrl: $externalSubtitleUrl, autoPlay: $autoPlay, traceId: $traceId, startTime: $startTime, seekMode: $seekMode, isHardWareDecode: $isHardWareDecode, allowedScreenSleep: $allowedScreenSleep, subtitleConfig: $subtitleConfig, subtitleBuilder: $subtitleBuilder, subtitlePositionConfig: $subtitlePositionConfig, onPlayerConfig: $onPlayerConfig}';
+    return 'AliPlayerWidgetData{sceneType: $sceneType, videoSource: $videoSource, androidViewType: $androidViewType, coverUrl: $coverUrl, videoTitle: $videoTitle, thumbnailUrl: $thumbnailUrl, externalSubtitleUrl: $externalSubtitleUrl, autoPlay: $autoPlay, traceId: $traceId, startTime: $startTime, seekMode: $seekMode, isHardWareDecode: $isHardWareDecode, allowedScreenSleep: $allowedScreenSleep, subtitleConfig: $subtitleConfig, subtitleBuilder: $subtitleBuilder, onPlayerConfig: $onPlayerConfig}';
   }
 }

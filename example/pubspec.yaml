@@ -33,14 +33,13 @@ dependencies:
 
   # A high-performance video playback component specifically designed for Flutter applications,
   # built on top of the AliCloud Player SDK `flutter_aliplayer`.
-  # TODO keria: use formal pubspec
   aliplayer_widget:
     path: ../
 
-  # The following adds the flutter aliplayer package
-  flutter_aliplayer: ^7.12.0
-  #  flutter_aliplayer:
-  #    path: ../../FlutterSDK/flutter_aliplayer
+  # `aliplayer_widget` already depends on `flutter_aliplayer` internally.
+  # Only declare `flutter_aliplayer` explicitly when you need direct access to low-level APIs.
+  # Advanced API usage: MediaLoader preloading, etc.
+  flutter_aliplayer: ^7.14.0
 
   # The following adds the Cupertino Icons font to your application.
   # Use with the CupertinoIcons class for iOS style icons.
@@ -91,6 +90,9 @@ flutter:
   # assets:
   #   - images/a_dot_burr.jpeg
   #   - images/a_dot_ham.jpeg
+  assets:
+    - assets/encryptedApp_android.dat
+    - assets/encryptedApp_ios.dat
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/assets-and-images/#resolution-aware

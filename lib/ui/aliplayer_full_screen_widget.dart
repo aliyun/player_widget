@@ -7,93 +7,96 @@
 part of 'package:aliplayer_widget/aliplayer_widget_lib.dart';
 
 /// 播放器全屏视图
-late AliPlayerWidgetController _fullController;
-
+///
+/// 纯全屏壳：只负责全屏特有逻辑（屏幕方向、系统 UI、返回键处理）。
+/// 不关心内容物的参数，由调用方组装 [child]。
+/// 不创建新控制器、不 configure、不销毁控制器（控制器归 AliPlayerWidget 管理）。
+///
+/// Fullscreen shell widget that handles orientation, system UI, and back button.
+/// Content is provided via [child] by the caller.
 class AliPlayerFullScreenWidget extends StatefulWidget {
-  final AliPlayerWidgetData data;
-
+  /// 共享的播放器控制器（用于退出全屏状态切换）
   final AliPlayerWidgetController controller;
 
-  // 支持插槽配置
-  final Map<SlotType, Function?> slotBuilders;
+  /// 全屏显示的内容
+  final Widget child;
 
-  /// 控制默认插槽中单个 UI 元素的显示与隐藏。
-  ///
-  /// 用于在不替换整个插槽的情况下，对插槽内部元素进行细粒度控制。
-  /// 与 [slotBuilders] 不同，后者会完全替换整个插槽，
-  /// [hiddenSlotElements] 仅对默认实现中的部分元素进行隐藏。
-  ///
-  /// Key 为插槽类型 [SlotType]，Value 为需要隐藏的元素 key 集合。
-  /// 元素 key 由常量类定义，例如：[TopBarElements]、[BottomBarElements] 等。
-  final Map<SlotType, Set<String>> hiddenSlotElements;
-
-  const AliPlayerFullScreenWidget(
-    this.controller,
-    this.data, {
+  const AliPlayerFullScreenWidget({
+    required this.controller,
+    required this.child,
     super.key,
-    this.slotBuilders = const {},
-    this.hiddenSlotElements = const {},
   });
 
   @override
   State<AliPlayerFullScreenWidget> createState() =>
-      AliPlayerScreenFullWidgetState();
+      AliPlayerFullScreenWidgetState();
 }
 
-class AliPlayerScreenFullWidgetState extends State<AliPlayerFullScreenWidget> {
+class AliPlayerFullScreenWidgetState extends State<AliPlayerFullScreenWidget> {
+  @override
+  void initState() {
+    super.initState();
+    // using FullScreenUtil to handle full-screen system UI settings (orientation, system UI)
+    FullScreenUtil.enterFullScreen();
+  }
+
+  @override
+  void dispose() {
+    // 不在 dispose 中恢复屏幕方向
+    // 屏幕方向恢复由 AliPlayerWidget._pushFullScreenWidget() 在 pop 返回后处理
+    // 避免异步操作与 Navigator.pop 和 Widget 重建的竞态条件
+    logi("[lifecycle] dispose");
+    super.dispose();
+  }
+
+  /// 处理返回按钮事件（路由 pop 由竖屏 listener 统一处理）
+  void _handleBackPress() {
+    widget.controller.exitFullScreen();
+  }
+
   @override
   Widget build(BuildContext context) {
     return PopScope(
       canPop: false,
-      onPopInvoked: (bool didPip) {
-        if (didPip) {
+      onPopInvoked: (bool didPop) {
+        if (didPop) {
           return; // 如果已经处理了返回操作，则直接返回
         }
+        // 处理返回事件：退出全屏并同步状态
+        _handleBackPress();
       },
       child: Scaffold(
         backgroundColor: Colors.black,
-        body: Container(
-          decoration: const BoxDecoration(color: Colors.black),
-          width: double.infinity,
-          child: AliPlayerWidget(
-            _fullController,
-            slotBuilders: widget.slotBuilders,
-            hiddenSlotElements: widget.hiddenSlotElements,
-          ),
+        body: OrientationBuilder(
+          builder: (context, orientation) {
+            // 降级策略：设备未旋转（仍为竖屏）时，手动旋转内容
+            // 适用于 iPhone 7P 等 setPreferredOrientations 不可靠的旧设备
+            //
+            // 重要：始终保持相同的 widget 树结构（RotatedBox > SizedBox > MediaQuery > child），
+            // 避免方向切换时 if/else 分支导致 child 在树中位置变化，
+            // 引起 AliPlayerWidget State 重建和 PlatformView 重新创建。
+            final needsRotation = orientation == Orientation.portrait;
+            final size = MediaQuery.of(context).size;
+            final effectiveSize =
+                needsRotation ? Size(size.height, size.width) : size;
+            return Container(
+              alignment: Alignment.center,
+              color: Colors.black,
+              child: RotatedBox(
+                quarterTurns: needsRotation ? 1 : 0,
+                child: SizedBox(
+                  width: effectiveSize.width,
+                  height: effectiveSize.height,
+                  child: MediaQuery(
+                    data: MediaQuery.of(context).copyWith(size: effectiveSize),
+                    child: widget.child,
+                  ),
+                ),
+              ),
+            );
+          },
         ),
       ),
     );
-  }
-
-  @override
-  void initState() {
-    super.initState();
-    // 使用 FullScreenUtil 统一处理全屏系统 UI 设置
-    FullScreenUtil.enterFullScreen();
-
-    _fullController = AliPlayerWidgetController(context);
-    _fullController.configure(widget.data).then((_) {
-      widget.controller.syncStateTo(_fullController).then((_) {
-        // 以指定位置起播
-        _fullController._aliPlayer.setStartTime(
-          widget.data.startTime,
-          widget.data.seekMode,
-        );
-        _fullController.play();
-      });
-    });
-
-    // 暂停竖屏页面视频
-    widget.controller.pause();
-  }
-
-  /// 清理资源
-  /// 在 StatefulWidget 被从树中移除并销毁时调用的，这个方法用于清理资源。
-  ///
-  /// Called when the widget is removed from the tree permanently. Used to release resources.
-  @override
-  void dispose() {
-    logi("[lifecycle] dispose");
-    super.dispose();
   }
 }

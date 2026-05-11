@@ -38,17 +38,27 @@ enum CustomUIStyle {
 
 class _SlotDemoPageState extends State<SlotDemoPage>
     with TickerProviderStateMixin {
+  /// 水印插槽类型，用于标识水印插槽
+  ///
+  /// Watermark slot type, used to identify the watermark slot.
+  /// defaultOrder=35 自动落在 coverImage(30) 和 playControl(40) 之间
+  static const _slotTypeWatermark = SlotType(
+    'watermark',
+    defaultOrder: 35,
+  );
+
   /// 播放器组件控制器
   ///
-  /// 用于页面生命周期管理（初始化、销毁）。
-  /// 注意：slotBuilder 内部的播放控制应使用传入的 controller 参数，而非此控制器。
+  /// 用于页面生命周期管理（初始化、销毁）和播放控制。
   ///
-  /// Page-level controller for lifecycle management.
-  /// Note: Use the controller parameter passed to slotBuilders for playback controls.
+  /// Page-level controller for lifecycle management and playback control.
   late AliPlayerWidgetController _controller;
 
   /// 是否使用自定义UI
   bool _useCustomUI = false;
+
+  /// 是否显示水印
+  bool _showWatermark = false;
 
   /// 自定义UI样式
   CustomUIStyle _uiStyle = CustomUIStyle.modern;
@@ -136,6 +146,7 @@ class _SlotDemoPageState extends State<SlotDemoPage>
   Widget _buildDefaultPlayerWidget() {
     return AliPlayerWidget(
       _controller,
+      slotBuilders: _getWatermarkSlotBuilders(),
     );
   }
 
@@ -143,6 +154,7 @@ class _SlotDemoPageState extends State<SlotDemoPage>
   Widget _buildFineGrainedPlayerWidget() {
     return AliPlayerWidget(
       _controller,
+      slotBuilders: _getWatermarkSlotBuilders(),
       hiddenSlotElements: const {
         // 演示：隐藏顶部栏插槽中的 UI 元素
         SlotType.topBar: {
@@ -170,33 +182,35 @@ class _SlotDemoPageState extends State<SlotDemoPage>
 
   /// 构建自定义播放器组件
   ///
-  /// 重要：slotBuilder 接收 controller 参数，用于全屏模式兼容。
-  /// 在 slotBuilder 内部必须使用传入的 controller，而非 _controller。
+  /// 通过 slotBuilders 替换内置插槽实现自定义 UI。
   Widget _buildCustomPlayerWidget() {
     return AliPlayerWidget(
       _controller,
-      slotBuilders: _getSlotBuilders(),
+      slotBuilders: {
+        ..._getStyleSlotBuilders(),
+        ..._getWatermarkSlotBuilders(),
+      },
     );
   }
 
   // ============================================================
-  // slotBuilder 相关方法 - 必须使用传入的 controller 参数
+  // slotBuilder 相关方法
   // ============================================================
 
   /// 构建自定义顶部栏
-  Widget _buildCustomTopBar(AliPlayerWidgetController controller) {
+  Widget _buildCustomTopBar() {
     switch (_uiStyle) {
       case CustomUIStyle.modern:
-        return _buildModernTopBar(controller);
+        return _buildModernTopBar();
       case CustomUIStyle.classic:
-        return _buildClassicTopBar(controller);
+        return _buildClassicTopBar();
       case CustomUIStyle.fineGrained:
         return const SizedBox.shrink(); // 不会被调用
     }
   }
 
   /// 现代风格顶部栏
-  Widget _buildModernTopBar(AliPlayerWidgetController controller) {
+  Widget _buildModernTopBar() {
     return Positioned(
       top: 0,
       left: 0,
@@ -221,7 +235,7 @@ class _SlotDemoPageState extends State<SlotDemoPage>
               ),
               child: IconButton(
                 icon: const Icon(Icons.arrow_back, color: Colors.white),
-                onPressed: () => _onBackPressed(controller),
+                onPressed: () => _onBackPressed(_controller),
               ),
             ),
             const Text(
@@ -249,7 +263,7 @@ class _SlotDemoPageState extends State<SlotDemoPage>
   }
 
   /// 经典风格顶部栏
-  Widget _buildClassicTopBar(AliPlayerWidgetController controller) {
+  Widget _buildClassicTopBar() {
     return Positioned(
       top: 16,
       left: 16,
@@ -266,7 +280,7 @@ class _SlotDemoPageState extends State<SlotDemoPage>
             ),
             child: IconButton(
               icon: const Icon(Icons.arrow_back, color: Colors.white, size: 20),
-              onPressed: () => _onBackPressed(controller),
+              onPressed: () => _onBackPressed(_controller),
             ),
           ),
           const Text(
@@ -295,12 +309,12 @@ class _SlotDemoPageState extends State<SlotDemoPage>
   }
 
   /// 构建自定义底部栏
-  Widget _buildCustomBottomBar(AliPlayerWidgetController controller) {
+  Widget _buildCustomBottomBar() {
     switch (_uiStyle) {
       case CustomUIStyle.modern:
-        return _buildModernBottomBar(controller);
+        return _buildModernBottomBar();
       case CustomUIStyle.classic:
-        return _buildClassicBottomBar(controller);
+        return _buildClassicBottomBar();
       case CustomUIStyle.fineGrained:
         return const SizedBox.shrink(); // 不会被调用
     }
@@ -308,9 +322,8 @@ class _SlotDemoPageState extends State<SlotDemoPage>
 
   /// 现代风格底部栏
   ///
-  /// 播放控制逻辑直接写在 slotBuilder 内部，使用传入的 controller。
-  /// 这确保了全屏模式下控制正常工作。
-  Widget _buildModernBottomBar(AliPlayerWidgetController controller) {
+  /// 播放控制逻辑直接写在 slotBuilder 内部，使用 _controller。
+  Widget _buildModernBottomBar() {
     return Positioned(
       bottom: 0,
       left: 0,
@@ -339,9 +352,9 @@ class _SlotDemoPageState extends State<SlotDemoPage>
               child: IconButton(
                 icon: const Icon(Icons.replay_10, color: Colors.white),
                 onPressed: () {
-                  final pos = controller.currentPositionNotifier.value;
+                  final pos = _controller.currentPositionNotifier.value;
                   final target = pos - const Duration(seconds: 10);
-                  controller.seek(target.isNegative ? Duration.zero : target);
+                  _controller.seek(target.isNegative ? Duration.zero : target);
                 },
               ),
             ),
@@ -361,7 +374,7 @@ class _SlotDemoPageState extends State<SlotDemoPage>
                 ],
               ),
               child: ValueListenableBuilder<int>(
-                valueListenable: controller.playStateNotifier,
+                valueListenable: _controller.playStateNotifier,
                 builder: (context, playState, child) {
                   return IconButton(
                     iconSize: 32,
@@ -371,7 +384,7 @@ class _SlotDemoPageState extends State<SlotDemoPage>
                           : Icons.play_arrow,
                       color: Colors.white,
                     ),
-                    onPressed: controller.togglePlayState,
+                    onPressed: _controller.togglePlayState,
                   );
                 },
               ),
@@ -387,10 +400,10 @@ class _SlotDemoPageState extends State<SlotDemoPage>
               child: IconButton(
                 icon: const Icon(Icons.forward_10, color: Colors.white),
                 onPressed: () {
-                  final pos = controller.currentPositionNotifier.value;
-                  final total = controller.totalDurationNotifier.value;
+                  final pos = _controller.currentPositionNotifier.value;
+                  final total = _controller.totalDurationNotifier.value;
                   final target = pos + const Duration(seconds: 10);
-                  controller.seek(target > total ? total : target);
+                  _controller.seek(target > total ? total : target);
                 },
               ),
             ),
@@ -401,7 +414,7 @@ class _SlotDemoPageState extends State<SlotDemoPage>
   }
 
   /// 经典风格底部栏
-  Widget _buildClassicBottomBar(AliPlayerWidgetController controller) {
+  Widget _buildClassicBottomBar() {
     return Positioned(
       bottom: 0,
       left: 0,
@@ -416,7 +429,7 @@ class _SlotDemoPageState extends State<SlotDemoPage>
           ),
         ),
         child: ValueListenableBuilder<int>(
-          valueListenable: controller.playStateNotifier,
+          valueListenable: _controller.playStateNotifier,
           builder: (context, playState, child) {
             return Row(
               children: [
@@ -425,13 +438,13 @@ class _SlotDemoPageState extends State<SlotDemoPage>
                   icon: playState == FlutterAvpdef.started
                       ? Icons.pause
                       : Icons.play_arrow,
-                  onPressed: controller.togglePlayState,
+                  onPressed: _controller.togglePlayState,
                 ),
                 const SizedBox(width: 8),
 
                 // 当前时间
                 ValueListenableBuilder<Duration>(
-                  valueListenable: controller.currentPositionNotifier,
+                  valueListenable: _controller.currentPositionNotifier,
                   builder: (context, position, child) {
                     return Text(
                       _formatDuration(position),
@@ -442,12 +455,12 @@ class _SlotDemoPageState extends State<SlotDemoPage>
                 const SizedBox(width: 8),
 
                 // 进度条
-                Expanded(child: _buildClassicProgressSlider(controller)),
+                Expanded(child: _buildClassicProgressSlider()),
                 const SizedBox(width: 8),
 
                 // 总时长
                 ValueListenableBuilder<Duration>(
-                  valueListenable: controller.totalDurationNotifier,
+                  valueListenable: _controller.totalDurationNotifier,
                   builder: (context, duration, child) {
                     return Text(
                       _formatDuration(duration),
@@ -460,9 +473,7 @@ class _SlotDemoPageState extends State<SlotDemoPage>
                 // 全屏按钮
                 _buildClassicControlButton(
                   icon: Icons.fullscreen,
-                  onPressed: () => controller.toggleFullscreen(
-                    slotBuilders: _getSlotBuilders(),
-                  ),
+                  onPressed: () => _controller.toggleFullscreen(),
                 ),
               ],
             );
@@ -493,12 +504,12 @@ class _SlotDemoPageState extends State<SlotDemoPage>
   }
 
   /// 构建经典风格进度条
-  Widget _buildClassicProgressSlider(AliPlayerWidgetController controller) {
+  Widget _buildClassicProgressSlider() {
     return ValueListenableBuilder<Duration>(
-      valueListenable: controller.currentPositionNotifier,
+      valueListenable: _controller.currentPositionNotifier,
       builder: (context, currentPosition, child) {
         return ValueListenableBuilder<Duration>(
-          valueListenable: controller.totalDurationNotifier,
+          valueListenable: _controller.totalDurationNotifier,
           builder: (context, totalDuration, child) {
             final progress = totalDuration.inMilliseconds > 0
                 ? currentPosition.inMilliseconds / totalDuration.inMilliseconds
@@ -521,7 +532,7 @@ class _SlotDemoPageState extends State<SlotDemoPage>
                     milliseconds:
                         (totalDuration.inMilliseconds * value).toInt(),
                   );
-                  controller.seek(position);
+                  _controller.seek(position);
                 },
               ),
             );
@@ -539,9 +550,9 @@ class _SlotDemoPageState extends State<SlotDemoPage>
   }
 
   /// 构建自定义播放控制
-  Widget _buildCustomPlayControl(AliPlayerWidgetController controller) {
+  Widget _buildCustomPlayControl() {
     return GestureDetector(
-      onTap: controller.togglePlayState,
+      onTap: _controller.togglePlayState,
       child: Container(
         color: Colors.transparent,
         child: const SizedBox.expand(),
@@ -562,13 +573,48 @@ class _SlotDemoPageState extends State<SlotDemoPage>
     }
   }
 
-  /// 获取当前样式的 slotBuilders 配置
-  Map<SlotType, Function?> _getSlotBuilders() {
+  /// 获取当前样式的插槽替换配置
+  Map<SlotType, SlotWidgetBuilder?> _getStyleSlotBuilders() {
     return {
-      SlotType.topBar: (context, ctrl) => _buildCustomTopBar(ctrl),
-      SlotType.bottomBar: (context, ctrl) => _buildCustomBottomBar(ctrl),
-      SlotType.playControl: (context, ctrl) => _buildCustomPlayControl(ctrl),
+      SlotType.topBar: (context) => _buildCustomTopBar(),
+      SlotType.bottomBar: (context) => _buildCustomBottomBar(),
+      SlotType.playControl: (context) => _buildCustomPlayControl(),
     };
+  }
+
+  /// 获取水印自定义插槽配置（独立于 UI 样式）
+  ///
+  /// 位置：视频上方、控制栏下方（由 defaultOrder=350 自动决定）
+  Map<SlotType, SlotWidgetBuilder?> _getWatermarkSlotBuilders() {
+    if (!_showWatermark) return {};
+    return {
+      _slotTypeWatermark: (context) => _buildWatermarkSlot(),
+    };
+  }
+
+  /// 构建水印插槽
+  Widget _buildWatermarkSlot() {
+    return Center(
+      child: IgnorePointer(
+        child: Opacity(
+          opacity: 0.5,
+          child: Text(
+            'AliPlayerWidget Watermark',
+            style: TextStyle(
+              color: Colors.white,
+              fontSize: 18,
+              fontWeight: FontWeight.bold,
+              shadows: [
+                Shadow(
+                  color: Colors.black.withOpacity(0.5),
+                  blurRadius: 2,
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
   }
 
   // ============================================================
@@ -606,8 +652,7 @@ class _SlotDemoPageState extends State<SlotDemoPage>
             const Text(
               "• 插槽化设计：播放器界面拆分为多个可组合区域\n"
               "• 灵活自定义：顶部栏、底部栏等插槽支持完全自定义\n"
-              "• 细粒度控制：支持按需隐藏默认插槽中的 UI 元素\n"
-              "• 全屏兼容：slotBuilder 使用 controller 参数确保全屏模式正常",
+              "• 细粒度控制：支持按需隐藏默认插槽中的 UI 元素\n",
             ),
             const SizedBox(height: 16),
 
@@ -650,47 +695,34 @@ class _SlotDemoPageState extends State<SlotDemoPage>
             ),
             const SizedBox(height: 16),
 
+            // 自定义插槽开关
+            const Text(
+              "自定义插槽：",
+              style: TextStyle(fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 8),
+            SwitchListTile(
+              title: const Text('显示水印'),
+              subtitle: const Text(
+                '演示通过 slotBuilders 在任意层级插入自定义插槽',
+                style: TextStyle(fontSize: 12),
+              ),
+              value: _showWatermark,
+              onChanged: (value) {
+                setState(() {
+                  _showWatermark = value;
+                });
+              },
+              dense: true,
+              contentPadding: EdgeInsets.zero,
+            ),
+            const SizedBox(height: 16),
+
             const Text(
               "当前模式：",
               style: TextStyle(fontWeight: FontWeight.bold),
             ),
             Text(_useCustomUI ? "自定义UI模式 ($_uiStyle)" : "默认UI模式"),
-
-            const SizedBox(height: 16),
-
-            // 使用说明
-            Container(
-              padding: const EdgeInsets.all(12),
-              decoration: BoxDecoration(
-                color: Colors.blue.shade50,
-                borderRadius: BorderRadius.circular(8),
-                border: Border.all(color: Colors.blue.shade200),
-              ),
-              child: const Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    children: [
-                      Icon(Icons.info_outline, size: 18, color: Colors.blue),
-                      SizedBox(width: 8),
-                      Text(
-                        "重要提示",
-                        style: TextStyle(
-                          fontWeight: FontWeight.bold,
-                          color: Colors.blue,
-                        ),
-                      ),
-                    ],
-                  ),
-                  SizedBox(height: 8),
-                  Text(
-                    "在 slotBuilder 中进行播放控制时，请务必使用传入的 controller 参数，以确保在全屏模式下能够正常工作。\n"
-                    "请避免使用外部捕获的 controller。",
-                    style: TextStyle(fontSize: 12),
-                  ),
-                ],
-              ),
-            ),
           ],
         ),
       ),

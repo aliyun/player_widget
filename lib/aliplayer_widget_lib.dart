@@ -20,6 +20,21 @@ export 'package:flutter_aliplayer/flutter_aliplayer.dart';
 export 'package:flutter_aliplayer/flutter_aliplayer_global_setting.dart';
 export 'package:flutter_aliplayer/flutter_aliplayer_factory.dart';
 
+// 导出 i18n 模块
+export 'i18n/player_i18n.dart';
+export 'i18n/player_i18n_keys.dart';
+export 'i18n/player_localizations.dart';
+export 'i18n/player_translations.dart';
+
+// 导出插槽类型
+export 'slot/slot_type.dart';
+
+// 导出策略系统
+export 'strategy/player_strategy.dart';
+export 'strategy/strategy_manager.dart';
+export 'strategy/strategies/first_frame_strategy.dart';
+export 'strategy/strategies/stutter_detect_strategy.dart';
+
 // 导入必要的依赖
 import 'dart:async';
 import 'dart:convert';
@@ -28,18 +43,26 @@ import 'dart:ui';
 
 import 'package:aliplayer_widget/constants/setting_constants.dart';
 import 'package:aliplayer_widget/base/safe_value_notifier.dart';
+import 'package:aliplayer_widget/i18n/player_i18n_keys.dart';
 import 'package:aliplayer_widget/constants/subtitle_model.dart';
+import 'package:aliplayer_widget/i18n/player_i18n.dart';
+import 'package:aliplayer_widget/i18n/player_translations.dart';
 import 'package:aliplayer_widget/manager/file_manager.dart';
 import 'package:aliplayer_widget/manager/shared_animation_manager.dart';
 import 'package:aliplayer_widget/manager/storage_path_manager.dart';
 import 'package:aliplayer_widget/slot/slot_constants.dart';
 import 'package:aliplayer_widget/slot/slot_elements.dart';
+import 'package:aliplayer_widget/slot/slot_type.dart';
+import 'package:aliplayer_widget/theme/player_theme.dart';
+import 'package:aliplayer_widget/ui/aliplayer_control_slider_widget.dart';
+import 'package:aliplayer_widget/ui/aliplayer_custom_button.dart';
 import 'package:aliplayer_widget/ui/aliplayer_subtitle_widget.dart';
-import 'package:aliplayer_widget/utils/format_util.dart';
+import 'package:aliplayer_widget/ui/aliplayer_play_state_widget.dart';
+import 'package:aliplayer_widget/utils/play_state_overlay.dart';
 import 'package:aliplayer_widget/utils/scene_util.dart';
 import 'package:aliplayer_widget/utils/screen_util.dart';
-import 'package:aliplayer_widget/utils/subtitle_builder_utils.dart';
-import 'package:aliplayer_widget/utils/subtitle_config_utils.dart';
+import 'package:aliplayer_widget/subtitle/subtitle_builder.dart';
+import 'package:aliplayer_widget/subtitle/subtitle_config.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -49,18 +72,17 @@ import 'package:flutter_aliplayer/flutter_aliplayer_global_setting.dart';
 import 'package:flutter_aliplayer/flutter_alidownloader.dart';
 import 'package:wakelock_plus/wakelock_plus.dart';
 
+import 'manager/scenario_manager.dart';
 import 'slot/slot_manager.dart';
+import 'strategy/strategy_manager.dart';
 import 'ui/aliplayer_center_display_widget.dart';
 import 'ui/aliplayer_cover_image_widget.dart';
-import 'ui/aliplayer_custom_slider_widget.dart';
 import 'ui/aliplayer_top_bar_widget.dart';
 import 'ui/aliplayer_bottom_bar_widget.dart';
 import 'ui/aliplayer_play_control_widget.dart';
-import 'ui/aliplayer_play_state_widget.dart';
 import 'ui/aliplayer_seek_thumbnail_widget.dart';
-import 'ui/aliplayer_setting_menu_panel.dart';
+import 'manager/aliplayer_settings_panel_manager.dart';
 import 'utils/log_util.dart';
-import 'utils/snack_bar_util.dart';
 import 'utils/track_info_util.dart';
 import 'utils/vibration_util.dart';
 import 'utils/full_screen_util.dart';

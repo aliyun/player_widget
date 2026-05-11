@@ -1,0 +1,16 @@
+# Local development overrides — DO NOT commit this file.
+#
+# This file overrides dependency versions for local source-code development.
+# It only takes effect for the "root package" (i.e., the package where you run `flutter pub get`).
+#
+# Usage:
+#   When you need to debug or develop against a local flutter_aliplayer source,
+#   keep the lines below uncommented. The path is relative to this file's directory.
+#
+# Note:
+#   - If the specified path does NOT exist, `flutter pub get` will FAIL (no fallback).
+#   - This file is gitignored and should never be committed to version control.
+
+#dependency_overrides:
+#  flutter_aliplayer:
+#    path: ../../../FlutterSDK/flutter_aliplayer

@@ -15,27 +15,35 @@ class FullScreenUtil {
   FullScreenUtil._();
 
   /// 进入全屏模式
-  static Future<void> enterFullScreen() async {
+  ///
+  /// 使用 fire-and-forget 模式（不 await），
+  /// 先锁定横屏方向再隐藏系统 UI，使用 SystemUiMode.manual 兼容旧 iOS。
+  static void enterFullScreen() {
     // 如果已经是全屏模式，则直接返回
     if (isFullScreen()) return;
 
-    // 隐藏状态栏和导航栏
-    await SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersiveSticky);
+    // 先锁定屏幕方向为横屏（优先级高于系统UI）
+    OrientationUtil.switchToLandscape();
 
-    // 锁定屏幕方向为横屏
-    await OrientationUtil.switchToLandscape();
+    // 隐藏状态栏和导航栏（使用 manual 模式，兼容旧 iOS）
+    SystemChrome.setEnabledSystemUIMode(SystemUiMode.manual, overlays: []);
   }
 
   /// 退出全屏模式
-  static Future<void> exitFullScreen() async {
+  ///
+  /// 使用 fire-and-forget 模式，恢复竖屏方向和系统 UI。
+  static void exitFullScreen() {
     // 如果已经不是全屏模式，则直接返回
     if (!isFullScreen()) return;
 
-    // 恢复状态栏和导航栏
-    await SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
+    // 恢复竖屏方向
+    OrientationUtil.switchToPortrait();
 
-    // 解锁屏幕方向，恢复为竖屏
-    await OrientationUtil.switchToPortrait();
+    // 恢复状态栏和导航栏
+    SystemChrome.setEnabledSystemUIMode(
+      SystemUiMode.manual,
+      overlays: SystemUiOverlay.values,
+    );
   }
 
   /// 获取当前屏幕方向

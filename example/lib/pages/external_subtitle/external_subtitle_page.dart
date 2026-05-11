@@ -5,8 +5,8 @@
 // Brief: 外挂字幕示例
 
 import 'package:aliplayer_widget/aliplayer_widget_lib.dart';
-import 'package:aliplayer_widget/utils/subtitle_builder_utils.dart';
-import 'package:aliplayer_widget/utils/subtitle_config_utils.dart';
+import 'package:aliplayer_widget/subtitle/subtitle_builder.dart';
+import 'package:aliplayer_widget/subtitle/subtitle_config.dart';
 import 'package:aliplayer_widget_example/constants/demo_constants.dart';
 import 'package:aliplayer_widget_example/manager/sp_manager.dart';
 import 'package:aliplayer_widget_example/pages/link/link_constants.dart';
@@ -183,11 +183,6 @@ class _ExternalSubtitlePage extends State<ExternalSubtitlePage> {
       externalSubtitleUrl: savedSubtitleLink,
       videoTitle: "外挂字幕",
       startTime: _videoDurationMills,
-      subtitlePositionConfig: const SubtitlePositionConfig(
-        bottom: 0,
-        left: 0,
-        right: 0,
-      ),
       // 注释掉自定义配置，使用默认配置
       // subtitleConfig: _createDefaultSubtitleConfig(),
       // subtitleBuilder: _createDefaultSubtitleBuilder(),
@@ -380,11 +375,7 @@ class _ExternalSubtitlePage extends State<ExternalSubtitlePage> {
   // 动态改变字幕位置
   void _changeSubtitlePosition() {
     _controller.updateSubtitlePosition(
-      const SubtitlePositionConfig(
-        bottom: 0,
-        left: 100,
-        right: 0,
-      ),
+      const EdgeInsets.only(left: 100),
     );
 
     // 重新配置播放器以应用新的字幕设置

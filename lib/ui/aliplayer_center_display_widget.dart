@@ -3,10 +3,11 @@
 // Author: keria
 // Date: 2025/2/14
 // Brief: 自定义居中展示控件
+import 'package:aliplayer_widget/theme/player_styles.dart';
 import 'package:flutter/material.dart';
 
 /// 自定义居中展示控件
-class AliPlayerCenterDisplayWidget extends StatefulWidget {
+class AliPlayerCenterDisplayWidget extends StatelessWidget {
   /// 内容组件
   final Widget contentWidget;
 
@@ -16,54 +17,31 @@ class AliPlayerCenterDisplayWidget extends StatefulWidget {
   });
 
   @override
-  State<AliPlayerCenterDisplayWidget> createState() =>
-      _AliPlayerCenterDisplayWidgetState();
-}
-
-class _AliPlayerCenterDisplayWidgetState
-    extends State<AliPlayerCenterDisplayWidget> {
-  @override
   Widget build(BuildContext context) {
-    return AnimatedOpacity(
-      opacity: 1.0,
-      duration: const Duration(milliseconds: 300),
-      child: Center(
+    return Padding(
+      padding: const EdgeInsets.only(
+        top: PlayerStyles.kTopBarHeight +
+            PlayerStyles.kCenterDisplayTopExtraPadding,
+      ),
+      child: Container(
+        alignment: Alignment.topCenter,
         child: IntrinsicWidth(
           child: IntrinsicHeight(
             child: Container(
-              alignment: Alignment.center,
               decoration: BoxDecoration(
-                color: Colors.white.withOpacity(0.3),
-                borderRadius: BorderRadius.circular(16),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.white.withOpacity(0.2),
-                    blurRadius: 8,
-                    offset: const Offset(0, 4),
-                  ),
-                ],
+                color: PlayerStyles.kControlWidgetColor,
+                // 设置圆角半径
+                borderRadius: BorderRadius.circular(
+                  PlayerStyles.kCenterDisplayBorderRadius,
+                ),
               ),
-              child: Padding(
-                padding: const EdgeInsets.all(8),
-                child: widget.contentWidget, // 动态传入的内容
-              ),
+              alignment: Alignment.center,
+              child: contentWidget,
             ),
           ),
         ),
       ),
     );
-  }
-
-  /// 状态更新回调
-  /// 当 Widget 的状态被更新时，该方法被调用。
-  ///
-  /// Called when the state of the widget is updated.
-  @override
-  void didUpdateWidget(covariant AliPlayerCenterDisplayWidget oldWidget) {
-    super.didUpdateWidget(oldWidget);
-    if (oldWidget.contentWidget != widget.contentWidget) {
-      setState(() {});
-    }
   }
 }
 

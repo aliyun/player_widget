@@ -52,10 +52,9 @@ AliPlayerWidget 提供了丰富的 API 接口，方便开发者直接控制播�
 
 ### **其他功能**
 
-| 接口名称          | 功能描述                           |
-| ----------------- | ---------------------------------- |
-| `clearCaches`     | 清除播放器缓存（包括视频缓存和图片缓存） |
-| `getWidgetVersion`| 获取当前 Flutter Widget 的版本号     |
+> 以下接口已迁移至 `AliPlayerWidgetGlobalSetting`，请直接使用：
+> - 版本号：`AliPlayerWidgetGlobalSetting.kWidgetVersion`
+> - 清除缓存：`AliPlayerWidgetGlobalSetting.clearCaches()`
 
 ## **事件通知**
 

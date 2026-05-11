@@ -52,10 +52,9 @@ AliPlayerWidget provides a rich set of API interfaces that allow developers to d
 
 ### **Other Functions**
 
-| Interface Name    | Function Description                                    |
-| ----------------- | ------------------------------------------------------- |
-| `clearCaches`     | Clears player caches (including video and image caches) |
-| `getWidgetVersion`| Retrieves the current Flutter Widget version number     |
+> The following APIs have been moved to `AliPlayerWidgetGlobalSetting`:
+> - Version: `AliPlayerWidgetGlobalSetting.kWidgetVersion`
+> - Clear caches: `AliPlayerWidgetGlobalSetting.clearCaches()`
 
 ## **Event Notifications**
 

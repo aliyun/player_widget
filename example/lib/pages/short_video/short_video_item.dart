@@ -95,17 +95,13 @@ class ShortVideoItemState extends State<ShortVideoItem> {
       _controller,
       slotBuilders: {
         // 通过 overlay 浮层插槽的方式，构建右侧操作按钮
-        SlotType.overlays: (context, controller) =>
-            _buildRightSideActionsOverlay(context, controller),
+        SlotType.overlays: (context) => _buildRightSideActionsOverlay(context),
       },
     );
   }
 
   /// 构建右侧操作按钮 overlay
-  Widget _buildRightSideActionsOverlay(
-    BuildContext context,
-    AliPlayerWidgetController controller,
-  ) {
+  Widget _buildRightSideActionsOverlay(BuildContext context) {
     return Positioned(
       right: 12,
       bottom: 100, // 避免与底部控制栏重叠

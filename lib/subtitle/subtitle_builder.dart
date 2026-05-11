@@ -4,10 +4,9 @@
 // @date 2025/7/16 16:31
 // @brief 字幕构建器接口
 
-import 'package:aliplayer_widget/utils/subtitle_config_utils.dart';
 import 'package:flutter/cupertino.dart';
-
 import 'package:aliplayer_widget/constants/subtitle_model.dart';
+import 'package:aliplayer_widget/subtitle/subtitle_config.dart';
 
 /// 字幕构建器接口
 abstract class SubtitleBuilder {

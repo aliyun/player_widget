@@ -10,19 +10,21 @@ The AliPlayerWidget slot system allows developers to flexibly customize various 
 
 The system provides the following slot types, **arranged from bottom to top by layer**:
 
-| Slot Type | Description | Default Visible |
-|---------|---------|---------|
-| **playerSurface** | Player view slot for displaying video content (customization not recommended) | Yes |
-| **subtitle** | Subtitle slot for displaying video subtitles | Yes (conditional) |
-| **coverImage** | Cover image slot, displays a cover image before video loads | Yes (conditional) |
-| **playControl** | Play control slot, handles gesture controls for the player | Yes |
-| **topBar** | Top bar slot, typically contains back button, title, and settings button | Yes |
-| **bottomBar** | Bottom bar slot, typically contains play controls, progress bar, and fullscreen button | Yes |
-| **seekThumbnail** | Seek thumbnail slot, displays preview thumbnails when dragging the progress bar | Yes (conditional) |
-| **centerDisplay** | Center display slot, shows volume, brightness, and other info during gesture operations | Yes (conditional) |
-| **playState** | Play state slot, displays status information like playback errors | Yes (conditional) |
-| **settingMenu** | Settings menu slot, contains player settings options | Yes (except in minimal mode) |
-| **overlays** | Overlay slot, positioned at the topmost layer for custom overlay content like likes, comments, and share buttons | No |
+| Slot Type | Default Order | Description | Default Visible |
+|---------|:-------:|---------|:-------:|
+| **playerSurface** | 10 | Player view slot for displaying video content (customization not recommended) | Yes |
+| **subtitle** | 20 | Subtitle slot for displaying video subtitles | Yes (conditional) |
+| **coverImage** | 30 | Cover image slot, displays a cover image before video loads | Yes (conditional) |
+| **playControl** | 40 | Play control slot, handles gesture controls for the player | Yes |
+| **topBar** | 50 | Top bar slot, typically contains back button, title, and settings button | Yes |
+| **bottomBar** | 60 | Bottom bar slot, typically contains play controls, progress bar, and fullscreen button | Yes |
+| **seekThumbnail** | 70 | Seek thumbnail slot, displays preview thumbnails when dragging the progress bar | Yes (conditional) |
+| **centerDisplay** | 80 | Center display slot, shows volume, brightness, and other info during gesture operations | Yes (conditional) |
+| **playState** | 90 | Play state slot, displays status information like playback errors | Yes (conditional) |
+| **settingMenu** | 100 | Settings menu slot, contains player settings options | Yes (except in minimal mode) |
+| **overlays** | 110 | Overlay slot, positioned at the topmost layer for custom overlay content like likes, comments, and share buttons | No |
+
+> **Default Order**: Lower values are closer to the bottom layer. Built-in slots are spaced by 10, leaving ample room for custom slot insertion.
 
 > **Note**: The `playerSurface` slot is responsible for rendering video content. Modifying this slot may cause the player to malfunction, so customization is not recommended.
 
@@ -48,7 +50,7 @@ Replace only the slots you want to customize, while keeping others at default:
 AliPlayerWidget(
   controller,
   slotBuilders: {
-    SlotType.topBar: (context, controller) => MyCustomTopBar(controller),
+    SlotType.topBar: (context) => MyCustomTopBar(),
   },
 )
 ```
@@ -62,37 +64,40 @@ AliPlayerWidget(
   controller,
   slotBuilders: {
     // Note: Customizing playerSurface is not recommended
-    SlotType.topBar: (context, controller) => MyCustomTopBar(controller),
-    SlotType.bottomBar: (context, controller) => MyCustomBottomBar(controller),
-    SlotType.playControl: (context, controller) => MyPlayControl(controller),
-    SlotType.coverImage: (context, controller) => MyCoverImage(controller),
-    SlotType.playState: (context, controller) => MyPlayState(controller),
-    SlotType.centerDisplay: (context, controller) => MyCenterDisplay(controller),
-    SlotType.seekThumbnail: (context, controller) => MySeekThumbnail(controller),
-    SlotType.subtitle: (context, controller) => MySubtitle(controller),
-    SlotType.settingMenu: (context, controller) => MySettingMenu(controller),
-    SlotType.overlays: (context, controller) => MyOverlays(controller),
+    SlotType.topBar: (context) => MyCustomTopBar(),
+    SlotType.bottomBar: (context) => MyCustomBottomBar(),
+    SlotType.playControl: (context) => MyPlayControl(),
+    SlotType.coverImage: (context) => MyCoverImage(),
+    SlotType.playState: (context) => MyPlayState(),
+    SlotType.centerDisplay: (context) => MyCenterDisplay(),
+    SlotType.seekThumbnail: (context) => MySeekThumbnail(),
+    SlotType.subtitle: (context) => MySubtitle(),
+    SlotType.settingMenu: (context) => MySettingMenu(),
+    SlotType.overlays: (context) => MyOverlays(),
   },
 )
 ```
 
 #### **SlotWidgetBuilder Types**
 
-The slot system supports two builder signatures for backward compatibility:
+The slot system currently uses a concise builder signature:
 
 ```dart
-// New signature (recommended) - ensures fullscreen mode support
+// Current signature (recommended)
+typedef SlotWidgetBuilder = Widget Function(BuildContext context);
+
+// Legacy signature (deprecated)
+@Deprecated('Use SlotWidgetBuilder instead')
 typedef SlotWidgetBuilderWithController = Widget Function(
   BuildContext context,
   AliPlayerWidgetController controller,
 );
-
-// Old signature (deprecated) - may not work correctly in fullscreen mode
-@Deprecated('Use SlotWidgetBuilderWithController instead')
-typedef SlotWidgetBuilder = Widget Function(BuildContext context);
 ```
 
-> **Important**: The `controller` parameter in the new signature ensures that slotBuilders work correctly in fullscreen mode. When entering fullscreen, a new controller instance is created. By receiving the controller as a parameter, your slotBuilder will always control the correct player instance.
+**Notes:**
+
+* The current architecture uses a single shared Controller mode. Both fullscreen and normal modes share the same Controller instance, so there is no need to pass it via builder parameters.
+* If you need to access the Controller in a custom slot, you can obtain it directly through an external reference.
 
 ### **2.3 Hiding Slots**
 
@@ -133,30 +138,26 @@ AliPlayerWidget(
 
 > **Note**: `hiddenSlotElements` only applies to default slots. If a slot is customized via `slotBuilders`, the `hiddenSlotElements` configuration for that slot will be ignored.
 
-### **2.5 Backward Compatibility**
+### **2.5 Custom UI Insertion and Layer Control**
 
-The legacy `overlays` parameter is deprecated. Please migrate to the new slot system:
+Unlike traditional overlay approaches that only stack elements on top, the slot system allows you to insert custom UI components at **any layer** of the player. Use `defaultOrder` to precisely control the rendering order, enabling accurate layer placement for components like watermarks, bullet comments, ads, and more:
+
+`SlotType` is an extensible class. You can create custom slot types and control their layer position via `defaultOrder`:
 
 ```dart
-// Legacy (deprecated)
-AliPlayerWidget(
-  controller,
-  overlays: [MyOverlayWidget()],
-)
+// Create a custom slot type, layered between coverImage(30) and playControl(40)
+const myWatermark = SlotType('watermark', defaultOrder: 35);
 
-// New approach (recommended)
 AliPlayerWidget(
   controller,
   slotBuilders: {
-    SlotType.overlays: (context, controller) => MyOverlayWidget(controller),
+    myWatermark: (context) => MyWatermarkWidget(),
   },
+  // All slots are automatically sorted by defaultOrder
 )
 ```
 
-> **Important:**
->
-> *   **Mechanism**: Fullscreen mode creates a new controller instance. The `controller` parameter automatically binds to the active instance, ensuring control logic remains effective in fullscreen.
-> *   **Requirement**: Inside `slotBuilder`, you **must** use the `controller` passed via the callback parameter. **Do not** reference the external `_controller`.
+> **Tip**: The system automatically sorts all built-in and custom slots by `defaultOrder`. Custom slots are seamlessly merged into the rendering order based on their `defaultOrder` value.
 
 ## **3. How It Works**
 

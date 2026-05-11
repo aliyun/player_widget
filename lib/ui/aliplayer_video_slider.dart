@@ -4,6 +4,8 @@
 // Date: 2025/2/12
 // Brief: 播放器进度条控件
 
+import 'package:aliplayer_widget/theme/player_theme.dart';
+import 'package:aliplayer_widget/ui/aliplayer_slider_shape.dart';
 import 'package:aliplayer_widget/utils/format_util.dart';
 import 'package:aliplayer_widget/utils/vibration_util.dart';
 import 'package:flutter/material.dart';
@@ -30,6 +32,9 @@ class AliPlayerVideoSlider extends StatefulWidget {
   /// seek结束时触发的回调
   final ValueChanged<Duration>? onSeekEnd;
 
+  /// orientation 默认样式控制
+  final Orientation orientation;
+
   const AliPlayerVideoSlider({
     super.key,
     required this.currentPosition,
@@ -38,6 +43,7 @@ class AliPlayerVideoSlider extends StatefulWidget {
     this.onDragUpdate,
     this.onDragEnd,
     this.onSeekEnd,
+    this.orientation = Orientation.portrait,
   });
 
   @override
@@ -47,10 +53,10 @@ class AliPlayerVideoSlider extends StatefulWidget {
 class _AliPlayerVideoSliderState extends State<AliPlayerVideoSlider> {
   // 初始化颜色管理
   static const Map<String, Color> _colors = {
-    'background': Colors.grey,
-    'buffered': Colors.blueGrey,
-    'progress': Colors.blueAccent,
-    'thumb': Colors.blue,
+    'background': PlayerStyles.kSliderBackgroundColor,
+    'buffered': PlayerStyles.kSliderBufferColor,
+    'progress': PlayerStyles.kSliderProgressColor,
+    'thumb': PlayerStyles.kSliderThumbColor,
   };
 
   // 当前拖拽的进度百分比
@@ -66,6 +72,9 @@ class _AliPlayerVideoSliderState extends State<AliPlayerVideoSlider> {
   late int _totalDurationInMillis;
   late int _currentPositionInMillis;
   late int _bufferedPositionInMillis;
+
+  // 确保 state 中只初始化一次
+  final AliPlayerCommonSliderShape sliderShape = AliPlayerCommonSliderShape();
 
   @override
   void initState() {
@@ -85,16 +94,36 @@ class _AliPlayerVideoSliderState extends State<AliPlayerVideoSlider> {
   /// Builds the main player view.
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 4.0, vertical: 2.0),
-      child: Row(
+    return _buildWidgetByOrientation(context);
+  }
+
+  Widget _buildWidgetByOrientation(BuildContext context) {
+    if (widget.orientation == Orientation.portrait) {
+      return Padding(
+        padding: const EdgeInsets.symmetric(horizontal: PlayerStyles.kVideoSliderHorizontalPadding),
+        child: Row(
+          children: [
+            _buildVideoSlider(),
+            const SizedBox(width: PlayerStyles.kVideoSliderHorizontalPadding),
+            _buildTimeText(),
+          ],
+        ),
+      );
+    } else {
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          Padding(
+            padding: const EdgeInsets.symmetric(
+              horizontal: 4.0,
+            ),
+            child: _buildTimeText(),
+          ),
+          const SizedBox(height: PlayerStyles.kVideoSliderHorizontalPadding),
           _buildVideoSlider(),
-          const SizedBox(width: 8),
-          _buildTimeText(),
         ],
-      ),
-    );
+      );
+    }
   }
 
   /// 构建视频进度条
@@ -125,19 +154,21 @@ class _AliPlayerVideoSliderState extends State<AliPlayerVideoSlider> {
   /// 获取 SliderTheme 数据
   SliderThemeData _getSliderThemeData(BuildContext context) {
     return SliderTheme.of(context).copyWith(
-      trackHeight: 2.0,
-      thumbShape: const RoundSliderThumbShape(
-        enabledThumbRadius: 4.0,
+      trackHeight: PlayerStyles.commonSliderHeight,
+      trackShape: sliderShape,
+      thumbShape: RoundSliderThumbShape(
+        enabledThumbRadius:
+            (widget.orientation == Orientation.portrait) ? 5.0 : 7.0,
         elevation: 2.0,
       ),
       overlayShape: const RoundSliderOverlayShape(
-        overlayRadius: 8.0,
+        overlayRadius: 7.0,
       ),
       overlayColor: _colors['progress']!.withAlpha(32),
       activeTrackColor: _colors['progress']!,
       thumbColor: _colors['thumb']!,
       inactiveTrackColor: _colors['background']!,
-      secondaryActiveTrackColor: _colors['buffered']!,
+      secondaryActiveTrackColor: _colors['buffered'],
     );
   }
 
@@ -146,8 +177,14 @@ class _AliPlayerVideoSliderState extends State<AliPlayerVideoSlider> {
     return Text(
       '${FormatUtil.formatDuration(widget.currentPosition)} / ${FormatUtil.formatDuration(widget.totalDuration)}',
       style: const TextStyle(
-        fontSize: 12,
+        fontSize: PlayerStyles.commonTextSize,
         color: Colors.white,
+        shadows: [
+          Shadow(
+            blurRadius: 1.0, // 模糊半径: 1px
+            color: PlayerStyles.kColorProgressBarTimeShadow,
+          ),
+        ],
       ),
     );
   }
