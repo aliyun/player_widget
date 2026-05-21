@@ -61,8 +61,8 @@ class ShortVideoUtil {
         return [];
       }
 
-      // 检查响应是否为非空列表
-      if (response is List && response.isNotEmpty) {
+      // 检查响应是否为列表
+      if (response is List) {
         return response
             .map((dramaJson) => DramaInfo.fromJson(dramaJson))
             .toList();

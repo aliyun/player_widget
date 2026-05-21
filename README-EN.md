@@ -90,11 +90,11 @@ Strategy is the basic organizational unit for player behavior logic. Built-in re
 
 ### **3. Video Source Support**
 
-AliPlayerWidget provides flexible video source configuration methods, supporting multiple video source types. For detailed information, please refer to [Video Source Support Documentation](./docs/video-source-support-en.md)
+AliPlayerWidget provides flexible video source configuration methods, supporting multiple video source types. For detailed information, please refer to [Video Source Support Documentation](./docs/advanced/video-source-support-en.md)
 
 ### **4. UI Theme**
 
-AliPlayerWidget provides a unified UI design specification, supporting quick skin replacement. Simply pass the icon resource path to achieve brand customization. For detailed information, please refer to [UI Theme Documentation](./docs/ui-theme-en.md)
+AliPlayerWidget provides a unified UI design specification, supporting quick skin replacement. Simply pass the icon resource path to achieve brand customization. For detailed information, please refer to [UI Theme Documentation](./docs/advanced/ui-theme-en.md)
 
 ### **5. API Reference**
 

@@ -28,8 +28,8 @@ mixin SafeNotifierMixin on ChangeNotifier {
   /// 检查通知器是否已被释放，并在已释放时输出警告日志。
   bool _checkDisposed() {
     if (_isDisposed) {
-      // Log a warning message when attempting to interact with a disposed notifier.
-      logw("Attempted to interact with a disposed notifier.", tag: _tag);
+      logw("Attempted to interact with a disposed $runtimeType.",
+          tag: _tag);
     }
     return _isDisposed;
   }
@@ -82,7 +82,8 @@ mixin SafeNotifierMixin on ChangeNotifier {
       _isDisposed = true;
       super.dispose();
     } else {
-      logw("Attempted to dispose an already disposed notifier.", tag: _tag);
+      logw("Attempted to dispose an already disposed $runtimeType.",
+          tag: _tag);
     }
   }
 }

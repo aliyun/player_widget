@@ -246,6 +246,10 @@
                 if (currentPath.toUpperCase() === 'README.MD') {
                     // README.md 特殊处理，转为 README-EN.md
                     newPath = 'README-EN.md';
+                } else if (currentPath.toUpperCase() === 'CHANGELOG.MD') {
+                    // CHANGELOG 英文版是根目录 CHANGELOG.md，不在 docsify 服务路径内
+                    // 文档内的语言链接负责跳转，此处不做导航
+                    return;
                 } else if (currentPath.endsWith('.md')) {
                     // 其他文件添加 -en 后缀
                     newPath = currentPath.slice(0, -3) + '-en.md';

@@ -91,11 +91,11 @@ Language: 中文简体 | [English](README-EN.md)
 
 ### **3. 视频源支持**
 
-AliPlayerWidget 提供了灵活的视频源配置方式，支持多种视频源类型。有关详细信息，请查看 [视频源支持文档](./docs/video-source-support.md)
+AliPlayerWidget 提供了灵活的视频源配置方式，支持多种视频源类型。有关详细信息，请查看 [视频源支持文档](./docs/advanced/video-source-support.md)
 
 ### **4. UI 主题**
 
-AliPlayerWidget 提供了统一的 UI 设计规范，支持快速替换播放器皮肤。只需传入图标资源路径即可实现品牌定制。有关详细信息，请查看 [UI 主题文档](./docs/ui-theme.md)
+AliPlayerWidget 提供了统一的 UI 设计规范，支持快速替换播放器皮肤。只需传入图标资源路径即可实现品牌定制。有关详细信息，请查看 [UI 主题文档](./docs/advanced/ui-theme.md)
 
 ### **5. API 参考**
 

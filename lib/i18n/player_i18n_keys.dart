@@ -117,6 +117,12 @@ class PlayerI18nKeys {
   /// 文件已经保存 / AlreadySaved
   static const String downloadAlreadySaved = 'player.tip.downloadAlreadySaved';
 
+  /// 下载进度显示 / Download Progress
+  static const String downloadProgress = 'player.tip.downloadProgress';
+
+  /// 下载进度显示 / Download Progress
+  static const String downloadStart = 'player.tip.downloadStart';
+
   // ==================== 旋转模式 Rotate Mode ====================
   /// 旋转角度格式 (如 "90°")
   static const String rotateFormat = 'player.rotate.format';

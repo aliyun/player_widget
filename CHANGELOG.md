@@ -1,6 +1,56 @@
 # **AliPlayerWidget Changelog**
 
-> Language: [Simplified Chinese](CHANGELOG-CN.md) | English
+> Language: [Simplified Chinese](docs/CHANGELOG.md) | English
+
+## **[7.15.0] - Privacy Enhancement, Bug Fixes & Performance Improvements**
+
+### **SDK Update**
+
+- **Upgraded core SDK (`flutter_aliplayer`) to v7.15.0**
+
+### **Bug Fixes**
+
+- **Privacy**
+  - Added `PrivacyUtil` to sanitize `VideoSource.toString()` output, preventing credentials and URLs from being exposed in logs or debug output.
+- **Navigation**
+  - Guarded `Navigator.pop()` with `canPop()` check to prevent popping on an empty navigation stack.
+- **Wakelock**
+  - Corrected inverted `allowedScreenSleep` logic that caused the wakelock to behave oppositely to its intended setting.
+- **Memory & Lifecycle**
+  - Replaced cached `BuildContext` with a context provider to eliminate stale-context crashes.
+  - Ensured correct destroy sequence to prevent notifier safety violations during disposal.
+  - Prevented fullscreen dispose from incorrectly unbinding the portrait context.
+  - Closed `StreamController` after download completion to eliminate resource leaks.
+  - Improved `SafeNotifier` dispose safety with additional debug-mode assertions.
+- **Download**
+  - Improved download error handling and subscription safety to prevent double-cancel errors.
+- **Type Safety**
+  - Made `videoSource` non-nullable and removed related dead code.
+  - Narrowed `isSubtitleVisibleNotifier` type to non-nullable for stronger type guarantees.
+
+### **Performance**
+
+- Replaced `vibrate()` with `selectionFeedback()` during drag updates for platform-appropriate haptic feedback.
+- Cached `_resolveSlotOrder` result to avoid redundant sorting on every build cycle.
+
+### **Improvements**
+
+- Extracted download logic into a dedicated `DownloadManager` for better separation of concerns.
+- Extracted player notification logic and download preparation into focused helpers.
+- Marked immutable fields as `final` in `AliPlayerWidgetData` to communicate intent and enable compiler optimizations.
+- Merged duplicate vertical dimension utility methods and improved naming consistency.
+
+### **Example Updates**
+
+The example app has undergone a targeted quality pass to close the gap between demo code and production code. The fixes address three categories of issues that erode developer trust when using the example as a reference.
+
+- **Startup & Lifecycle Correctness**: Global settings initialization is now properly awaited before `runApp`, eliminating a startup race condition. The `WidgetsBindingObserver` is now removed symmetrically and guarded, preventing dangling listener callbacks. The keyboard-height calculation in `LivePage` now correctly converts physical pixels to logical pixels via `devicePixelRatio`.
+- **Null Safety & State Isolation**: `videoInfoList` is initialized to `[]` at declaration, removing a guaranteed `LateInitializationError` on load failure. A file-scope mutable integer (`_selectIndex`) has been moved into its owning `State` class, eliminating hidden cross-instance state pollution.
+- **Async & Resource Safety**: `precacheImage` calls are now guarded with `context.mounted` to prevent callbacks on unmounted widgets. `FutureBuilder` futures in `SettingsPage` are cached across rebuilds to prevent redundant network requests on every `setState`. `SPManager` initialization adopts a `Completer`-based pattern, replacing a callback queue with a cleaner async contract. Animation concurrency in `LikeOverlayWidget` is capped to prevent unbounded list growth.
+
+> **Productization Assessment**: The example now demonstrates correct Flutter idioms across the full widget lifecycle — startup, async init, observer registration, context safety, and disposal. It can be used as a reliable reference implementation, not just a functional demo. The previous version contained several patterns that, if copied verbatim by developers, would have introduced production bugs (startup race, stale context, physical-pixel mismatch). These are now resolved.
+
+---
 
 ## **[7.14.0] - Strategy System, i18n, UI Theme & Slot System Enhancement**
 

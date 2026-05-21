@@ -113,10 +113,10 @@ class AliSlidingWindow<T> {
     if (position < 0 || position >= _itemList.length) return;
     if (_currentIndex == position) return;
 
-    final currentWindow = getWindowIndices(position);
+    final currentWindow = getWindowItems(position);
     if (currentWindow.isEmpty) return;
 
-    final previousWindow = getWindowIndices(_currentIndex);
+    final previousWindow = getWindowItems(_currentIndex);
     final toLoad = _difference(currentWindow, previousWindow);
     final toCancel = _difference(previousWindow, currentWindow);
 
@@ -131,7 +131,7 @@ class AliSlidingWindow<T> {
   /// 使用提供的处理器函数处理项目列表
   void _processItems(List<T> items, void Function(T item) processor) {
     for (var item in items) {
-      if (item != null) processor(item);
+      processor(item);
     }
   }
 
@@ -158,7 +158,7 @@ class AliSlidingWindow<T> {
   /// Get items within the sliding window based on the current position.
   ///
   /// 根据当前位置获取滑动窗口内的项目
-  List<T> getWindowIndices(int position) {
+  List<T> getWindowItems(int position) {
     if (position < 0 || position >= _itemList.length) return [];
     final windowIndices = <T>[];
     for (var offset in _windowItems) {
@@ -206,7 +206,7 @@ class AliSlidingWindow<T> {
   ///
   /// 辅助方法，用于计算两个列表的差集
   List<T> _difference(List<T> list1, List<T> list2) {
-    final set2 = Set.from(list2);
+    final set2 = list2.toSet();
     return list1.where((item) => !set2.contains(item)).toList();
   }
 }

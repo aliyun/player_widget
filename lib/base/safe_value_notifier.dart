@@ -13,4 +13,10 @@ import 'safe_notifier_mixin.dart';
 /// ValueNotifier 的安全实现，防止在释放后出错。
 class SafeValueNotifier<T> extends ValueNotifier<T> with SafeNotifierMixin {
   SafeValueNotifier(super.value);
+
+  @override
+  set value(T newValue) {
+    if (isDisposed) return;
+    super.value = newValue;
+  }
 }

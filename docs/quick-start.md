@@ -61,7 +61,7 @@ class _VideoPlayerPageState extends State<VideoPlayerPage> {
     );
 
     // 初始化播放器组件控制器
-    _controller = AliPlayerWidgetController(context);
+    _controller = AliPlayerWidgetController();
     _controller.configure(data);
   }
 

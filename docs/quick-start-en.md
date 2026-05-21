@@ -62,7 +62,7 @@ class _VideoPlayerPageState extends State<VideoPlayerPage> {
     );
 
     // Initialize player component controller
-    _controller = AliPlayerWidgetController(context);
+    _controller = AliPlayerWidgetController();
     _controller.configure(data);
   }
 

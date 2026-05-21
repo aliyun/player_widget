@@ -61,6 +61,19 @@ class VibrationUtil {
     }
   }
 
+  /// 轻量级选择反馈，适用于拖动等高频手势场景
+  ///
+  /// 使用 [HapticFeedback.selectionClick] 替代循环振动，避免 Future 积压。
+  static void selectionFeedback() {
+    final now = DateTime.now();
+    if (_lastVibrationTime == null ||
+        now.difference(_lastVibrationTime!) >=
+            const Duration(milliseconds: defaultMinVibrationInterval)) {
+      HapticFeedback.selectionClick();
+      _lastVibrationTime = now;
+    }
+  }
+
   /// 边界振动反馈，带有防抖机制
   ///
   /// [value] 边界值，当值小于等于 0.0 或大于等于 1.0 时触发振动

@@ -203,11 +203,17 @@ class AliPlayerWidgetState extends State<AliPlayerWidget>
   /// 播放组件控制器
   late AliPlayerWidgetController _playController;
 
+  /// 本实例绑定的 context provider 引用
+  late final BuildContext? Function() _contextProvider;
+
   /// 共享动画控制器
   late SharedAnimationManager _animationManager;
 
   /// 当前播放场景类型
   late SceneType _sceneType;
+
+  /// 缓存的插槽渲染顺序，在 initState 计算，slotBuilders 变化时刷新
+  late List<SlotType> _resolvedSlotOrder;
 
   /// 当前是否处于全屏状态（用于防止重复 push）
   bool _isFullScreen = false;
@@ -302,7 +308,7 @@ class AliPlayerWidgetState extends State<AliPlayerWidget>
   /// Builds all slot widgets
   List<Widget> _buildAllSlots(double width, double height) {
     final slots = <Widget>[];
-    final sortedSlots = _resolveSlotOrder();
+    final sortedSlots = _resolvedSlotOrder;
 
     // 按顺序构建插槽
     for (final entry in sortedSlots) {
@@ -612,7 +618,9 @@ class AliPlayerWidgetState extends State<AliPlayerWidget>
     }
 
     // 执行默认的返回操作
-    Navigator.of(context).pop();
+    if (Navigator.of(context).canPop()) {
+      Navigator.of(context).pop();
+    }
     return true;
   }
 
@@ -825,7 +833,7 @@ class AliPlayerWidgetState extends State<AliPlayerWidget>
         final isSubtitleVisible =
             _playController.isSubtitleVisibleNotifier.value;
         return AliPlayerSubtitleWidget(
-          subtitleOn: isSubtitleVisible!,
+          subtitleOn: isSubtitleVisible,
           subtitles: subtitles,
           trackIndex: trackIndex,
           subtitleBuilder: _playController.subtitleBuilder,
@@ -1008,8 +1016,8 @@ class AliPlayerWidgetState extends State<AliPlayerWidget>
 
   /// 播放器视图水平拖动回调
   void _onPlayerViewHorizontalDragUpdate(double delta) {
-    // 触发设备振动
-    VibrationUtil.vibrate(duration: 50);
+    // 轻量级触觉反馈，避免高频 drag update 产生 Future 积压
+    VibrationUtil.selectionFeedback();
 
     // Update dragging state.
     _isDraggingNotifier.value = true;
@@ -1140,11 +1148,18 @@ class AliPlayerWidgetState extends State<AliPlayerWidget>
     /// 获取播放控制器
     _playController = widget._controller;
 
+    /// 绑定 context provider
+    _contextProvider = () => context;
+    _playController._bindContext(_contextProvider);
+
     /// 初始化共享动画管理器
     _animationManager = SharedAnimationManager(this);
 
     /// 初始化场景类型
     _sceneType = _playController._widgetData?.sceneType ?? SceneType.vod;
+
+    /// 缓存插槽渲染顺序
+    _resolvedSlotOrder = _resolveSlotOrder();
 
     /// 添加观察者
     WidgetsBinding.instance.addObserver(this);
@@ -1198,6 +1213,11 @@ class AliPlayerWidgetState extends State<AliPlayerWidget>
     FullScreenUtil.exitFullScreen();
     _isFullScreen = false;
 
+    // 全屏 dispose 会解绑 contextProvider，需重新绑定竖屏 context
+    if (mounted) {
+      _playController._bindContext(_contextProvider);
+    }
+
     // Note keria:
     // 坑点：由于 Flutter SDK 内部实现限制，需重新绑定原生播放器到竖屏的 AliPlayerView
     // 全屏期间，全屏的 AliPlayerView 调用了 _setPlayerView(fullscreenViewId)，覆盖了竖屏的绑定
@@ -1214,6 +1234,9 @@ class AliPlayerWidgetState extends State<AliPlayerWidget>
   @override
   void dispose() {
     logi("[lifecycle] dispose");
+
+    // 解绑 context provider（仅解绑自己绑定的）
+    _playController._unbindContext(_contextProvider);
 
     // 销毁 ValueNotifier
     _disposeValueNotifiers();
@@ -1255,6 +1278,11 @@ class AliPlayerWidgetState extends State<AliPlayerWidget>
     if (widget._controller != oldWidget._controller) {
       _playController = widget._controller;
       setState(() {});
+    }
+
+    // slotBuilders 变化时刷新插槽顺序缓存
+    if (widget.slotBuilders != oldWidget.slotBuilders) {
+      _resolvedSlotOrder = _resolveSlotOrder();
     }
   }
 

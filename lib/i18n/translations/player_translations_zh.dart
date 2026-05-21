@@ -61,6 +61,8 @@ class PlayerTranslationsZh with PlayerTranslationsMixin {
             'downloadStoragePathNotSet':
                 '请先调用 AliPlayerWidgetGlobalSetting.setStoragePaths 设置存储路径。',
             'downloadAlreadySaved': '该视频已下载。保存路径: {path}',
+            'downloadProgress': '下载进度 ：{progress} %',
+            'downloadStart': '开始下载',
           },
           'rotate': {
             'format': '{degree}°',

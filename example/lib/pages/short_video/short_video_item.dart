@@ -40,7 +40,7 @@ class ShortVideoItemState extends State<ShortVideoItem> {
     debugPrint("[$_tag][lifecycle][initState]: ${widget.videoInfo.id}");
 
     // 初始化播放器组件控制器
-    _controller = AliPlayerWidgetController(context);
+    _controller = AliPlayerWidgetController();
 
     // 设置播放器视频源
     final videoSource = VideoSourceFactory.createUrlSource(

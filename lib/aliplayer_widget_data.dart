@@ -204,6 +204,10 @@ class UrlVideoSource extends VideoSource {
   bool validate() {
     return url.isNotEmpty;
   }
+
+  @override
+  String toString() =>
+      'UrlVideoSource{url: ${PrivacyUtil.removeAuthKeyFromUrl(url)}}';
 }
 
 /// VidSts 类型的视频源
@@ -275,6 +279,14 @@ class VidStsVideoSource extends VideoSource {
         accessKeySecret.isNotEmpty &&
         securityToken.isNotEmpty;
   }
+
+  @override
+  String toString() =>
+      'VidStsVideoSource{vid: $vid, '
+      'accessKeyId: ${PrivacyUtil.blur(accessKeyId)}, '
+      'accessKeySecret: ${PrivacyUtil.blur(accessKeySecret)}, '
+      'securityToken: ${PrivacyUtil.blur(securityToken)}, '
+      'region: $region}';
 }
 
 /// VidAuth 类型的视频源
@@ -322,6 +334,11 @@ class VidAuthVideoSource extends VideoSource {
   bool validate() {
     return vid.isNotEmpty && playAuth.isNotEmpty;
   }
+
+  @override
+  String toString() =>
+      'VidAuthVideoSource{vid: $vid, '
+      'playAuth: ${PrivacyUtil.blur(playAuth)}}';
 }
 
 /// 视频源工厂类
@@ -462,12 +479,12 @@ class AliPlayerWidgetData {
   /// 播放场景类型，默认为点播 [SceneType.vod]
   ///
   /// Playback scene type, default is vod [SceneType.vod]
-  SceneType sceneType = SceneType.vod;
+  final SceneType sceneType;
 
-  /// 视频资源对象，用于定义播放源
+  /// 视频资源对象，用于定义播放源（必填，不可变）
   ///
-  /// Video source object, used to define the playback source
-  VideoSource? videoSource;
+  /// Video source object, used to define the playback source (required, immutable)
+  final VideoSource videoSource;
 
   /// Android 播放器视图类型，默认为 [AndroidViewType.defaultValue]
   ///
@@ -475,57 +492,59 @@ class AliPlayerWidgetData {
   ///
   /// 仅对 Android 平台生效，iOS 平台会忽略此配置。
   /// Only takes effect on Android; iOS ignores this configuration.
-  AndroidViewType androidViewType;
+  final AndroidViewType androidViewType;
 
   /// 封面图地址，可以为空
   ///
   /// Cover URL, can be empty
-  String coverUrl;
+  final String coverUrl;
 
   /// 视频标题，可以为空
   ///
   /// Video title, can be empty
-  String videoTitle;
+  final String videoTitle;
 
   /// 缩略图地址，可以为空
   ///
   /// Thumbnail URL, can be empty
-  String thumbnailUrl;
+  final String thumbnailUrl;
 
   /// 外挂字幕地址，可以为空
   ///
   /// ExternalSubtitle URL, can be empty
-  String externalSubtitleUrl;
+  final String externalSubtitleUrl;
 
   /// 是否自动播放，默认为 false
   ///
   /// Whether to play automatically, default is false
-  bool autoPlay;
+  final bool autoPlay;
 
   /// 用于跟踪视频播放的 ID，可以为空
   ///
   /// Trace ID for tracking video playback, can be empty
-  String traceId;
+  final String traceId;
 
   /// 视频开始时间，单位毫秒，必须为非负数
   ///
   /// Video start time in milliseconds, must be non-negative
-  int startTime;
+  final int startTime;
 
   /// 视频 seek 模式，默认为精确模式 [FlutterAvpdef.ACCURATE]
   ///
   /// Video seek mode, default is accurate mode [FlutterAvpdef.ACCURATE]
-  int seekMode = FlutterAvpdef.ACCURATE;
+  final int seekMode;
 
   /// 视频解码，默认为true
   ///
   /// Setting video decoding which is enable by default.
-  bool isHardWareDecode = true;
+  final bool isHardWareDecode;
 
-  /// 是否允许屏幕休眠，默认为 false
+  /// 是否允许屏幕休眠，默认为 false（即默认保持屏幕常亮）
   ///
-  /// Whether to allow screen sleep, default is false
-  bool allowedScreenSleep = false;
+  /// Whether to allow the screen to sleep during playback.
+  /// When set to `false` (default), the screen stays awake while playing.
+  /// When set to `true`, the system is allowed to turn off the screen normally.
+  final bool allowedScreenSleep;
 
   /// 字幕配置
   ///
@@ -590,7 +609,7 @@ class AliPlayerWidgetData {
   /// - [traceId]：用于跟踪视频播放的 ID，默认为空字符串。
   /// - [startTime]：视频起始播放时间（秒），必须为非负数，默认为 0。
   /// - [seekMode]：视频跳转模式，默认为精确跳转。
-  /// - [allowedScreenSleep]：是否允许屏幕休眠，默认为 false。
+  /// - [allowedScreenSleep]：是否允许屏幕休眠，默认为 false（保持屏幕常亮）。
   /// - [isHardWareDecode]：是否开启硬解码，默认为true。
   /// - [subtitleConfig]：字幕配置，默认为默认配置。
   /// - [subtitleBuilder]：字幕构建器，可以为空。
@@ -608,7 +627,7 @@ class AliPlayerWidgetData {
   /// - [traceId]: The ID used to track video playback, defaulting to an empty string.
   /// - [startTime]: The start time of video playback in seconds, must be non-negative, defaulting to 0.
   /// - [seekMode]: The seek mode for video playback, defaulting to accurate seeking.
-  /// - [allowedScreenSleep]: Whether to allow screen sleep, default is false.
+  /// - [allowedScreenSleep]: Whether to allow screen sleep, default is false (keeps screen awake).
   /// - [isHardWareDecode]: Whether to enable hardwareDecoder , default is true.
   /// - [subtitleConfig]: Subtitle configuration, default is default configuration.
   /// - [subtitleBuilder]: Subtitle builder, can be null.
