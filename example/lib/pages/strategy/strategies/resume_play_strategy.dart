@@ -54,7 +54,7 @@ class ResumePlayStrategy extends BasePlayerStrategy {
   @override
   void onStart(AliPlayerWidgetController controller) {
     // 提取当前视频的 mediaId 用作存储 key，获取不到则不执行策略
-    _currentMediaId = controller.widgetData?.videoSource?.mediaId;
+    _currentMediaId = controller.widgetData?.videoSource.mediaId;
     if (_currentMediaId == null) return;
 
     // 监听播放状态变化
