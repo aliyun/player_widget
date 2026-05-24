@@ -24,6 +24,13 @@ class SettingsPage extends StatefulWidget {
 }
 
 class _SettingsPageState extends State<SettingsPage> {
+  // 缓存异步 Future，避免 rebuild 时重复发起请求
+  final Map<String, Future<dynamic>> _cachedFutures = {};
+
+  Future<T> _getCachedFuture<T>(String key, Future<T> Function() loader) {
+    return (_cachedFutures[key] ??= loader()) as Future<T>;
+  }
+
   @override
   Widget build(BuildContext context) {
     // 数据结构定义
@@ -114,8 +121,8 @@ class _SettingsPageState extends State<SettingsPage> {
           final Widget itemView;
           if (item is SwitchItem) {
             itemView = _buildSwitchItem(item);
-          } else if (item is SelectionItem) {
-            itemView = _buildSelectionItem(item);
+          } else if (item is SelectionItem<ShortVideoResource>) {
+            itemView = _buildTypedSelectionItem(item);
           } else if (item is ButtonItem) {
             itemView = _buildButtonItem(item);
           } else if (item is TextItem) {
@@ -180,24 +187,10 @@ class _SettingsPageState extends State<SettingsPage> {
     );
   }
 
-  // 这个方法将用于处理所有 SelectionItem 类型
-  Widget _buildSelectionItem(SettingItem item) {
-    if (item is SelectionItem<String>) {
-      return _buildTypedSelectionItem<String>(item);
-    } else if (item is SelectionItem<ShortVideoResource>) {
-      return _buildTypedSelectionItem<ShortVideoResource>(item);
-    }
-    return const ListTile(
-      title: Text("未支持的 SelectionItem 类型"),
-      subtitle: Text("请在 _buildSelectionItem 中添加对应类型支持"),
-    );
-  }
-
   // 构建 Selection Item
-// 构建 Selection Item
   Widget _buildTypedSelectionItem<T>(SelectionItem<T> item) {
     return FutureBuilder<List<T>>(
-      future: item.optionsLoader(),
+      future: _getCachedFuture('${item.title}_options', item.optionsLoader),
       builder: (context, optionsSnapshot) {
         if (optionsSnapshot.connectionState == ConnectionState.waiting) {
           return ListTile(
@@ -333,7 +326,7 @@ class _SettingsPageState extends State<SettingsPage> {
   // 构建 Text Item
   Widget _buildTextItem(TextItem item) {
     return FutureBuilder<String>(
-      future: item.subtitleLoader(),
+      future: _getCachedFuture(item.title, item.subtitleLoader),
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
           return ListTile(
@@ -474,8 +467,8 @@ class ShortVideoResource {
 
   factory ShortVideoResource.fromJson(Map<String, dynamic> json) {
     return ShortVideoResource(
-      title: json['title'],
-      url: json['url'],
+      title: json['title'] as String? ?? '',
+      url: json['url'] as String? ?? '',
     );
   }
 }

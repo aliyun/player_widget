@@ -100,7 +100,9 @@ class _AliPlayerVideoSliderState extends State<AliPlayerVideoSlider> {
   Widget _buildWidgetByOrientation(BuildContext context) {
     if (widget.orientation == Orientation.portrait) {
       return Padding(
-        padding: const EdgeInsets.symmetric(horizontal: PlayerStyles.kVideoSliderHorizontalPadding),
+        padding: const EdgeInsets.symmetric(
+          horizontal: PlayerStyles.kVideoSliderHorizontalPadding,
+        ),
         child: Row(
           children: [
             _buildVideoSlider(),

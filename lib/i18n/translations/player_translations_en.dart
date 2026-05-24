@@ -65,6 +65,8 @@ class PlayerTranslationsEn with PlayerTranslationsMixin {
                 'Please call AliPlayerWidgetGlobalSetting.setStoragePaths to set storage paths first.',
             'downloadAlreadySaved':
                 'This video has already been downloaded. Save path: {path}',
+            'downloadProgress': 'Downloading ：{progress} %',
+            'downloadStart': 'Starting...',
           },
           'rotate': {
             'format': '{degree}°',

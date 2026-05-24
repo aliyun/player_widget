@@ -69,7 +69,7 @@ final data = AliPlayerWidgetData(
 );
 
 // 3. Initialize player component controller
-_controller = AliPlayerWidgetController(context);
+_controller = AliPlayerWidgetController();
 _controller.configure(data);
 ```
 

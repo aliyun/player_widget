@@ -320,7 +320,9 @@ class SettingItemBuilder {
   }
 
   /// 包装清晰度 notifier（从 trackInfo 获取 String）
-  ValueNotifier<String> _wrapQualityNotifier(List<AVPTrackInfo>? trackInfoList) {
+  ValueNotifier<String> _wrapQualityNotifier(
+    List<AVPTrackInfo>? trackInfoList,
+  ) {
     String initial = 'AUTO';
     final currentTrack = controller.currentTrackInfoNotifier.value;
     if (currentTrack != null) {

@@ -32,19 +32,17 @@ class ScreenUtil {
       return screenSize;
     }
 
-    // 处理竖屏视频的情况下，调整逻辑
+    // 竖屏视频（portrait video）
+    // TODO: 竖屏视频在全屏与非全屏模式下可能需要不同的布局策略，待后续需求明确后区分
     if (videoSize.height > videoSize.width) {
-      return isFullScreenMode
-          ? _calculateVerticalFullScreenDimensions(screenSize, videoSize)
-          : _calculateVerticalNonFullScreenDimensions(screenSize, videoSize);
+      return _calculatePortraitDimensions(screenSize, videoSize);
     }
 
-    // 计算视频的宽高比
+    // 横屏视频（landscape video）
     final aspectRatio = videoSize.aspectRatio;
-    // 根据模式选择全屏或非全屏计算逻辑
     return isFullScreenMode
-        ? _calculateFullScreenDimensions(screenSize, aspectRatio)
-        : _calculateNonFullScreenDimensions(screenSize, aspectRatio);
+        ? _calculateLandscapeFullScreenDimensions(screenSize, aspectRatio)
+        : _calculateLandscapeNonFullScreenDimensions(screenSize, aspectRatio);
   }
 
   /// 默认尺寸计算
@@ -68,40 +66,22 @@ class ScreenUtil {
     return Size(width, height);
   }
 
-  /// 竖屏模式下全屏显示
-  static Size _calculateVerticalFullScreenDimensions(
+  /// 竖屏视频尺寸计算（portrait video）
+  static Size _calculatePortraitDimensions(
     Size screenSize,
     Size videoSize,
   ) {
-    final videoAspectRatio = videoSize.aspectRatio; // 竖屏的宽高比应该是 < 1
+    final videoAspectRatio = videoSize.aspectRatio;
     final screenAspectRatio = screenSize.width / screenSize.height;
 
-    // 如果屏幕宽高比大于视频宽高比，则优先利用屏幕宽度
     if (screenAspectRatio > videoAspectRatio) {
       return Size(screenSize.width, screenSize.width / videoAspectRatio);
     }
-    // 否则优先利用屏幕高度
     return Size(screenSize.height * videoAspectRatio, screenSize.height);
   }
 
-  /// 竖屏模式下非全屏显示
-  static Size _calculateVerticalNonFullScreenDimensions(
-    Size screenSize,
-    Size videoSize,
-  ) {
-    final videoAspectRatio = videoSize.aspectRatio; // 竖屏的宽高比应该是 < 1
-    final screenAspectRatio = screenSize.width / screenSize.height;
-
-    // 如果屏幕宽高比大于视频宽高比，则优先利用屏幕宽度
-    if (screenAspectRatio > videoAspectRatio) {
-      return Size(screenSize.width, screenSize.width / videoAspectRatio);
-    }
-    // 否则优先利用屏幕高度
-    return Size(screenSize.height * videoAspectRatio, screenSize.height);
-  }
-
-  /// 全屏模式下的宽高计算
-  static Size _calculateFullScreenDimensions(
+  /// 横屏视频全屏模式尺寸计算（landscape video, fullscreen）
+  static Size _calculateLandscapeFullScreenDimensions(
     Size screenSize,
     double aspectRatio,
   ) {
@@ -117,8 +97,8 @@ class ScreenUtil {
     }
   }
 
-  /// 非全屏模式下的宽高计算
-  static Size _calculateNonFullScreenDimensions(
+  /// 横屏视频非全屏模式尺寸计算（landscape video, non-fullscreen）
+  static Size _calculateLandscapeNonFullScreenDimensions(
     Size screenSize,
     double aspectRatio,
   ) {

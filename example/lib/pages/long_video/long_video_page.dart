@@ -10,9 +10,6 @@ import 'package:aliplayer_widget_example/pages/link/link_constants.dart';
 import 'package:aliplayer_widget_example/manager/sp_manager.dart';
 import 'package:flutter/material.dart';
 
-/// 当前选中的底部导航栏索引
-int _selectIndex = 0;
-
 /// 长视频播放页面
 ///
 /// A page for playing long videos using AliPlayerWidget.
@@ -29,6 +26,9 @@ class LongVideoPage extends StatefulWidget {
 class _LongVideoPageState extends State<LongVideoPage> {
   /// 播放器组件控制器
   late AliPlayerWidgetController _controller;
+
+  /// 当前选中的底部导航栏索引
+  int _selectIndex = 0;
 
   /// 构建主体内容
   ///
@@ -98,7 +98,7 @@ class _LongVideoPageState extends State<LongVideoPage> {
     super.initState();
 
     // 初始化播放器组件控制器
-    _controller = AliPlayerWidgetController(context);
+    _controller = AliPlayerWidgetController();
 
     // 获取保存的 vid 及 playAuth
     var saveVid = SPManager.instance.getString(LinkConstants.vid);

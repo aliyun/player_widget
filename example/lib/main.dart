@@ -26,10 +26,9 @@ import 'package:path_provider/path_provider.dart';
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
 
-  // 初始化 AliPlayer Widget 全局设置
-  initializeGlobalSettings();
-
-  runZonedGuarded(() {
+  runZonedGuarded(() async {
+    // 初始化 AliPlayer Widget 全局设置
+    await initializeGlobalSettings();
     runApp(const MyApp());
   }, (error, stackTrace) {
     debugPrint('[AliPlayerWidget][fatal][error]: $error, $stackTrace');
@@ -87,7 +86,6 @@ Future<void> initializeGlobalSettings() async {
   var bytes = await rootBundle.load((Platform.isAndroid)
       ? "assets/encryptedApp_android.dat"
       : "assets/encryptedApp_ios.dat");
-  // getExternalStorageDirectories
   FlutterAliPlayerFactory.initService(bytes.buffer.asUint8List());
 }
 

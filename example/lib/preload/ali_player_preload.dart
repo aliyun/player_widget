@@ -242,6 +242,7 @@ class AliPlayerPreload {
   /// 使用 precacheImage 预加载图片
   void _preloadImage(String url) {
     Future.microtask(() async {
+      if (!_context.mounted) return;
       _log("[preload][image], $url");
       await precacheImage(NetworkImage(url), _context, onError: (_, __) {
         _log("[cbk][image][error], $url", isError: true);

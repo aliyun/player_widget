@@ -1,6 +1,56 @@
 # **AliPlayerWidget 更新日志**
 
-> Language: 中文简体 | [English](CHANGELOG.md)
+> Language: 中文简体 | [English](../CHANGELOG.md)
+
+## **[7.15.0] - 隐私增强、Bug 修复与性能优化**
+
+### **版本更新**
+
+- **内核 SDK（`flutter_aliplayer`）升级至 v7.15.0**
+
+### **Bug 修复**
+
+- **隐私**
+  - 新增 `PrivacyUtil`，对 `VideoSource.toString()` 输出进行脱敏处理，防止凭证和 URL 信息泄露到日志或调试输出中。
+- **导航**
+  - 在调用 `Navigator.pop()` 前增加 `canPop()` 判断，防止在空路由栈上执行 pop 操作导致崩溃。
+- **唤醒锁**
+  - 修复 `allowedScreenSleep` 逻辑反转问题，此前唤醒锁行为与预期设置相反。
+- **内存与生命周期**
+  - 将缓存的 `BuildContext` 替换为 context provider，消除因持有过期 context 导致的崩溃。
+  - 修正对象销毁顺序，防止 dispose 阶段出现 notifier 安全性违规。
+  - 防止全屏 dispose 错误地解绑竖屏 context。
+  - 下载完成后正确关闭 `StreamController`，消除资源泄漏。
+  - 增强 `SafeNotifier` 的 dispose 安全性，并在调试模式下添加断言。
+- **下载**
+  - 改进下载错误处理与订阅安全性，防止重复取消时报错。
+- **类型安全**
+  - 将 `videoSource` 改为非空类型并移除相关死代码。
+  - 将 `isSubtitleVisibleNotifier` 类型收窄为非空，提供更严格的类型保证。
+
+### **性能**
+
+- 将拖动更新时的 `vibrate()` 替换为 `selectionFeedback()`，提供更符合平台规范的触觉反馈。
+- 缓存 `_resolveSlotOrder` 的排序结果，避免每次构建时重复执行排序。
+
+### **优化**
+
+- 将下载逻辑提取至独立的 `DownloadManager`，实现关注点分离。
+- 将播放器通知逻辑与下载准备逻辑提取为独立辅助方法。
+- 将 `AliPlayerWidgetData` 中不可变字段标记为 `final`，明确意图并支持编译器优化。
+- 合并重复的垂直方向尺寸工具方法，优化命名一致性。
+
+### **示例更新**
+
+本次对 Example 工程进行了一轮针对性质量治理，目标是将示例代码的可信度与可参考性提升至生产级别。问题集中在三个维度：
+
+- **启动与生命周期正确性**：全局设置初始化现已在 `runApp` 前完成 `await`，消除启动阶段的竞态条件。`WidgetsBindingObserver` 的注册与注销现在对称执行且带保护标志，防止回调残留。`LivePage` 的键盘高度计算已修正为逻辑像素（除以 `devicePixelRatio`），修复此前因物理像素直接用于布局导致的数值偏差。
+- **空安全与状态隔离**：`videoInfoList` 在声明处初始化为 `[]`，根除加载失败时的 `LateInitializationError` 崩溃。文件级全局可变变量 `_selectIndex` 已移入所属 `State` 类，消除实例间的隐式状态污染。
+- **异步与资源安全**：`precacheImage` 调用加入 `context.mounted` 守卫，防止在已销毁的 Widget 上触发回调。`SettingsPage` 的 `FutureBuilder` Future 跨重建缓存，避免每次 `setState` 重复发起网络请求。`SPManager` 初始化改用 `Completer` 模式，以更清晰的异步契约替代回调队列。`LikeOverlayWidget` 的动画并发数上限修复，防止列表无限增长。
+
+> **产品化评估**：经本次治理，示例工程已能正确示范 Flutter Widget 全生命周期的惯用写法——包括启动时序、异步初始化、Observer 注册、context 安全访问与 dispose 管理。开发者可将其作为可信的参考实现，而非仅作为功能验证 Demo。此前版本存在若干「照抄即引入生产 Bug」的反模式（启动竞态、过期 context、物理像素误用），现已全部修正。
+
+---
 
 ## **[7.14.0] - 策略系统、国际化、UI 主题与插槽系统增强**
 

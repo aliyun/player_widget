@@ -97,3 +97,7 @@ part 'aliplayer_widget_controller.dart';
 part 'aliplayer_widget_data.dart';
 
 part 'aliplayer_widget_global_setting.dart';
+
+part 'utils/privacy_util.dart';
+
+part 'manager/download_manager.dart';

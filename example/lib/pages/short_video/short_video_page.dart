@@ -77,7 +77,7 @@ class _ShortVideoListPageState extends State<ShortVideoListPage> {
   static const String _tag = "ShortVideoPage";
 
   /// 视频数据源列表（每个 item 对应一个视频）
-  late List<VideoInfo> videoInfoList;
+  List<VideoInfo> videoInfoList = [];
 
   /// 播放器预加载器
   late AliPlayerPreload _aliPlayerPreload;
@@ -227,7 +227,7 @@ class _ShortVideoListPageState extends State<ShortVideoListPage> {
       if (i != currentIndex) {
         // 暂停非当前 item
         _itemKeys[i].currentState?.pause();
-      } else if (i == currentIndex) {
+      } else {
         // 恢复当前 item
         _itemKeys[i].currentState?.resume();
       }

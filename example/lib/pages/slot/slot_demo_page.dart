@@ -72,7 +72,7 @@ class _SlotDemoPageState extends State<SlotDemoPage>
     super.initState();
 
     // 初始化播放器组件控制器
-    _controller = AliPlayerWidgetController(context);
+    _controller = AliPlayerWidgetController();
 
     // 获取保存的链接
     var savedLink = SPManager.instance.getString(LinkConstants.url);

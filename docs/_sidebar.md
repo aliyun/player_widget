@@ -17,3 +17,4 @@
   - [自定义配置](./advanced/custom-config.md)
   - [UI 主题](./advanced/ui-theme.md)
   - [国际化 (i18n)](./advanced/i18n.md)
+- [更新日志](./CHANGELOG.md)

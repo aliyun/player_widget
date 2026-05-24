@@ -37,6 +37,9 @@ class _LivePageState extends State<LivePage> with WidgetsBindingObserver {
   /// 键盘高度
   double _keyboardHeight = 0;
 
+  /// WidgetsBindingObserver 是否已注册
+  bool _observerRegistered = false;
+
   /// 聊天消息列表
   final List<String> _chatMessages = [];
 
@@ -375,7 +378,7 @@ class _LivePageState extends State<LivePage> with WidgetsBindingObserver {
     super.initState();
 
     // 初始化播放器组件控制器
-    _controller = AliPlayerWidgetController(context);
+    _controller = AliPlayerWidgetController();
 
     // 获取保存的链接
     final savedLink = SPManager.instance.getString(LinkConstants.live);
@@ -397,6 +400,7 @@ class _LivePageState extends State<LivePage> with WidgetsBindingObserver {
 
     // 添加观察者
     WidgetsBinding.instance.addObserver(this);
+    _observerRegistered = true;
 
     // 设置播放器视频源
     final videoSource = VideoSourceFactory.createUrlSource(savedLink);
@@ -422,7 +426,9 @@ class _LivePageState extends State<LivePage> with WidgetsBindingObserver {
     // 销毁播放控制器
     _controller.destroy();
 
-    WidgetsBinding.instance.removeObserver(this);
+    if (_observerRegistered) {
+      WidgetsBinding.instance.removeObserver(this);
+    }
 
     super.dispose();
   }
@@ -430,10 +436,10 @@ class _LivePageState extends State<LivePage> with WidgetsBindingObserver {
   /// 监听键盘高度变化
   @override
   void didChangeMetrics() {
-    // 获取键盘高度
-    final bottomInset = MediaQuery.of(context).viewInsets.bottom;
+    final view = WidgetsBinding.instance.platformDispatcher.views.first;
+    final bottom = view.viewInsets.bottom / view.devicePixelRatio;
     setState(() {
-      _keyboardHeight = bottomInset;
+      _keyboardHeight = bottom;
     });
   }
 }

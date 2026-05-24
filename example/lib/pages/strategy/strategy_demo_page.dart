@@ -37,7 +37,7 @@ class _StrategyDemoPageState extends State<StrategyDemoPage> {
     super.initState();
 
     // 初始化播放器组件控制器
-    _controller = AliPlayerWidgetController(context);
+    _controller = AliPlayerWidgetController();
 
     // 注册带回调的策略实例，替换内置默认版本 + 添加自定义策略
     _controller.strategyManager

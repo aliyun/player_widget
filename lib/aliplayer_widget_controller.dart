@@ -14,19 +14,11 @@ class AliPlayerWidgetController {
   /// 日志标签
   static const _logTag = "AliPlayerWidgetController";
 
-  final BuildContext _context;
-
   /// 播放器实例
   late FlutterAliplayer _aliPlayer;
 
-  /// 下载器实例
-  late FlutterAliDownloader _aliDownloader;
-
-  /// 管理流订阅
-  late StreamSubscription _subscription;
-
-  /// 下载保存路径
-  String? downloadSavePath = FileManager.getFolderPath(FolderType.download);
+  /// 下载管理器
+  late DownloadManager _downloadManager;
 
   /// 播放器唯一标识符
   late String _playerUniqueId;
@@ -201,7 +193,7 @@ class AliPlayerWidgetController {
   /// 当前显示的字幕状态
   ///
   /// The current displayed subtitle status
-  final SafeValueNotifier<bool?> isSubtitleVisibleNotifier =
+  final SafeValueNotifier<bool> isSubtitleVisibleNotifier =
       SafeValueNotifier(false);
 
   /// 截图状态变化通知器
@@ -217,10 +209,12 @@ class AliPlayerWidgetController {
       SafeValueNotifier<bool>(false);
 
   /// 当前下载状态
-  ///
-  ///
-  final SafeValueNotifier<DownloadState> downloadStateNotifier =
-      SafeValueNotifier(const UnknownState());
+  SafeValueNotifier<DownloadState> get downloadStateNotifier =>
+      _downloadManager.stateNotifier;
+
+  /// 下载保存路径
+  String? get downloadSavePath => _downloadManager.savePath;
+  set downloadSavePath(String? path) => _downloadManager.savePath = path;
 
   /// 当前加载状态
   ///
@@ -272,7 +266,7 @@ class AliPlayerWidgetController {
 
   /// 获取当前播放配置数据（只读）
   ///
-  /// 供策略或外部逻辑读取视频源等配置信息，例如 `widgetData?.videoSource?.mediaId`。
+  /// 供策略或外部逻辑读取视频源等配置信息，例如 `widgetData?.videoSource.mediaId`。
   /// 注意：此属性仅用于读取，请勿直接修改其内部字段，否则可能导致播放器状态不一致。
   ///
   /// Returns the current player configuration data (read-only).
@@ -286,12 +280,16 @@ class AliPlayerWidgetController {
   ///
   /// Constructor to create an instance of [AliPlayerWidgetController].
   ///
-  /// 参数：
-  /// - [_context]：当前 Widget 的上下文，必须提供，用于初始化控制器并与 UI 层交互。
+  /// [context] 参数已废弃，无需传入。Context 现由 [AliPlayerWidgetState] 自动注入。
   ///
-  /// Parameters:
-  /// - _context: The context of the current widget, required for initializing the controller and interacting with the UI layer.
-  AliPlayerWidgetController(this._context) {
+  /// The [context] parameter is deprecated and no longer needed.
+  /// Context is now automatically provided by [AliPlayerWidgetState].
+  AliPlayerWidgetController([
+    @Deprecated('BuildContext parameter is no longer needed. '
+        'Context is now automatically provided by AliPlayerWidgetState. '
+        'Use AliPlayerWidgetController() instead.')
+    BuildContext? context,
+  ]) {
     logi("[lifecycle] construct", tag: _logTag);
     _init();
   }
@@ -314,22 +312,52 @@ class AliPlayerWidgetController {
   ///
   /// Destroy the player controller
   void destroy() {
-    // 释放屏幕常亮
-    if (_widgetData?.allowedScreenSleep == true) {
+    // The next line disables the wakelock again.
+    if (_widgetData?.allowedScreenSleep == false) {
       WakelockPlus.disable();
     }
-
-    // 销毁播放器实例
-    Future.microtask(() => _destroyPlayer());
-
-    // 销毁下载器实例
-    Future.microtask(() => _destroyDownloader());
 
     // 停止并销毁策略系统
     strategyManager.dispose();
 
-    // 销毁值监听器
-    Future.microtask(() => _disposeValueNotifiers());
+    // 确保顺序：先停止播放器和下载器，再释放 notifier
+    Future.microtask(() {
+      _destroyPlayer();
+      _destroyDownloader();
+      _disposeValueNotifiers();
+    });
+  }
+
+  // ---------------------------------------------------------------------------
+  // Context Provider（由 AliPlayerWidgetState 管理生命周期）
+  // ---------------------------------------------------------------------------
+
+  /// 当前活跃的 BuildContext 提供者
+  ///
+  /// 由 [AliPlayerWidgetState] 在 initState 时绑定，dispose 时解绑。
+  /// 用于在异步回调中安全获取当前挂载的 context（toast、截图提示等）。
+  ///
+  /// 全屏共享场景下，多个 widget 实例共享同一个 controller，
+  /// 切换时通过 _bindContext/_unbindContext 的引用比对确保生命周期安全。
+  BuildContext? Function()? _contextProvider;
+
+  /// 绑定 context provider
+  ///
+  /// 由 [AliPlayerWidgetState.initState] 调用，以及全屏退出后重新绑定。
+  /// 新绑定会覆盖旧绑定（全屏进入时覆盖竖屏的 provider）。
+  void _bindContext(BuildContext? Function() provider) {
+    _contextProvider = provider;
+  }
+
+  /// 解绑 context provider
+  ///
+  /// 由 [AliPlayerWidgetState.dispose] 调用。
+  /// 仅当传入的 [provider] 与当前绑定的引用一致时才清空，
+  /// 避免全屏 dispose 误清竖屏的绑定。
+  void _unbindContext(BuildContext? Function() provider) {
+    if (_contextProvider == provider) {
+      _contextProvider = null;
+    }
   }
 
   /// 初始化播放器实例
@@ -444,10 +472,7 @@ class AliPlayerWidgetController {
       String quality = TrackInfoUtil.getQuality(selectedTrackInfo);
       String qualityLabel = PlayerI18n.t(PlayerI18nKeys.statusQuality);
 
-      PlayStateShowUtil.success(
-        _context,
-        message: "$qualityLabel: $quality",
-      );
+      _showSuccess("$qualityLabel: $quality");
     });
 
     // 监听当前加载状态
@@ -476,8 +501,11 @@ class AliPlayerWidgetController {
 
       // If occurs error, update video size as default.
       if (videoSizeNotifier.value == Size.zero) {
-        final videoSize = ScreenUtil.calculateDefaultDimensions(_context);
-        videoSizeNotifier.value = videoSize;
+        final ctx = _contextProvider?.call();
+        if (ctx != null && ctx.mounted) {
+          final videoSize = ScreenUtil.calculateDefaultDimensions(ctx);
+          videoSizeNotifier.value = videoSize;
+        }
       }
     });
 
@@ -551,12 +579,9 @@ class AliPlayerWidgetController {
 
     /// 截图代理回调
     _aliPlayer.setOnSnapShot((path, playerId) {
-      PlayStateShowUtil.success(
-        _context,
-        message: PlayerI18n.t(
-          PlayerI18nKeys.statusSnapSaved,
-        ),
-      );
+      _showSuccess(PlayerI18n.t(
+        PlayerI18nKeys.statusSnapSaved,
+      ));
       snapFileStateNotifier.value = path;
     });
 
@@ -655,7 +680,13 @@ class AliPlayerWidgetController {
   }
 
   void _initializeDownloader() {
-    _aliDownloader = FlutterAliDownloader.init();
+    _downloadManager = DownloadManager(
+      currentTrackInfoNotifier: currentTrackInfoNotifier,
+      widgetDataGetter: () => _widgetData,
+      showSuccess: _showSuccess,
+      showInfo: _showInfo,
+      showError: _showError,
+    );
   }
 
   /// 销毁下载器实例
@@ -663,22 +694,7 @@ class AliPlayerWidgetController {
   /// 释放下载器资源，根据当前视频源类型和选择的清晰度索引释放对应的下载资源。
   /// 该方法会在控制器销毁时被调用，确保下载器资源得到正确释放。
   void _destroyDownloader() {
-    int selectVideoIndex = 0;
-
-    if (null != currentTrackInfoNotifier.value) {
-      // 获取当前选择清晰度信息
-      selectVideoIndex = currentTrackInfoNotifier.value!.trackIndex!;
-    }
-
-    if (_widgetData?.videoSource is VidStsVideoSource) {
-      final stsSource = _widgetData?.videoSource as VidStsVideoSource;
-      String vid = stsSource.vid;
-      _aliDownloader.release(vid, selectVideoIndex);
-    } else if (_widgetData?.videoSource is VidAuthVideoSource) {
-      final authSource = _widgetData?.videoSource as VidAuthVideoSource;
-      String vid = authSource.vid;
-      _aliDownloader.release(vid, selectVideoIndex);
-    }
+    _downloadManager.destroy();
   }
 
   /// 设置默认值
@@ -765,8 +781,8 @@ class AliPlayerWidgetController {
     // 准备播放
     prepare();
 
-    // 允许屏幕常亮
-    if (_widgetData?.allowedScreenSleep == true) {
+    // The following line will enable the Android and iOS wakelock.
+    if (_widgetData?.allowedScreenSleep == false) {
       WakelockPlus.enable();
     }
   }
@@ -775,14 +791,14 @@ class AliPlayerWidgetController {
   ///
   /// Configure the player based on video source
   void _configurePlayerSource(AliPlayerWidgetData data) {
-    if (data.videoSource == null || !data.videoSource!.validate()) {
-      throw ArgumentError("Invalid video source");
-    }
-
     final videoSource = data.videoSource;
 
-    // 确保视频源不为空
-    if (videoSource == null) {
+    if (!videoSource.validate()) {
+      loge(
+          "VideoSource validation failed (${videoSource.sourceType}). "
+          "Player will not be configured. "
+          "Please check your video source parameters and re-configure.",
+          tag: _logTag);
       return;
     }
 
@@ -834,10 +850,7 @@ class AliPlayerWidgetController {
   /// Setup scenario flag for playback experience optimization.
   void _setupScenarioFlag(AliPlayerWidgetData data) {
     final sceneType = data.sceneType;
-    final sourceType = data.videoSource?.sourceType;
-    if (sourceType == null) {
-      return;
-    }
+    final sourceType = data.videoSource.sourceType;
 
     final scenarioFlag = ScenarioManager.buildScenarioFlag(
       sceneType: sceneType,
@@ -1270,163 +1283,26 @@ class AliPlayerWidgetController {
   /// 2. 授权码方式 (VidAuthVideoSource)
   ///
   /// 下载前会检查视频是否已下载，避免重复下载。
-  void startVideoDownload() {
-    // 检查视频源是否存在
-    if (_widgetData?.videoSource == null) return;
+  void startVideoDownload() => _downloadManager.startVideoDownload();
 
-    // 检查下载保存目录是否存在
-    if (downloadSavePath == null || downloadSavePath!.isEmpty) {
-      PlayStateShowUtil.error(
-        _context,
-        message: PlayerI18n.t(PlayerI18nKeys.downloadStoragePathNotSet),
-      );
-      return;
-    }
-
-    // 检查是否已经下载完成，如果已完成则提示用户
-    if (downloadStateNotifier.value is DownloadCompletedState) {
-      final DownloadCompletedState state =
-          downloadStateNotifier.value as DownloadCompletedState;
-      PlayStateShowUtil.success(
-        _context,
-        message: PlayerI18n.t(
-          PlayerI18nKeys.downloadAlreadySaved,
-          {"path": state.downloadFile},
-        ),
-      );
-      return;
-    } else if (downloadStateNotifier.value is DownloadingState) {
-      // 如果处于加载状态，直接return
-      return;
-    }
-
-    // 设置下载保存目录
-    _aliDownloader.setSaveDir(downloadSavePath!);
-
-    String? vid; // 视频ID
-    Future<dynamic>? downloadAction;
-
-    // 根据不同视频源类型执行相应下载逻辑
-    if (_widgetData?.videoSource is VidStsVideoSource) {
-      // 处理 STS 类型视频源的下载准备
-      final stsSource = _widgetData?.videoSource as VidStsVideoSource;
-      vid = stsSource.vid;
-      String accessKeyId = stsSource.accessKeyId;
-      String accessKeySecret = stsSource.accessKeySecret;
-      String securityToken = stsSource.securityToken;
-
-      downloadAction = _aliDownloader.prepare(
-        FlutterAvpdef.DOWNLOADTYPE_STS,
-        vid,
-        accessKeyId: accessKeyId,
-        accessKeySecret: accessKeySecret,
-        securityToken: securityToken,
-      );
-    } else if (_widgetData?.videoSource is VidAuthVideoSource) {
-      // 处理 Auth 类型视频源的下载准备
-      final authSource = _widgetData?.videoSource as VidAuthVideoSource;
-      vid = authSource.vid;
-      String playAuth = authSource.playAuth;
-
-      downloadAction = _aliDownloader.prepare(
-        FlutterAvpdef.DOWNLOADTYPE_AUTH,
-        vid,
-        playAuth: playAuth,
-      );
-    }
-
-    if (vid != null && vid.isNotEmpty) {
-      downloadAction?.then((value) {
-        _executeDownloadWithMediaInfo(vid!, value);
-      }).catchError((error, stack) {
-        _handleDownloadError(error);
-      });
-    } else {
-      // UrlVideoSource is not support;
-      downloadStateNotifier.value = const DownloadErrorState(
-        errorCode: "Video Source Error",
-        errorMessage: "Unsupported video source. Only vid source is supported.",
-      );
+  void _showSuccess(String message) {
+    final ctx = _contextProvider?.call();
+    if (ctx != null && ctx.mounted) {
+      PlayStateShowUtil.success(ctx, message: message);
     }
   }
 
-  /// 处理下载错误
-  void _handleDownloadError(dynamic error) {
-    if (error is PlatformException) {
-      // 返回错误
-      downloadStateNotifier.value = DownloadErrorState(
-        errorCode: error.code,
-        errorMessage: error.message!,
-      );
-    } else {
-      downloadStateNotifier.value = DownloadErrorState(
-        errorCode: "Download Error",
-        errorMessage: error,
-      );
+  void _showInfo(String message) {
+    final ctx = _contextProvider?.call();
+    if (ctx != null && ctx.mounted) {
+      PlayStateShowUtil.info(ctx, message: message);
     }
   }
 
-  /// 根据媒体信息执行实际的下载操作
-  ///
-  /// 解析媒体信息并选择合适的视频轨道进行下载，同时监听下载过程中的各种状态变化：
-  /// - 下载进度更新
-  /// - 下载完成处理
-  /// - 下载错误处理
-  ///
-  /// 该方法会优先使用当前选择的清晰度，如果没有则使用默认的第一个视频轨道进行下载。
-  ///
-  /// [vid] 视频ID，用于标识要下载的视频资源
-  /// [mediaInfoValue] 媒体信息JSON字符串，包含视频轨道等信息
-  void _executeDownloadWithMediaInfo(String vid, dynamic mediaInfoValue) {
-    // 默认为 0
-    int selectVideoIndex = 0;
-    if (null != currentTrackInfoNotifier.value) {
-      // 获取当前选择清晰度信息
-      selectVideoIndex = currentTrackInfoNotifier.value!.trackIndex!;
-    } else {
-      // 获取OnPrepared清晰度信息
-      Map<String, dynamic> jsonMap = json.decode(mediaInfoValue);
-      AliMediaInfo info = AliMediaInfo.fromJson(jsonMap);
-      if (null != info.trackInfos && info.trackInfos!.isNotEmpty) {
-        selectVideoIndex = info.trackInfos![0].index!;
-      }
-    }
-    _aliDownloader.selectItem(vid, selectVideoIndex);
-
-    // 创建监听流控制器
-    StreamController<dynamic> controller = StreamController<dynamic>();
-    controller.addStream(_aliDownloader.start(vid, selectVideoIndex)!);
-
-    if (!controller.hasListener) {
-      _subscription = controller.stream.listen((event) {
-        String downloadEvent = event[EventChanneldef.TYPE_KEY];
-        if (downloadEvent == DownloadEvent.DOWNLOAD_PROGRESS) {
-          // 更新下载进度
-          String progress = event[EventChanneldef.DOWNLOAD_PROGRESS];
-          downloadStateNotifier.value = DownloadingState(
-            progress: int.parse(progress),
-          );
-        } else if (downloadEvent == DownloadEvent.DOWNLOAD_COMPLETION) {
-          // 下载完成处理
-          String fileSavePath = event['savePath'];
-          downloadStateNotifier.value = DownloadCompletedState(
-            downloadFile: fileSavePath,
-          );
-          // 关闭监听
-          _subscription.cancel();
-        } else if (downloadEvent == DownloadEvent.DOWNLOAD_ERROR) {
-          // 错误处理
-          String errorCode = event['errorCode'];
-          String errorMsg = event['errorMsg'];
-          // 更新状态
-          downloadStateNotifier.value = DownloadErrorState(
-            errorCode: errorCode,
-            errorMessage: errorMsg,
-          );
-          // 关闭监听
-          _subscription.cancel();
-        }
-      });
+  void _showError(String message) {
+    final ctx = _contextProvider?.call();
+    if (ctx != null && ctx.mounted) {
+      PlayStateShowUtil.error(ctx, message: message);
     }
   }
 

@@ -106,7 +106,8 @@ class AliPlayerSettingsPanelManager {
         ? TrackInfoUtil.getQuality(currentTrackInfo)
         : (items.isNotEmpty ? items.first : 'AUTO');
 
-    final initialIndex = items.indexOf(currentQuality).clamp(0, items.length - 1);
+    final initialIndex =
+        items.indexOf(currentQuality).clamp(0, items.length - 1);
 
     return showRightSettingPanel<String>(
       context: context,
@@ -169,7 +170,8 @@ class AliPlayerSettingsPanelManager {
                       margin: const EdgeInsets.only(
                         top: PlayerStyles.kPortraitSettingPanelTopMargin,
                       ),
-                      child: _buildPortraitSubtitleSection(itemBuilder, controller),
+                      child: _buildPortraitSubtitleSection(
+                          itemBuilder, controller),
                     ),
                     _buildPortraitSettingsSection(itemBuilder, controller),
                     _buildPortraitTogglesSection(itemBuilder),
@@ -246,7 +248,8 @@ class AliPlayerSettingsPanelManager {
   }
 
   /// 竖屏 - 镜像/渲染/旋转设置区块
-  static Widget _buildPortraitDisplayModeSection(SettingItemBuilder itemBuilder) {
+  static Widget _buildPortraitDisplayModeSection(
+      SettingItemBuilder itemBuilder) {
     final items = itemBuilder.filterVisibleSettingItems([
       itemBuilder.buildMirrorItem(),
       itemBuilder.buildRenderItem(),

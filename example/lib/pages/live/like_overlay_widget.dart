@@ -23,6 +23,12 @@ class _LikeOverlayWidgetState extends State<LikeOverlayWidget> {
   final List<_LikeAnimationItem> _likeAnimations = [];
   DateTime? _lastTapTime;
 
+  /// 同时存在的最大动画数量上限
+  static const int _maxConcurrentAnimations = 15;
+
+  /// 单调递增 ID，避免时间戳碰撞
+  int _idCounter = 0;
+
   /// 连击检测阈值
   static const int _doubleTapThresholdMs = 300;
 
@@ -39,9 +45,10 @@ class _LikeOverlayWidgetState extends State<LikeOverlayWidget> {
   }
 
   void _triggerLike() {
+    if (_likeAnimations.length >= _maxConcurrentAnimations) return;
     setState(() {
       _likeAnimations.add(_LikeAnimationItem(
-        id: DateTime.now().microsecondsSinceEpoch,
+        id: _idCounter++,
         offsetX: Random().nextDouble() * 60 - 30,
       ));
     });

@@ -20,12 +20,12 @@ class PlayStateShowUtil {
   /// - 对于 Loading 状态：如果为 null，则不自动消失，需手动调用 hide()。
   /// - 对于其他状态：默认为 2秒，必须在指定时间后消失。
   static void show(
-      BuildContext context, {
-        required PlayStatus widgetStatus,
-        String? statusMessage,
-        String? statusCode,
-        Duration? duration = const Duration(seconds: 2),
-      }) {
+    BuildContext context, {
+    required PlayStatus widgetStatus,
+    String? statusMessage,
+    String? statusCode,
+    Duration? duration = const Duration(seconds: 2),
+  }) {
     // 1. 基础安全检查
     if (!context.mounted) return;
 
@@ -112,11 +112,11 @@ class PlayStateShowUtil {
 
   /// 便捷方法：成功状态 (默认2秒后消失)
   static void success(
-      BuildContext context, {
-        String? message,
-        String? code,
-        Duration duration = const Duration(seconds: 2),
-      }) {
+    BuildContext context, {
+    String? message,
+    String? code,
+    Duration duration = const Duration(seconds: 2),
+  }) {
     show(
       context,
       widgetStatus: PlayStatus.success,
@@ -128,11 +128,11 @@ class PlayStateShowUtil {
 
   /// 便捷方法：错误状态 (默认3秒后消失)
   static void error(
-      BuildContext context, {
-        String? message,
-        String? code,
-        Duration duration = const Duration(seconds: 3),
-      }) {
+    BuildContext context, {
+    String? message,
+    String? code,
+    Duration duration = const Duration(seconds: 3),
+  }) {
     show(
       context,
       widgetStatus: PlayStatus.error,
@@ -144,11 +144,11 @@ class PlayStateShowUtil {
 
   /// 便捷方法：信息状态 (默认2秒后消失)
   static void info(
-      BuildContext context, {
-        String? message,
-        String? code,
-        Duration duration = const Duration(seconds: 2),
-      }) {
+    BuildContext context, {
+    String? message,
+    String? code,
+    Duration duration = const Duration(seconds: 2),
+  }) {
     show(
       context,
       widgetStatus: PlayStatus.info,
@@ -170,10 +170,10 @@ class PlayStateShowUtil {
   /// 2. 发生错误需要显示错误提示前
   /// 3. 页面销毁时（dispose 中）
   static void loading(
-      BuildContext context, {
-        String? message,
-        Duration? duration,
-      }) {
+    BuildContext context, {
+    String? message,
+    Duration? duration,
+  }) {
     show(
       context,
       widgetStatus: PlayStatus.loading,
@@ -207,7 +207,6 @@ class _PlayStateOverlayContent extends StatefulWidget {
 
 class _PlayStateOverlayContentState extends State<_PlayStateOverlayContent>
     with SingleTickerProviderStateMixin {
-
   late AnimationController _controller;
   late Animation<double> _fadeAnimation;
   late Animation<Offset> _slideAnimation;
@@ -269,4 +268,3 @@ class _PlayStateOverlayContentState extends State<_PlayStateOverlayContent>
     );
   }
 }
-

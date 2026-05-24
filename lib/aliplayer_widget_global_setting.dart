@@ -34,7 +34,7 @@ class AliPlayerWidgetGlobalSetting {
   /// Flutter Widget version
   ///
   /// Flutter Widget 版本号
-  static const String kWidgetVersion = '7.14.0';
+  static const String kWidgetVersion = '7.15.0';
 
   /// whether to enable local cache
   ///

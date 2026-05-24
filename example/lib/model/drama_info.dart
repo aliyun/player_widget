@@ -90,17 +90,37 @@ class DramaInfo {
   ///
   /// Get a drama video by id.
   VideoInfo? getDramaById(int videoId) {
-    try {
-      return dramas.firstWhere((video) => video.id == videoId);
-    } catch (_) {
-      return null;
-    }
+    return dramas.where((video) => video.id == videoId).firstOrNull;
   }
 
   /// 获取剧集视频数量
   ///
   /// Get the number of drama videos.
   int get dramaCount => dramas.length;
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is DramaInfo &&
+          runtimeType == other.runtimeType &&
+          id == other.id &&
+          title == other.title &&
+          cover == other.cover &&
+          drama == other.drama &&
+          _listEquals(dramas, other.dramas);
+
+  @override
+  int get hashCode =>
+      Object.hash(id, title, cover, drama, Object.hashAll(dramas));
+
+  static bool _listEquals<T>(List<T> a, List<T> b) {
+    if (identical(a, b)) return true;
+    if (a.length != b.length) return false;
+    for (int i = 0; i < a.length; i++) {
+      if (a[i] != b[i]) return false;
+    }
+    return true;
+  }
 
   @override
   String toString() =>

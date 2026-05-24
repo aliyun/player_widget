@@ -159,7 +159,7 @@ class _ExternalSubtitlePage extends State<ExternalSubtitlePage> {
   @override
   void initState() {
     super.initState();
-    _controller = AliPlayerWidgetController(context);
+    _controller = AliPlayerWidgetController();
 
     // 获取保存的链接
     var savedLink = SPManager.instance.getString(LinkConstants.shortVideo);
@@ -387,10 +387,15 @@ class _ExternalSubtitlePage extends State<ExternalSubtitlePage> {
   /// 重新配置播放器以应用新的设置
   void _reconfigurePlayer() {
     _controller.getCurrentPosition().then((currentPosition) {
-      // 更新起始时间为当前位置
-      _playerData.startTime = currentPosition;
+      _playerData = AliPlayerWidgetData(
+        videoSource: _playerData.videoSource,
+        externalSubtitleUrl: _playerData.externalSubtitleUrl,
+        videoTitle: _playerData.videoTitle,
+        startTime: currentPosition,
+        subtitleConfig: _playerData.subtitleConfig,
+        subtitleBuilder: _playerData.subtitleBuilder,
+      );
 
-      // 重新配置播放器
       _controller.configure(_playerData);
     });
 
