@@ -1,0 +1,476 @@
+# **AliPlayerWidget Changelog**
+
+> Language: [中文](./CHANGELOG.md) | English
+
+## **[7.15.0] - Privacy Enhancement, Bug Fixes & Performance Improvements**
+
+### **SDK Update**
+
+- **Upgraded core SDK (`flutter_aliplayer`) to v7.15.0**
+
+### **Bug Fixes**
+
+- **Privacy**
+  - Added `PrivacyUtil` to sanitize `VideoSource.toString()` output, preventing credentials and URLs from being exposed in logs or debug output.
+- **Navigation**
+  - Guarded `Navigator.pop()` with `canPop()` check to prevent popping on an empty navigation stack.
+- **Wakelock**
+  - Corrected inverted `allowedScreenSleep` logic that caused the wakelock to behave oppositely to its intended setting.
+- **Memory & Lifecycle**
+  - Replaced cached `BuildContext` with a context provider to eliminate stale-context crashes.
+  - Ensured correct destroy sequence to prevent notifier safety violations during disposal.
+  - Prevented fullscreen dispose from incorrectly unbinding the portrait context.
+  - Closed `StreamController` after download completion to eliminate resource leaks.
+  - Improved `SafeNotifier` dispose safety with additional debug-mode assertions.
+- **Download**
+  - Improved download error handling and subscription safety to prevent double-cancel errors.
+- **Type Safety**
+  - Made `videoSource` non-nullable and removed related dead code.
+  - Narrowed `isSubtitleVisibleNotifier` type to non-nullable for stronger type guarantees.
+
+### **Performance**
+
+- Replaced `vibrate()` with `selectionFeedback()` during drag updates for platform-appropriate haptic feedback.
+- Cached `_resolveSlotOrder` result to avoid redundant sorting on every build cycle.
+
+### **Improvements**
+
+- Extracted download logic into a dedicated `DownloadManager` for better separation of concerns.
+- Extracted player notification logic and download preparation into focused helpers.
+- Marked immutable fields as `final` in `AliPlayerWidgetData` to communicate intent and enable compiler optimizations.
+- Merged duplicate vertical dimension utility methods and improved naming consistency.
+
+### **Example Updates**
+
+The example app has undergone a targeted quality pass to close the gap between demo code and production code. The fixes address three categories of issues that erode developer trust when using the example as a reference.
+
+- **Startup & Lifecycle Correctness**: Global settings initialization is now properly awaited before `runApp`, eliminating a startup race condition. The `WidgetsBindingObserver` is now removed symmetrically and guarded, preventing dangling listener callbacks. The keyboard-height calculation in `LivePage` now correctly converts physical pixels to logical pixels via `devicePixelRatio`.
+- **Null Safety & State Isolation**: `videoInfoList` is initialized to `[]` at declaration, removing a guaranteed `LateInitializationError` on load failure. A file-scope mutable integer (`_selectIndex`) has been moved into its owning `State` class, eliminating hidden cross-instance state pollution.
+- **Async & Resource Safety**: `precacheImage` calls are now guarded with `context.mounted` to prevent callbacks on unmounted widgets. `FutureBuilder` futures in `SettingsPage` are cached across rebuilds to prevent redundant network requests on every `setState`. `SPManager` initialization adopts a `Completer`-based pattern, replacing a callback queue with a cleaner async contract. Animation concurrency in `LikeOverlayWidget` is capped to prevent unbounded list growth.
+
+> **Productization Assessment**: The example now demonstrates correct Flutter idioms across the full widget lifecycle — startup, async init, observer registration, context safety, and disposal. It can be used as a reliable reference implementation, not just a functional demo. The previous version contained several patterns that, if copied verbatim by developers, would have introduced production bugs (startup race, stale context, physical-pixel mismatch). These are now resolved.
+
+---
+
+## **[7.14.0] - Strategy System, i18n, UI Theme & Slot System Enhancement**
+
+### **New Features**
+
+- **Strategy System**
+  - Pluggable strategy architecture with custom strategy registration for playback behavior control.
+  - Built-in first frame optimization and stutter detection strategies, ready to use out of the box.
+  - Built-in resume play strategy that automatically resumes playback when the app returns to foreground.
+- **Internationalization (i18n) System**
+  - Built-in Chinese and English support, auto-syncs with system language.
+  - Runtime language switching without restart.
+  - Custom language pack registration (e.g., Japanese, Korean) by implementing `PlayerTranslations` interface.
+  - Translation override mechanism to modify built-in text.
+  - Integrates with Flutter's `LocalizationsDelegate` for seamless MaterialApp integration.
+- **UI Theme System**
+  - Production-ready UI design with unified design tokens (colors, fonts, sizes, spacing via `PlayerStyles`).
+  - Custom skin support via `assetsPath` parameter — replace all player icons with your own assets.
+- **UI Enhancements**
+  - Redesigned player UI with production-ready visuals, no additional UI restoration needed.
+- **Player Configuration**
+  - Android view type configuration support (`AndroidViewType`).
+  - Optimized playback experience for different scenarios.
+
+### **Improvements**
+
+- **Fullscreen Optimization**
+  - Refactored fullscreen to single-instance architecture for better stability and resource management.
+  - Simplified fullscreen toggle logic with landscape top bar layout optimization.
+- **Slot System**
+  - Slots now support custom ordering and insertion at any level, making UI orchestration more flexible.
+  - Slot builder signature simplified to single parameter `(BuildContext context)`.
+  - `overlays` parameter deprecated, unified migration to slot system.
+
+### **Documentation Updates**
+
+- Added custom configuration guide.
+- Clarified `flutter_aliplayer` dependency version requirements.
+- Added strategy system documentation.
+
+### **Example Updates**
+
+- Added internationalization (i18n) demo page.
+- Added short-video right-side action buttons overlay example.
+- Added watermark slot example.
+- Added resume play strategy example.
+
+---
+
+## **[7.12.2] - Slot Builder Controller Parameter & Fullscreen Improvements**
+
+### **New Features**
+
+- **Slot Builder Controller Parameter for Fullscreen Support**
+  - Introduced `SlotWidgetBuilderWithController` type that passes the current `AliPlayerWidgetController` instance to slot builders.
+  - Enables custom slot UI to correctly control the player in fullscreen mode.
+  - The new signature: `Widget Function(BuildContext context, AliPlayerWidgetController controller)`.
+  - **Backward Compatible**: Old single-parameter `SlotWidgetBuilder` is still supported but deprecated. Automatic signature detection ensures seamless migration.
+
+- **Custom Configuration Callbacks**
+  - Added `OnGlobalInitCallback` via `AliPlayerWidgetGlobalSetting.setOnGlobalInit`, called after global initialization for custom global settings (e.g., `setOption`).
+  - Added `OnPlayerConfigCallback` via `AliPlayerWidgetData.onPlayerConfig`, called before `prepare()` for per-instance player configuration (e.g., `setPlayConfig`, `setOption`). Supports async operations (`FutureOr<void>`).
+  - Enables customers to configure player APIs not directly exposed by AliPlayerWidget within the best-practice configuration flow.
+
+### **Improvements**
+
+- **Simplified Fullscreen Toggle Logic**
+  - Refactored fullscreen toggle logic for better maintainability.
+  - Unified system UI handling across portrait and landscape modes.
+
+### **Bug Fixes**
+
+- **Documentation Language Switching**
+  - Fixed case-insensitive language switching in the documentation site.
+
+### **Documentation Updates**
+
+- **README Simplification**
+  - Removed inline code examples from README.md and README-EN.md, directing users to the Quick Start Guide for complete implementation details.
+  - Improved example READMEs with structured scenario descriptions (core features, implementation points, execution effects).
+
+- **Quick Start Guide Enhancement**
+  - Updated to use recommended `VidAuth` video source instead of URL-based source.
+  - Added `const` constructors for better performance.
+
+- **Core Components Restructure**
+  - Reorganized with numbered sections for improved readability and navigation.
+
+- **Video Source Documentation**
+  - Reordered to highlight `VidAuth` as the recommended playback method.
+  - Clarified the advantages and use cases of each video source type.
+
+- **Global Configuration Clarification**
+  - Emphasized default optimal settings.
+  - Clarified usage notes for custom configuration scenarios.
+
+---
+
+## **[7.12.1] - Fine-Grained Slot Element Control**
+
+### **New Features**
+
+- **Fine-Grained Slot Element Visibility Control (`hiddenSlotElements`)**
+  - `SlotType.centerDisplay`: Control visibility of volume, brightness, and speed indicators
+  - `SlotType.playState`: Control visibility of error icon and error message
+  - `SlotType.seekThumbnail`: Control visibility of thumbnail image and time text
+  - `SlotType.playControl`: Disable specific gesture interactions
+
+### **Notes**
+
+- This feature **only works with default slot UI**
+- If a `slotBuilders` is configured for a slot, `hiddenSlotElements` for that slot will **not take effect**
+- `PlayControlElements` is used to **disable gesture interactions**, not hide UI elements.
+
+---
+
+## **[7.12.0] - Custom Back Press Callback & Documentation Improvements**
+
+### **Update**
+  - **Kernel SDK Updated to v7.12.0**
+
+### **New Features**
+
+- **Custom Back Press Callback (`onBackPressed`)**
+  - Added `onBackPressed` callback parameter to `AliPlayerWidget`, allowing developers to fully customize back button behavior.
+  - The callback is invoked when the user presses the back button.
+  - Return `true` to indicate the event was handled and prevent default behavior.
+  - Return `false` or `null` to execute the default `Navigator.pop()` behavior.
+  - This enables scenarios such as:
+    - Showing confirmation dialogs before exiting
+    - Navigating to specific routes instead of simple pop
+    - Implementing custom back stack management in short-video scenarios
+
+### **Documentation Updates**
+
+- **Core Components Documentation Enhancement**
+
+---
+
+## **[7.11.0] - Version Upgrade and Page Consolidation Notes**
+
+### **Update**
+  - **Kernel SDK Updated to v7.11.0**
+  - **remove VidAuthPlay page and consolidate into long video page**
+
+---
+
+## **[7.10.0] - Local JWT Play Authentication & Kernel SDK Update**
+
+### **New Features**
+ - **Local JWT Play Authentication (JWTPlayAuth)**
+   - Introduced support for locally signed playback credentials using JWT (JSON Web Token). The client’s AppServer can now generate a JWT-based play token using the PlayKey, which is then validated by the on-demand streaming service.
+   - This enhancement improves security and flexibility by enabling offline or edge-side credential generation without requiring real-time authentication calls to external services.
+### **Updates**
+   - **Kernel SDK Updated to v7.10.0**
+   - Upgraded the underlying kernel SDK to version 7.10.0, incorporating performance improvements, bug fixes, and compatibility enhancements for the new JWTPlayAuth feature.
+
+## **[7.9.1] – Slot Synchronization on Portrait-to-Fullscreen Transition & Brightness Control Deprecation**
+
+### **Improvements**
+ - **Synchronized UI Slots During Portrait-to-Fullscreen Transition**
+   - Ensured consistent slot state and rendering when switching from vertical (portrait) mode to fullscreen (landscape) mode.
+   - Custom or disabled slots (e.g., top bar, bottom controls, overlay) now correctly persist their configuration across orientation changes.
+   - Eliminates UI flickering or unexpected reversion to default components during rotation, providing a smoother and more predictable customization experience—especially critical for short-video and mobile-first scenarios.
+ - **Brightness Control View Hidden by Default**
+   - The built-in brightness adjustment UI (typically shown in center feedback during swipe gestures) has been hidden starting from this version.
+   - Rationale: Official system-level brightness control APIs are not uniformly supported across Android/iOS versions and OEM skins. Exposing this feature as a built-in component risks compatibility issues, inconsistent behavior, or app rejection on certain platforms.
+   - Customization Path: Developers requiring brightness control may implement it via the center feedback slot using platform-specific plugins or third-party packages, giving full control over compatibility and UX.
+
+---
+
+## **[7.9.0] – Slot System for Full UI Customization & Documentation Restructure**
+
+### **New Features**
+
+- **Slot-Based UI Customization System**
+   Introduced a powerful slot system to enable fine-grained, component-level customization of the player UI:
+  - Provides dedicated slots for key UI regions such as:
+    - Top bar, bottom bar, play controls
+    - Cover image, subtitles, setting menu
+    - Center feedback (volume/brightness/seek), seek thumbnail, play state display
+    - Overlay layer for custom business widgets
+  - Each slot can be:
+    - Left as default (built-in UI)
+    - Replaced with a custom builder
+    - Explicitly disabled (hidden) when not needed
+  - The slot system makes it easy to:
+    - Create different player themes (minimal, classic, short-video style, etc.)
+    - Inject business-specific UI (e.g., like/share/comment, custom badges, watermarks)
+    - Combine multiple UI behaviors without modifying core player logic.
+- **Overlay Slot Unification**
+  - Consolidated overlay-related customization into a dedicated **overlay slot**, so custom floating UI components are now part of the unified slot mechanism.
+  - Provides a clearer and more extensible way to manage all overlay elements on top of the video surface.
+
+### **Improvements**
+
+- **Backward-Compatible Overlay Usage**
+  - Existing `overlays` parameter usage remains supported to ensure compatibility with older integrations.
+  - Internally, overlays and slots are now unified under the new slot-based architecture, making future UI extensions easier to maintain.
+- **Documentation Restructure (docs/ Directory)**
+  - Reorganized documentation into modular topics under `docs/`, including (but not limited to):
+    - Integration Guide
+    - Quick Start
+    - Core Components
+    - API Reference
+    - Advanced Features (e.g., video source types, overlays/slot system)
+  - README (EN & CN) is now lighter and mainly acts as an entry point, linking to these dedicated documents instead of embedding all details directly.
+
+---
+
+## **[7.8.0] - Enhanced Subtitles, Scene Control, Download and Screenshot**
+
+### **New Features**
+
+- **External Subtitle Support**  
+  Added comprehensive support for external subtitles, including:
+  - Toggle button to show/hide external subtitles
+  - Customizable display logic and positioning
+  - Dedicated `SubtitleBuilder` and configuration moved to `AliPlayerWidgetData`
+  - Optimized rendering performance and code structure
+- **Advanced Scene Types for UI Control**  
+  Introduced new scene types to enable fine-grained UI behavior:
+  - `SceneType.minimal`: Surface-only playback with **no UI elements**
+  - `SceneType.restricted`: Disables **all controls and gestures** for secure or limited playback scenarios
+- **Enhanced Media Operations: Download, Screenshot & Live Refresh**
+  Implemented key user-facing media control capabilities:
+  - **Video Download**: Support for downloading VOD content, including authenticated **VID-based sources** (VidSts/VidAuth)
+  - **In-Player Screenshot**: Capture and save the current video frame during playback (supports both VOD and live)
+  - **Live Stream Refresh**: Dedicated refresh button to reload live streams when encountering network or playback issues
+- **Playback Tracking with Trace ID**  
+  Added `traceId` support in `AliPlayerWidget` to enable end-to-end video playback tracking and diagnostics.
+- **Multi-Definition VOD Playback Logic**  
+  Expanded playback logic to better handle multi-definition Video-on-Demand (VOD) content.
+
+### **Improvements**
+
+- **Player View Default Update**  
+  Changed default player view type on Android to `AliPlayerViewTypeForAndroid.textureview` for improved compatibility and performance.
+
+- **Documentation Enhancements**  
+  - Updated README with integration diagrams (`Integration.png`, `Integration_en.png`)
+  - Revised usage examples to use the modern `videoSource` API
+  - Deprecated `videoUrl` and `AliPlayerWidgetData.fromUrl` in favor of `videoSource`
+
+### **Breaking Changes**
+
+- **Recommended Global Configuration Initialization**
+  To ensure proper storage path setup and platform-specific behavior (e.g., Android external storage vs. iOS sandbox), it is **recommended** to initialize `AliPlayerWidgetGlobalSetting` early in your application lifecycle.
+  
+  **Migration Suggestion**:
+  Please refer to `example/main.dart` for the suggested `initializeGlobalSettings()` implementation, which intelligently configures cache and file directories based on the platform:
+  
+  ```dart
+  /// Initialize aliplayer_widget global settings, including storage paths.
+  /// Call this once at app startup.
+  Future<void> initializeGlobalSettings() async {
+    await AliPlayerWidgetGlobalSetting.setupConfig();
+    // ... (platform-specific path logic as shown in example)
+    AliPlayerWidgetGlobalSetting.setStoragePaths(cachePath: ..., filesPath: ...);
+  }
+  ```
+  
+  Failure to initialize global settings may result in missing directories, cache errors, or playback failures. This change ensures proper file management and platform compliance.
+  
+- **Deprecated Controller Methods**  
+  The following methods in `AliPlayerWidgetController` are now **deprecated** and will be removed in a future release:
+  
+  - `getWidgetVersion()` → Use `AliPlayerWidgetGlobalSetting.kWidgetVersion`
+  - `clearCaches()` → Use `AliPlayerWidgetGlobalSetting.clearCaches()`
+  
+  Widget version has been updated to **7.8.0** as part of this change (included in 7.8.0 release).
+
+---
+
+**Note**: This release significantly enhances subtitle capabilities, introduces powerful scene-based UI control, and provides greater flexibility in storage and file management. The breaking changes around cache and version APIs require minor migration. Upgrading is recommended for apps needing external subtitles, secure playback modes, or customizable storage paths.
+
+---
+
+## **[7.3.0] - Screen Keep-On & Streaming Protocol Fixes**
+
+### **New Features**
+
+- **Screen Keep-On Support**  
+  Added screen keep-on functionality to prevent the device screen from dimming or locking during video playback.  
+  This feature is especially useful for long-form content, live streaming, and educational video applications.
+
+### **Improvements**
+
+- The method for switching between portrait and landscape modes has been modified. Now, the navigation bar will not be included when switching orientations.
+- The functionality to select a decoder has been integrated, allowing you to choose between software decoding or hardware decoding for playback based on your needs.
+
+### **Bug Fixes**
+
+- **Fixed URL-based Video Source Playback for RTMP/ARTC Streams**  
+  Resolved an issue where URL-formatted video sources were unable to play RTMP/ARTC format streams correctly.  
+  This update ensures better compatibility with various streaming protocols across different playback scenarios.
+
+---
+
+**Note**: This release enhances playback reliability and improves user experience for streaming use cases. Upgrading is recommended for apps requiring support for RTMP/ARTC and screen keep-on behavior.
+
+## **[7.2.0] - Enhanced Video Source Support**
+
+### **New Features**
+
+- **Multiple Video Source Support**: Added compatibility for various video source types, enabling playback through:
+  
+  - Direct URL playback for publicly accessible videos.
+  - VID+STS token-based playback for secure access and enhanced control.
+  - VID+Auth authentication-based playback for simplified authorization scenarios.
+  
+  This enhancement ensures that developers can meet diverse playback requirements across different use cases, such as VOD (Video on Demand), live streaming, and secure media distribution.
+
+### **Improvements**
+
+- Streamlined video source configuration to make it easier for developers to switch between different playback modes dynamically.
+- Updated the example project to demonstrate the integration of all supported video source types, providing a comprehensive reference for implementation.
+
+### **Documentation Updates**
+
+- Expanded the README documentation to include detailed guidance on configuring and utilizing each video source type.
+- Added code examples for integrating URL, VID+STS, and VID+Auth playback modes, ensuring clarity for developers adopting these features.
+
+---
+
+**Note**: This release focuses on enhancing video source flexibility and improving developer experience. Upgrading is recommended for projects requiring multi-source playback support.
+
+## **[7.0.3] - Bug Fixes and Feature Enhancements**
+
+### **Bug Fixes**
+- Resolved issues related to `pub.dev` compliance, ensuring smoother package publication and integration.
+  - Addressed metadata and dependency-related warnings.
+  - Improved package validation to meet `pub.dev` quality standards.
+
+### **New Features**
+- Introduced **business identifier** support, allowing developers to tag player instances with custom identifiers for better tracking and analytics.
+  - This feature enhances the ability to monitor and manage player usage in complex multi-scenario applications.
+
+- Added **video source switching functionality** to the example project, enabling seamless transitions between different video sources during playback.
+  - This update provides a practical demonstration of dynamic source management and enhances the flexibility of the example project for developers.
+
+---
+
+## **[7.0.2] - UI Performance Optimization**
+
+### **Performance Improvements**
+
+* Enhanced PageView scrolling performance, significantly reducing lag during transitions.
+* Optimized UI rendering for smoother interactions and improved responsiveness.
+
+### **Bug Fixes**
+
+* Fixed video loading delays during PageView scrolling on certain devices.
+* Resolved UI layout issues during full-screen mode transitions.
+
+**Note**: This release focuses on UI performance optimization. Upgrading is recommended for a smoother experience.
+
+---
+
+## **[7.0.1] - Documentation Improvements**
+
+### **Documentation Updates**
+
+- README Enhancements
+  - Improved clarity and structure of the README documentation for better readability.
+  - Included additional guidance on integrating `AliPlayerWidget` in multi-scenario applications (e.g., VOD, live streaming, short videos).
+
+### **No Functional Changes**
+
+This release focuses solely on improving documentation and does not include any functional changes or bug fixes. All features and APIs remain consistent with version `7.0.0`.
+
+---
+
+## **[7.0.0] - Initial Release**
+
+### **Features**
+- **Core Player Functionality**
+  - Implemented basic video playback capabilities including play, pause, stop and seek operations.
+  - Added support for multiple playback rates with `setRate()` method.
+  - Integrated brightness and volume control with delta adjustments.
+
+- **Controller Architecture**
+  - Developed `AliPlayerWidgetController` as the main interface for player interactions.CHANGELOG.md
+  - Implemented various notifiers including:
+    - `mirrorModeNotifier`
+    - `isMuteNotifier`
+    - `scaleModeNotifier`
+    - `isLoopNotifier`
+    - `speedNotifier`
+    - `trackInfoListNotifier`
+    - `thumbnailNotifier`
+
+- **Event Handling System**
+  - Established comprehensive callback mechanisms for player events:
+    - Video size change detection
+    - Loading status notifications (begin, progress, end)
+    - Seek completion events
+    - Playback position tracking
+
+### UI Components
+- **Setting Menu Panel**
+  - Created customizable settings menu with visibility control.
+  - Implemented setting items builder for dynamic configuration options.
+
+- **Overlay System**
+  - Introduced flexible overlay system allowing custom widgets to be positioned over the player.
+  - Supports multiple overlay elements with absolute positioning.
+
+### **Technical Implementation**
+- **Platform Integration**
+  - Implemented platform brightness detection for automatic theme mode adjustment.
+  - Developed robust initialization and destruction processes for player instances.
+
+- **Data Management**
+  - Created `AliPlayerWidgetData` class for managing video source information.
+  - Supports various media sources including VOD and live streams.
+
+### **Documentation**
+- Provided complete README documentation including:
+  - Quick start guide
+  - Core component descriptions
+  - Customization instructions
+  - Code examples for common use cases

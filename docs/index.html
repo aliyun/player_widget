@@ -117,33 +117,28 @@
             color: #42b983;
         }
 
-        /* 侧边栏按钮 - 垂直排列 */
-        .sidebar-btns {
-            padding: 10px 15px;
-            border-bottom: 1px solid #eee;
-            margin-bottom: 10px;
-        }
-        body.dark-mode .sidebar-btns {
-            border-bottom-color: #333;
-        }
-        .sidebar-btn {
-            display: block;
+        /* 侧边栏开关按钮（暗黑模式 / 语言切换） */
+        .sidebar-toggle-btn {
             cursor: pointer;
-            padding: 8px 12px;
-            margin-bottom: 6px;
-            font-size: 13px;
+            display: block;
             text-align: center;
+            padding: 10px 0;
+            margin: 0 15px 10px 15px;
+            font-weight: bold;
+            font-size: 14px;
             border-radius: 4px;
-            background: rgba(66, 185, 131, 0.1);
+            background-color: rgba(66, 185, 131, 0.1);
             color: #42b983;
             border: 1px solid #42b983;
-            transition: all 0.2s;
+            transition: all 0.3s;
         }
-        .sidebar-btn:last-child {
-            margin-bottom: 0;
+        body.dark-mode .sidebar-toggle-btn {
+            background-color: rgba(66, 185, 131, 0.15);
+            color: #5ecaa3;
+            border: 1px solid #3aa876;
         }
-        .sidebar-btn:hover {
-            background: #42b983;
+        .sidebar-toggle-btn:hover {
+            background-color: var(--theme-color);
             color: #fff;
         }
     </style>
@@ -152,7 +147,7 @@
 <body>
     <div id="app">加载中...</div>
     <script>
-        // 初始化暗黑模式
+        // 初始化暗黑模式（防止页面闪烁）
         if (localStorage.getItem('theme-mode') === 'dark') {
             document.body.classList.add('dark-mode');
         }
@@ -182,84 +177,133 @@
                 depth: 6
             },
             plugins: [
+                // 暗黑模式开关插件
                 function(hook, vm) {
                     hook.doneEach(function() {
-                        updateSidebarButtons();
-                        updateLangButton();
+                        const sidebar = document.querySelector('.sidebar-nav');
+                        if (!sidebar || document.querySelector('.sidebar-toggle-btn-theme')) return;
+
+                        const btn = document.createElement('div');
+                        btn.className = 'sidebar-toggle-btn sidebar-toggle-btn-theme';
+
+                        const savedTheme = localStorage.getItem('theme-mode');
+                        if (savedTheme === 'dark') {
+                            document.body.classList.add('dark-mode');
+                            btn.textContent = '🌙 切换亮色';
+                        } else {
+                            btn.textContent = '☀️ 切换暗色';
+                        }
+
+                        btn.onclick = function() {
+                            document.body.classList.toggle('dark-mode');
+                            const isDark = document.body.classList.contains('dark-mode');
+                            localStorage.setItem('theme-mode', isDark ? 'dark' : 'light');
+                            btn.textContent = isDark ? '🌙 切换亮色' : '☀️ 切换暗色';
+                        };
+
+                        sidebar.insertBefore(btn, sidebar.firstChild);
+                    });
+                },
+                // 中英文切换插件（含侧边栏动态加载）
+                function(hook, vm) {
+                    function getCurrentPath() {
+                        return window.location.hash.replace(/^#\//, '') || '';
+                    }
+                    // 中文首页路径：'./'、''、'/'、'README'、'README.md' 等
+                    function isChineseHome(path) {
+                        return path === '' || path === './' || path === '/' ||
+                            /^\.?\/?README(\.md)?$/i.test(path);
+                    }
+                    // 英文首页路径：README-EN(.md) 及异常生成的 ./-en 等
+                    function isEnglishHome(path) {
+                        return /^\.?\/?README-EN(\.md)?$/i.test(path) ||
+                            /^\.?\/?-en$/i.test(path);
+                    }
+                    function isEnglishPath(path) {
+                        return isEnglishHome(path) || /-en(\.md)?$/i.test(path);
+                    }
+                    function switchLang() {
+                        const currentPath = getCurrentPath();
+                        let newPath;
+                        if (isEnglishHome(currentPath)) {
+                            // 英文首页 → 中文首页
+                            newPath = './';
+                        } else if (isChineseHome(currentPath)) {
+                            // 中文首页 → 英文首页（README 使用大写 -EN.md 后缀）
+                            newPath = 'README-EN.md';
+                        } else if (isEnglishPath(currentPath)) {
+                            // 其他英文页 → 中文：兼容大小写后缀（-EN.md / -en.md / -en）
+                            newPath = currentPath.replace(/-en(\.md)?$/i, '$1');
+                        } else if (currentPath.endsWith('.md')) {
+                            // 其他中文页 → 英文：使用小写 -en.md 后缀
+                            newPath = currentPath.slice(0, -3) + '-en.md';
+                        } else {
+                            newPath = currentPath + '-en';
+                        }
+                        window.location.hash = '#/' + newPath;
+                    }
+                    // 动态加载对应语言的侧边栏
+                    function loadSidebar(isEnglish) {
+                        const sidebarFile = isEnglish ? '_sidebar-EN.md' : '_sidebar.md';
+                        fetch(sidebarFile).then(function(res) {
+                            return res.text();
+                        }).then(function(md) {
+                            const sidebarNav = document.querySelector('.sidebar-nav');
+                            if (!sidebarNav) return;
+                            // 保留顶部按钮
+                            const themeBtn = document.querySelector('.sidebar-toggle-btn-theme');
+                            const langBtn = document.querySelector('.sidebar-toggle-btn-lang');
+                            // 用 docsify 的 compiler 解析 markdown
+                            const html = vm.compiler ? vm.compiler.sidebar(md) : marked(md);
+                            sidebarNav.innerHTML = html;
+                            // 重新插入按钮（暗黑模式在最上面，语言切换在其下面）
+                            if (langBtn) sidebarNav.insertBefore(langBtn, sidebarNav.firstChild);
+                            if (themeBtn) sidebarNav.insertBefore(themeBtn, sidebarNav.firstChild);
+                            // 高亮当前页面
+                            highlightActive();
+                        });
+                    }
+                    // 高亮当前活动链接
+                    function highlightActive() {
+                        const currentPath = getCurrentPath();
+                        const links = document.querySelectorAll('.sidebar-nav a');
+                        links.forEach(function(link) {
+                            const href = link.getAttribute('href') || '';
+                            const linkPath = href.replace(/^#\//, '').replace(/^\.\//,'');
+                            link.parentElement.classList.remove('active');
+                            if (linkPath && currentPath.includes(linkPath.replace('./', ''))) {
+                                link.parentElement.classList.add('active');
+                            }
+                        });
+                    }
+                    hook.doneEach(function() {
+                        const sidebar = document.querySelector('.sidebar-nav');
+                        if (!sidebar) return;
+
+                        // 创建语言切换按钮
+                        let langBtn = document.querySelector('.sidebar-toggle-btn-lang');
+                        if (!langBtn) {
+                            langBtn = document.createElement('div');
+                            langBtn.className = 'sidebar-toggle-btn sidebar-toggle-btn-lang';
+                            langBtn.onclick = switchLang;
+                            // 插入到暗黑模式按钮之后
+                            const themeBtn = document.querySelector('.sidebar-toggle-btn-theme');
+                            if (themeBtn && themeBtn.nextSibling) {
+                                sidebar.insertBefore(langBtn, themeBtn.nextSibling);
+                            } else {
+                                sidebar.insertBefore(langBtn, sidebar.firstChild);
+                            }
+                        }
+                        // 更新按钮文本
+                        const path = getCurrentPath();
+                        const isEnglish = isEnglishPath(path);
+                        langBtn.textContent = isEnglish ? '🌐 中文' : '🌐 English';
+                        // 加载对应语言的侧边栏
+                        loadSidebar(isEnglish);
                     });
                 }
             ]
         };
-
-        function updateSidebarButtons() {
-            const sidebar = document.querySelector('.sidebar-nav');
-            if (!sidebar || document.querySelector('.sidebar-btns')) return;
-
-            const container = document.createElement('div');
-            container.className = 'sidebar-btns';
-
-            // 暗黑模式按钮
-            const darkBtn = document.createElement('div');
-            darkBtn.className = 'sidebar-btn';
-            darkBtn.id = 'dark-toggle';
-            darkBtn.textContent = document.body.classList.contains('dark-mode') ? '🌙 暗色' : '☀️ 亮色';
-            darkBtn.onclick = function() {
-                document.body.classList.toggle('dark-mode');
-                const isDark = document.body.classList.contains('dark-mode');
-                localStorage.setItem('theme-mode', isDark ? 'dark' : 'light');
-                darkBtn.textContent = isDark ? '🌙 暗色' : '☀️ 亮色';
-            };
-
-            // 语言切换按钮
-            const langBtn = document.createElement('div');
-            langBtn.className = 'sidebar-btn';
-            langBtn.id = 'lang-toggle';
-            langBtn.textContent = 'English';
-            langBtn.onclick = switchLang;
-
-            container.appendChild(darkBtn);
-            container.appendChild(langBtn);
-            sidebar.insertBefore(container, sidebar.firstChild);
-        }
-
-        function updateLangButton() {
-            const langBtn = document.getElementById('lang-toggle');
-            if (!langBtn) return;
-
-            const path = window.location.hash.replace('#/', '') || 'README.md';
-            const isEnglish = path.toUpperCase().includes('-EN');
-            langBtn.textContent = isEnglish ? '中文' : 'English';
-        }
-
-        function switchLang() {
-            const currentPath = window.location.hash.replace('#/', '') || 'README.md';
-            let newPath;
-
-            // 判断是否是英文版本（兼容大小写）
-            const isEnglish = currentPath.toUpperCase().includes('-EN');
-
-            if (isEnglish) {
-                // 英文转中文：移除 -EN 或 -en 后缀
-                newPath = currentPath.replace(/-en\.md$/i, '.md');
-            } else {
-                // 中文转英文
-                if (currentPath.toUpperCase() === 'README.MD') {
-                    // README.md 特殊处理，转为 README-EN.md
-                    newPath = 'README-EN.md';
-                } else if (currentPath.toUpperCase() === 'CHANGELOG.MD') {
-                    // CHANGELOG 英文版是根目录 CHANGELOG.md，不在 docsify 服务路径内
-                    // 文档内的语言链接负责跳转，此处不做导航
-                    return;
-                } else if (currentPath.endsWith('.md')) {
-                    // 其他文件添加 -en 后缀
-                    newPath = currentPath.slice(0, -3) + '-en.md';
-                } else {
-                    newPath = currentPath + '-en';
-                }
-            }
-
-            window.location.hash = '#/' + newPath;
-        }
     </script>
     <script src="//cdn.jsdelivr.net/npm/docsify@latest/lib/docsify.min.js"></script>
     <script src="//cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js"></script>
