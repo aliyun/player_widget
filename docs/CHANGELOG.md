@@ -1,6 +1,6 @@
 # **AliPlayerWidget 更新日志**
 
-> Language: 中文简体 | [English](../CHANGELOG.md)
+> Language: 中文简体 | [English](./CHANGELOG-en.md)
 
 ## **[7.15.0] - 隐私增强、Bug 修复与性能优化**
 
