@@ -43,6 +43,17 @@
 
 `aliplayer_widget` 内部已依赖 `flutter_aliplayer`。大多数场景下，您只需添加 `aliplayer_widget` 即可。如果您需要直接使用底层 API（如 MediaLoader 预加载），可额外显式声明 `flutter_aliplayer`。
 
+### **SDK 版本说明**
+
+`aliplayer_widget` 默认使用播放器独立 SDK 版本。
+
+| 场景 | 推荐版本 | 说明 |
+|------|---------|------|
+| 仅需播放能力 | 普通播放器 SDK（推荐） | 使用 [`flutter_aliplayer`](https://pub.dev/packages/flutter_aliplayer) 标准版本号即可 |
+| 推流 + 播放 | interactivelive 特殊版 | 仅建议在同时集成 [`flutter_livepush_plugin`](https://pub.dev/packages/flutter_livepush_plugin) 等推流能力，且需要与其底层 AliVCSDK 保持一致时使用 |
+
+> **⚠️ 重要提示**：非必要情况下，请不要使用 `interactivelive` 特殊版本。如果项目仅使用播放能力，请固定使用普通播放器 SDK 完整版本号，避免不必要地引入一体化 SDK，造成依赖复杂度增加或潜在 SDK 冲突。
+
 您可以通过以下任一方式添加依赖：
 
 ### **方式一：使用命令行添加（推荐）**
