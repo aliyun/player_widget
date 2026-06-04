@@ -39,7 +39,19 @@ dependencies:
   # `aliplayer_widget` already depends on `flutter_aliplayer` internally.
   # Only declare `flutter_aliplayer` explicitly when you need direct access to low-level APIs.
   # Advanced API usage: MediaLoader preloading, etc.
-  flutter_aliplayer: ^7.14.0
+  # ⚠️ SDK 版本兼容说明：
+  # 当前 flutter_livepush_plugin 基于 AliVCSDK_InteractiveLive（一体化 SDK）构建。
+  # flutter_aliplayer 播放插件如需与 flutter_livepush_plugin 在同一项目中使用，
+  # 必须使用对应的一体化 SDK 特殊版本，例如：7.11.0-interactivelive。
+  #
+  # 请务必通过完整版本号写死版本，避免使用范围版本或不明确的版本配置。
+  # 否则依赖解析时可能会路由到最新版本或播放器独立 SDK 版本，
+  # 导致 flutter_aliplayer 与 flutter_livepush_plugin 引入的底层 AliVCSDK 不一致。
+  #
+  # 一旦同一工程中同时存在一体化 SDK 与播放器独立 SDK，
+  # 可能出现重复符号、类/方法冲突、依赖冲突等编译异常，
+  # 也可能导致运行时错误或播放、推流功能不可用。
+  flutter_aliplayer: "7.11.0-interactivelive"
 
   # The following adds the Cupertino Icons font to your application.
   # Use with the CupertinoIcons class for iOS style icons.

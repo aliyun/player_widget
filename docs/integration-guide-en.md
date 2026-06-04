@@ -40,6 +40,17 @@ For more initialization configurations, refer to the `aliplayer_widget_example` 
 
 `aliplayer_widget` already depends on `flutter_aliplayer` internally. For most users, you only need to add `aliplayer_widget`. If you need direct access to low-level APIs (e.g., MediaLoader for preloading), you can additionally declare `flutter_aliplayer` explicitly.
 
+### **SDK Version Notes**
+
+`aliplayer_widget` uses the standalone player SDK version by default.
+
+| Scenario | Recommended Version | Description |
+|----------|-------------------|-------------|
+| Playback only | Standard Player SDK (Recommended) | Use the standard [`flutter_aliplayer`](https://pub.dev/packages/flutter_aliplayer) version |
+| Push streaming + Playback | interactivelive special version | Only recommended when integrating [`flutter_livepush_plugin`](https://pub.dev/packages/flutter_livepush_plugin) or similar push streaming capabilities, and when alignment with the underlying AliVCSDK is required |
+
+> **⚠️ Important**: Do not use the `interactivelive` special version unless necessary. If your project only requires playback capabilities, use the standard player SDK with a fixed full version number to avoid unnecessary integration of the all-in-one SDK, which may increase dependency complexity or cause potential SDK conflicts.
+
 You can add dependencies using either of the following methods:
 
 ### **Method 1: Command Line Addition (Recommended)**

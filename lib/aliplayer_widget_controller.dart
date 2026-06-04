@@ -845,7 +845,8 @@ class AliPlayerWidgetController {
     );
 
     _playerLog("[api][scenario] $scenarioFlag");
-    _aliPlayer.setOption(FlutterAvpdef.SCENARIO_FLAG, scenarioFlag);
+    // TODO: 当前接口暂不支持特殊版本。
+    // _aliPlayer.setOption(FlutterAvpdef.SCENARIO_FLAG, scenarioFlag);
   }
 
   /// 准备播放
@@ -949,7 +950,8 @@ class AliPlayerWidgetController {
     logi("setBrightness: ${brightnessNotifier.value} -> $value");
 
     // 亮度设置
-    FlutterAliPlayerGlobalSettings.setSystemBrightness(value);
+    // TODO: 当前接口暂不支持特殊版本。
+    // FlutterAliPlayerGlobalSettings.setSystemBrightness(value);
 
     brightnessNotifier.value = value;
   }
