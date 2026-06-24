@@ -44,7 +44,15 @@ With a minimalist API design, AliPlayerWidget achieves low-code integration, all
 - **High Performance and Stability**:
   - Built on the AliCloud Player SDK, providing low-latency and highly stable video playback.
   - Optimized architecture design featuring lightweight components, asynchronous loading, and an event-driven model to ensure efficient operation and smooth user experience.
-- **Cross-Platform Support**: Fully leverages Flutter's cross-platform capabilities, supporting both Android and iOS platforms, allowing single-codebase development for dual-platform execution.
+- **Cross-Platform Support:**
+  - Fully leverages Flutter's cross-platform capabilities, supporting both Android and iOS platforms, allowing single-codebase development for dual-platform execution.
+  - Unified cross-platform architecture where all platforms share the same design philosophy and interface semantics, reducing multi-platform integration and maintenance costs.
+
+| Platform | Description | Source | Documentation |
+|----------|-------------|--------|---------------|
+| **Android** | Native Android player UI components and scenario-based solutions | [PlayerKit-Android](https://github.com/aliyun/PlayerKit-Android) | [Online Docs](https://aliyun.github.io/PlayerKit-Android/) |
+| **iOS** | Native iOS player UI components and scenario-based solutions | [PlayerKit-iOS](https://github.com/aliyun/PlayerKit-iOS) | [Online Docs](https://aliyun.github.io/PlayerKit-iOS/) |
+| **Flutter** | Cross-platform Flutter player widget | [player_widget](https://github.com/aliyun/player_widget) | [Online Docs](https://aliyun.github.io/player_widget/) |
 
 ---
 

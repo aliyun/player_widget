@@ -45,7 +45,15 @@ Language: 中文简体 | [English](README-EN.md)
   - 基于阿里云播放器 SDK，提供低延迟、高稳定性的视频播放体验。
   - 优化的架构设计，通过轻量化组件、异步加载和事件驱动模型，确保高效运行与流畅用户体验。
 
-- **跨平台支持**：充分利用 Flutter 的跨平台特性，支持 Android 和 iOS 平台，一次开发即可实现双端运行。
+- **跨平台支持：**
+  - 充分利用 Flutter 的跨平台特性，支持 Android 和 iOS 平台，一次开发即可实现双端运行。
+  - 跨平台统一架构，各端共享相同的设计理念与接口语义，降低多端接入与维护成本。
+
+| 平台 | 说明 | 源码 | 文档 |
+|------|------|------|------|
+| **Android** | 原生 Android 播放器 UI 组件与场景化解决方案 | [PlayerKit-Android](https://github.com/aliyun/PlayerKit-Android) | [在线文档](https://aliyun.github.io/PlayerKit-Android/) |
+| **iOS** | 原生 iOS 播放器 UI 组件与场景化解决方案 | [PlayerKit-iOS](https://github.com/aliyun/PlayerKit-iOS) | [在线文档](https://aliyun.github.io/PlayerKit-iOS/) |
+| **Flutter** | 跨平台 Flutter 播放器 Widget 封装 | [player_widget](https://github.com/aliyun/player_widget) | [在线文档](https://aliyun.github.io/player_widget/) |
 
 ---
 
