@@ -137,7 +137,7 @@ To help developers quickly experience the functionalities of **AliPlayerWidget**
 
 Scan the QR code below with your mobile phone to quickly download and install the demo package:
 
-![Demo QR Code](https://alivc-demo-cms.alicdn.com/versionProduct/installPackage/aliplayer_widget/demo-qr-code.png)
+![Demo QR Code](https://alivc-demo-cms.alicdn.com/versionProduct/installPackage/aliplayer_widget/demo-qr-code_en.png)
 
 > **Note**: The QR code links to the latest version of the demo package. Ensure that your device allows the installation of third-party applications.
 
