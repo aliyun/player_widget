@@ -10,6 +10,18 @@ Language: 中文简体 | [English](README-EN.md)
 
 **AliPlayerWidget** 是一款专为 Flutter 应用程序打造的高性能视频播放组件，基于阿里云播放器 SDK `flutter_aliplayer` 构建。它不仅支持点播（VOD）、直播、列表播放以及短剧场景等多场景适配，还提供了丰富的功能集和高度灵活的 UI 定制能力，能够满足教育、娱乐、电商以及短剧应用等多种领域的视频播放需求。
 
+<p align="center">
+  <img
+    src="https://alivc-demo-cms.alicdn.com/versionProduct/installPackage/AliPlayerKit/playerkit-ui-preview.png"
+    alt="AliPlayerKit UI 组件预览"
+    width="100%"
+  />
+</p>
+
+<p align="center">
+  <sub>开箱即用的播放器 UI，支持多种播放形态与交互配置</sub>
+</p>
+
 通过极简的 API 设计，AliPlayerWidget 实现了低代码集成，开发者只需几行代码即可快速实现复杂的视频播放功能，显著降低开发成本。无论是基础的播放控制，还是复杂的交互场景（如手势调节、自定义 UI 叠加），AliPlayerWidget 都能轻松应对，帮助开发者构建流畅且高效的用户体验。
 
 ---
