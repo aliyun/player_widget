@@ -14,6 +14,16 @@ class AliPlayerWidgetController {
   /// 日志标签
   static const _logTag = "AliPlayerWidgetController";
 
+  /// 可测试性注入点：允许测试时替换播放器创建逻辑
+  ///
+  /// Testability injection point: allows tests to replace player creation.
+  ///
+  /// 设置后，[_initializePlayer] 将使用此工厂而非
+  /// [FlutterAliPlayerFactory.createAliPlayer]。
+  /// 测试结束后应置为 `null` 以恢复默认行为。
+  @visibleForTesting
+  static FlutterAliplayer Function()? playerFactoryOverride;
+
   /// 播放器实例
   late FlutterAliplayer _aliPlayer;
 
@@ -367,7 +377,8 @@ class AliPlayerWidgetController {
     logi("Initializing player");
 
     /// 1、创建播放器
-    _aliPlayer = FlutterAliPlayerFactory.createAliPlayer();
+    _aliPlayer = (kDebugMode ? playerFactoryOverride?.call() : null) ??
+        FlutterAliPlayerFactory.createAliPlayer();
     _playerUniqueId = _aliPlayer.playerId;
     _playerLog("[api][lifecycle][create]");
 
@@ -667,6 +678,7 @@ class AliPlayerWidgetController {
     thumbnailNotifier.dispose();
     subtitleNotifier.dispose();
     subtitleTrackIndexNotifier.dispose();
+    isSubtitleVisibleNotifier.dispose();
     externalSubtitleAvailableNotifier.dispose();
     showExternalSubtitleNotifier.dispose();
 

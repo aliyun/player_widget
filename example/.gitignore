@@ -74,5 +74,11 @@ app.*.map.json
 # Exceptions to above rules.
 !/packages/flutter_tools/test/data/dart_dependencies_test/**/.packages
 
+# Test coverage output
+coverage/
+
+# Golden test failure artifacts
+**/test*/**/failures/
+
 # Local dev toolkits
 dev.sh

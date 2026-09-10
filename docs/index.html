@@ -142,6 +142,43 @@
             background-color: var(--theme-color);
             color: #fff;
         }
+
+        /* Diff 代码块红绿高亮 */
+        code[class*="lang-diff"] .token.deleted:not(.prefix) {
+            background-color: rgba(255, 0, 0, 0.1);
+            color: inherit;
+            display: block;
+        }
+        code[class*="lang-diff"] .token.inserted:not(.prefix) {
+            background-color: rgba(0, 255, 0, 0.075);
+            color: inherit;
+            display: block;
+        }
+        code[class*="lang-diff"] .token.deleted .prefix {
+            color: #d73a49;
+            user-select: none;
+        }
+        code[class*="lang-diff"] .token.inserted .prefix {
+            color: #22863a;
+            user-select: none;
+        }
+        code[class*="lang-diff"] .token.unchanged .prefix {
+            color: #999;
+            user-select: none;
+        }
+        /* Diff 暗黑模式 */
+        body.dark-mode code[class*="lang-diff"] .token.deleted:not(.prefix) {
+            background-color: rgba(255, 0, 0, 0.15);
+        }
+        body.dark-mode code[class*="lang-diff"] .token.inserted:not(.prefix) {
+            background-color: rgba(0, 255, 0, 0.12);
+        }
+        body.dark-mode code[class*="lang-diff"] .token.deleted .prefix {
+            color: #f97583;
+        }
+        body.dark-mode code[class*="lang-diff"] .token.inserted .prefix {
+            color: #85e89d;
+        }
     </style>
 </head>
 
@@ -314,6 +351,7 @@
     <script src="//cdn.jsdelivr.net/npm/prismjs@latest/components/prism-bash.js"></script>
     <script src="//cdn.jsdelivr.net/npm/prismjs@latest/components/prism-dart.js"></script>
     <script src="//cdn.jsdelivr.net/npm/prismjs@latest/components/prism-yaml.js"></script>
+    <script src="//cdn.jsdelivr.net/npm/prismjs@latest/components/prism-diff.js"></script>
     <script src="//cdn.jsdelivr.net/npm/docsify-pagination@latest/dist/docsify-pagination.min.js"></script>
     <script src="//cdn.jsdelivr.net/npm/docsify-copy-code"></script>
     <script src="//cdn.jsdelivr.net/npm/docsify/lib/plugins/zoom-image.min.js"></script>

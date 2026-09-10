@@ -74,6 +74,19 @@ class AliPlayerWidgetGlobalSetting {
   /// Global initialization custom configuration callback
   static OnGlobalInitCallback? _onGlobalInitCallback;
 
+  /// 清除所有全局状态，恢复默认值
+  ///
+  /// Reset all global state to defaults.
+  ///
+  /// 仅用于测试，确保测试用例之间的状态隔离。
+  /// Only for testing—ensures state isolation between test cases.
+  @visibleForTesting
+  static void reset() {
+    if (!kDebugMode) return;
+    _isInitialized = false;
+    _onGlobalInitCallback = null;
+  }
+
   /// 注册全局初始化自定义配置回调
   ///
   /// Register a callback for custom global initialization configuration.

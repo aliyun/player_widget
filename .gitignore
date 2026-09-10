@@ -65,6 +65,12 @@ doc/api/
 .pub-cache/
 .pub/
 
+# Test coverage output
+coverage/
+
+# Golden test failure artifacts
+**/test*/**/failures/
+
 # Web related
 lib/generated_plugin_registrant.dart
 
