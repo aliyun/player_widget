@@ -4,11 +4,8 @@
 // Date: 2025/11/14
 // Brief: 插槽系统演示页面
 
-import 'package:aliplayer_widget/slot/slot_elements.dart';
 import 'package:aliplayer_widget/utils/full_screen_util.dart';
 import 'package:aliplayer_widget_example/constants/demo_constants.dart';
-import 'package:aliplayer_widget_example/manager/sp_manager.dart';
-import 'package:aliplayer_widget_example/pages/link/link_constants.dart';
 import 'package:flutter/material.dart';
 import 'package:aliplayer_widget/aliplayer_widget_lib.dart';
 
@@ -74,19 +71,14 @@ class _SlotDemoPageState extends State<SlotDemoPage>
     // 初始化播放器组件控制器
     _controller = AliPlayerWidgetController();
 
-    // 获取保存的链接
-    var savedLink = SPManager.instance.getString(LinkConstants.url);
-    // 如果没有保存的链接，则使用默认链接
-    if (savedLink == null || savedLink.isEmpty) {
-      savedLink = DemoConstants.sampleVideoUrl;
-    }
-
     // 设置播放器视频源
-    final videoSource = VideoSourceFactory.createUrlSource(savedLink);
+    final videoSource = VideoSourceFactory.createVidAuthSource(
+      vid: DemoConstants.sampleVid,
+      playAuth: DemoConstants.samplePlayAuth,
+    );
     // 设置播放器组件数据
     final data = AliPlayerWidgetData(
       videoSource: videoSource,
-      videoTitle: "插槽系统演示视频",
     );
     _controller.configure(data);
   }

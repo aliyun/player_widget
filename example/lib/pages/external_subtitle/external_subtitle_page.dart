@@ -5,8 +5,6 @@
 // Brief: 外挂字幕示例
 
 import 'package:aliplayer_widget/aliplayer_widget_lib.dart';
-import 'package:aliplayer_widget/subtitle/subtitle_builder.dart';
-import 'package:aliplayer_widget/subtitle/subtitle_config.dart';
 import 'package:aliplayer_widget_example/constants/demo_constants.dart';
 import 'package:aliplayer_widget_example/manager/sp_manager.dart';
 import 'package:aliplayer_widget_example/pages/link/link_constants.dart';

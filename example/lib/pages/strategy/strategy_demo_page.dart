@@ -78,7 +78,6 @@ class _StrategyDemoPageState extends State<StrategyDemoPage> {
     final resumePosition = ResumePlayStrategy.getResumePosition(videoSource);
     final data = AliPlayerWidgetData(
       videoSource: videoSource,
-      videoTitle: "Strategy Demo",
       startTime: resumePosition,
     );
     _controller.configure(data);

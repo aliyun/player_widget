@@ -39,7 +39,7 @@ dependencies:
   # `aliplayer_widget` already depends on `flutter_aliplayer` internally.
   # Only declare `flutter_aliplayer` explicitly when you need direct access to low-level APIs.
   # Advanced API usage: MediaLoader preloading, etc.
-  flutter_aliplayer: ^7.14.0
+  flutter_aliplayer: ^7.18.0
 
   # The following adds the Cupertino Icons font to your application.
   # Use with the CupertinoIcons class for iOS style icons.
@@ -63,6 +63,10 @@ dependencies:
 
   # The widget to support Pre-load function for PageView widget.
   preload_page_view: ^0.2.0
+
+  # A Markdown parser for Dart.
+  # Used to render AI analysis content in the AI education scene.
+  markdown: ^7.2.0
 
 dev_dependencies:
   flutter_test:
@@ -95,6 +99,7 @@ flutter:
   assets:
     - assets/encryptedApp_android.dat
     - assets/encryptedApp_ios.dat
+    - assets/icons/
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/assets-and-images/#resolution-aware

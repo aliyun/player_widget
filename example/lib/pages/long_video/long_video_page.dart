@@ -122,7 +122,6 @@ class _LongVideoPageState extends State<LongVideoPage> {
     // 设置播放器组件数据
     final data = AliPlayerWidgetData(
       videoSource: videoSource,
-      videoTitle: "Long Video Title",
     );
     _controller.configure(data);
   }

@@ -5,7 +5,6 @@
 // Brief: 直播间页面
 
 import 'package:aliplayer_widget/aliplayer_widget_lib.dart';
-import 'package:aliplayer_widget/slot/slot_elements.dart';
 import 'package:aliplayer_widget_example/pages/link/link_constants.dart';
 import 'package:aliplayer_widget_example/pages/live/like_overlay_widget.dart';
 import 'package:aliplayer_widget_example/constants/page_routes.dart';

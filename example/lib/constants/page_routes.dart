@@ -50,6 +50,9 @@ class PageRoutes {
   /// 国际化自定义演示页面
   static const String i18nDemo = '/i18n_demo';
 
+  /// AI 教育场景
+  static const String aiEducation = '/ai_education';
+
   /// 首页按钮配置
   ///
   /// A static list of home item configurations
@@ -73,6 +76,11 @@ class PageRoutes {
       name: '短视频（支持预加载）',
       icon: Icons.shortcut_rounded,
       pageRoute: preloadShortVideo,
+    ),
+    const HomePageItemConfig(
+      name: 'AI 教育',
+      icon: Icons.school_rounded,
+      pageRoute: aiEducation,
     ),
     const HomePageItemConfig(
       name: '外挂字幕',

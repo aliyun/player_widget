@@ -8,6 +8,7 @@ import 'dart:async';
 import 'dart:io';
 import 'package:aliplayer_widget/aliplayer_widget_lib.dart';
 import 'package:aliplayer_widget_example/constants/page_routes.dart';
+import 'package:aliplayer_widget_example/pages/ai_education/ai_education_page.dart';
 import 'package:aliplayer_widget_example/pages/debug/debug_page.dart';
 import 'package:aliplayer_widget_example/pages/external_subtitle/external_subtitle_page.dart';
 import 'package:aliplayer_widget_example/pages/home/home_page.dart';
@@ -111,6 +112,7 @@ class MyApp extends StatelessWidget {
         PageRoutes.shortVideo: (_) => const ShortVideoPage(preload: false),
         PageRoutes.preloadShortVideo: (_) => const ShortVideoPage(),
         PageRoutes.live: (_) => const LivePage(),
+        PageRoutes.aiEducation: (_) => const AiEducationPage(),
         PageRoutes.debug: (_) => const DebugPage(),
         PageRoutes.settings: (_) => const SettingsPage(),
         PageRoutes.link: (_) => const LinkPage(),
