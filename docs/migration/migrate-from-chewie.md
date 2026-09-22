@@ -291,6 +291,9 @@ flutter pub remove video_player
 | `isLive: true`          | `AliPlayerWidgetData(sceneType: SceneType.live)`             | 直接对应                                                     |
 | `allowedScreenSleep`    | `AliPlayerWidgetData(allowedScreenSleep: value)`             | 部分对应；chewie 默认 `true`，本组件默认 `false`，且生效范围不同 |
 | `fullScreenByDefault`   | Widget 挂载后，在首次播放开始时调用 `controller.enterFullScreen()` | 无同名配置项，需自行控制触发时机                             |
+| `playbackSpeeds`        | `AliPlayerWidgetData(playbackSpeeds: [...])`                 | 直接对应；通过配置自定义可选播放速度列表                     |
+| `hideControlsTimer`     | `AliPlayerWidgetData(autoHideControlsDuration: ...)`         | 直接对应；配置播放控件自动隐藏时间                           |
+| `chapters`              | `AliPlayerWidgetData(sceneType: SceneType.aiVod, chapters: [...])`  | chewie 使用 `ChewieChapter(title, start)`；aliplayer_widget 使用 `ChapterInfo(startMs, endMs, title)`，需显式传入结束时间，且 `sceneType` 须为 `aiVod` |
 
 ### **UI 与自定义配置**
 
@@ -311,6 +314,7 @@ flutter pub remove video_player
 | `SceneType.listPlayer` | 列表 / 信息流播放 | chewie 无对应配置                                      |
 | `SceneType.restricted` | 播放能力受限场景  | chewie 无对应配置                                      |
 | `SceneType.minimal`    | 极简 UI           | 接近 `showControls: false`，但还会隐藏封面、字幕和手势 |
+| `SceneType.aiVod`      | AI 增强点播        | 继承 VOD 能力并支持章节导航；对应 chewie `chapters` 配置的场景升级 |
 
 下表列出 chewie 各 UI 配置项在三级定制体系中的落点：
 
@@ -406,16 +410,14 @@ UI 禁用需求往往不是几个按钮，而是**一整套业务规则**。动�
 
 | chewie 能力                                                  | 状态    | 当前建议                                                     |
 | ------------------------------------------------------------ | ------- | ------------------------------------------------------------ |
-| 自定义 `playbackSpeeds` 可选列表                             | **TBD** | `setSpeed(speed: value)` 可设置当前倍速，但未确认默认设置面板的可选列表可由外部配置 |
 | `draggableProgressBar: false` 且仍显示进度条                 | **TBD** | 可隐藏进度条或自定义底部栏；未找到「显示但不可拖动」的直接配置 |
 | `showPlayButton`                                             | **TBD** | 未找到大播放按钮的一对一开关                                 |
 | `aspectRatio`                                                | **TBD** | 组件会根据视频尺寸计算显示区域；无需再强制指定宽高比         |
 | `materialProgressColors`、`cupertinoProgressColors`          | **TBD** | 未找到进度条颜色的一对一参数；如需保留品牌样式，使用自定义底部栏并专项验证 |
-| `chapters`                                                   | **TBD** | 未找到 chewie 章节列表的一对一数据入口                       |
 | `zoomAndPan`、`maxScale`、`transformationController`         | **TBD** | 未找到对应的缩放和平移配置                                   |
 | `pauseOnBackgroundTap`                                       | **TBD** | 未找到同名或等价的公开配置                                   |
 | `routePageBuilder`、全屏前后方向和系统栏配置                 | **TBD** | 全屏方法已提供，但未找到这些全屏页面细节的一对一外部配置     |
-| `hideControlsTimer`、`progressIndicatorDelay`、`controlsSafeAreaMinimum` | **TBD** | 未找到同名或等价的公开配置；有强需求时使用自定义插槽         |
+| `progressIndicatorDelay`、`controlsSafeAreaMinimum`                      | **TBD** | 未找到同名或等价的公开配置；有强需求时使用自定义插槽         |
 | chewie 内存字幕列表                                          | **TBD** | 已支持外挂字幕 URL，但未确认可直接接收 chewie 的内存字幕数据 |
 | Web 和桌面平台                                               | **TBD** | 当前文档明确覆盖 Android 和 iOS；其他平台继续保留原实现      |
 
@@ -433,7 +435,8 @@ UI 禁用需求往往不是几个按钮，而是**一整套业务规则**。动�
 | 截图                | 截取当前视频帧                             | `controller.snapshot(path)`                                  |
 | 视频缓存/预加载     | 配置本地缓存；按需接入预加载               | `AliPlayerWidgetGlobalSetting.setStoragePaths(...)`；预加载使用 `flutter_aliplayer` 的 `FlutterAliPlayerMediaLoader` |
 | 视频下载            | 将 VID 播放源下载到本地                    | 配置存储路径后调用 `controller.startVideoDownload()`         |
-| 场景类型            | 按场景调整默认 UI 行为                     | `SceneType.vod` / `.live` / `.listPlayer` / `.restricted` / `.minimal` |
+| 场景类型            | 按场景调整默认 UI 行为                     | `SceneType.vod` / `.live` / `.listPlayer` / `.restricted` / `.minimal` / `.aiVod` |
+| 章节导航            | 进度条章节标记 + 章节 Chip 列表 + 章节面板 | `AliPlayerWidgetData(sceneType: SceneType.aiVod, chapters: [...])` |
 | 插槽 UI 定制        | 多层级插槽系统，精细控制各区域             | `slotBuilders` + `hiddenSlotElements`                        |
 | 手势控制            | 长按倍速、水平拖动 Seek、垂直拖动音量/亮度 | 内置，无需额外配置                                           |
 | 缩略图预览          | Seek 过程中显示缩略图                      | `AliPlayerWidgetData(thumbnailUrl: ...)` + `thumbnailNotifier` |

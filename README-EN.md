@@ -4,7 +4,7 @@ Language: [Simplified Chinese](README.md) | English
 
 # **aliplayer_widget**
 
-[![pub package](https://img.shields.io/pub/v/aliplayer_widget.svg)](https://pub.dev/packages/aliplayer_widget) [![platform](https://img.shields.io/badge/-Flutter-02569B?logo=flutter&logoColor=white)](https://flutter.dev/) [![language](https://img.shields.io/badge/-Dart-0175C2?logo=dart&logoColor=white)](https://dart.dev/) [![website](https://img.shields.io/badge/Product-VOD-FF6A00)](https://www.aliyun.com/product/vod)
+[![pub package](https://img.shields.io/pub/v/aliplayer_widget.svg)](https://pub.dev/packages/aliplayer_widget) [![platform](https://img.shields.io/badge/-Flutter-02569B?logo=flutter&logoColor=white)](https://flutter.dev/) [![language](https://img.shields.io/badge/-Dart-0175C2?logo=dart&logoColor=white)](https://dart.dev/) [![platforms](https://img.shields.io/badge/platform-Android%20%7C%20iOS-blue.svg)](https://pub.dev/packages/aliplayer_widget) [![website](https://img.shields.io/badge/Product-VOD-FF6A00)](https://www.alibabacloud.com/en/product/apsaravideo-for-vod)
 
 ## **1. Overview**
 
@@ -178,21 +178,22 @@ The open-source content includes:
 
 ---
 
-## **9. Related Products**
+## **9. Device-Cloud Synergy**
 
-AliPlayerWidget is built on Alibaba Cloud audio and video capabilities. We recommend using it with the following cloud products to achieve better playback capabilities and video experience through cloud-client integration:
+AliPlayerWidget is built on top of Alibaba Cloud's audio and video capabilities. We recommend using it together with Alibaba Cloud products to take full advantage of device-cloud synergy and further enhance playback capabilities and the video experience.
 
-- [ApsaraVideo VOD](https://www.alibabacloud.com/en/product/apsaravideo-for-vod)
-- [ApsaraVideo Live](https://www.alibabacloud.com/en/product/apsaravideo-for-live)
-- [ApsaraVideo SDK](https://www.alibabacloud.com/help/en/apsara-video-sdk/)
+| Cloud Product                                                | Description                                                  |
+| ------------------------------------------------------------ | ------------------------------------------------------------ |
+| [ApsaraVideo for VOD](https://www.alibabacloud.com/en/product/apsaravideo-for-vod) | Provides one-stop video-on-demand services, including video upload, storage, transcoding, distribution, and playback |
+| [ApsaraVideo for Live](https://www.alibabacloud.com/en/product/apsaravideo-for-live) | Provides end-to-end live streaming services, including stream ingest, transcoding, distribution, and playback |
 
 ---
 
 ## **10. Contact Us**
 
-- 📘 **Official Documentation**: [Player Help Center](https://www.alibabacloud.com/help/en/vod/)
+- 📘 **Official Documentation**: [Player UI Integration Solution](https://www.alibabacloud.com/help/en/vod/developer-reference/flutter-widget-project-introduction)
 - 🔍 **Console**: [VOD Console](https://vod.console.alibabacloud.com)
 - 📝 **Open Ticket**: [Alibaba Cloud Official Support](https://smartservice.console.alibabacloud.com/service/create-ticket)
 - 💬 **GitHub Issues**: [Feedback and Suggestions Welcome](https://github.com/aliyun/player_widget/issues)
 
-For more common issues and resolution suggestions related to the use of Alibaba Cloud Player SDK, please refer to [FAQ about ApsaraVideo Player](https://www.alibabacloud.com/help/en/vod/support/faq-about-apsaravideo-player/).
+For more FAQs and fixes about using the Alibaba Cloud player, see [FAQ about ApsaraVideo Player](https://www.alibabacloud.com/help/en/vod/support/faq-about-apsaravideo-player/).

@@ -4,8 +4,7 @@
 // Date: 2025/2/11
 // Brief: 格式化工具类
 
-import 'package:aliplayer_widget/i18n/player_i18n.dart';
-import 'package:aliplayer_widget/i18n/player_i18n_keys.dart';
+import 'package:aliplayer_widget/i18n/i18n.dart';
 import 'package:flutter_aliplayer/flutter_avpdef.dart';
 
 /// 格式化工具类

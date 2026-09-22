@@ -86,7 +86,6 @@ void main() {
 ```dart
 final data = AliPlayerWidgetData(
   videoSource: videoSource,
-  videoTitle: "视频标题",
   onPlayerConfig: (player) async {
     // 示例 1：自定义缓冲策略和 Referer
     var config = await player.getPlayConfig();

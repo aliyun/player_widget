@@ -33,6 +33,14 @@ class AliPlayerWidgetController {
   /// 播放器唯一标识符
   late String _playerUniqueId;
 
+  /// 竖屏（非全屏）视图 ID，退出全屏时用于重绑定。
+  ///
+  /// Portrait (non-fullscreen) view ID, used for re-binding when
+  /// exiting fullscreen. This value is only updated when
+  /// [setPlayerView] is called with `isPortrait: true`,
+  /// so fullscreen views never overwrite it.
+  int? _portraitViewId;
+
   /// 策略管理器，管理已注册策略的生命周期
   ///
   /// 默认内置推荐策略（首帧统计、卡顿检测），开箱即用。
@@ -156,6 +164,22 @@ class AliPlayerWidgetController {
   final SafeValueNotifier<int> scaleModeNotifier =
       SafeValueNotifier(SettingConstants.defaultScaleMode);
 
+  /// 视频标题变化通知器
+  ///
+  /// Value notifier for video title
+  final SafeValueNotifier<String?> videoTitleNotifier = SafeValueNotifier(null);
+
+  /// 视频封面图变化通知器
+  ///
+  /// Value notifier for video cover
+  final SafeValueNotifier<String?> coverURLNotifier = SafeValueNotifier(null);
+
+  /// 播放场景类型变化通知器
+  ///
+  /// Value notifier for scene type
+  final SafeValueNotifier<SceneType> sceneTypeNotifier =
+      SafeValueNotifier(SceneType.vod);
+
   /// 播放清晰度变化通知器
   ///
   /// Value notifier for track info
@@ -218,55 +242,71 @@ class AliPlayerWidgetController {
   final SafeValueNotifier<bool> isFullScreenNotifier =
       SafeValueNotifier<bool>(false);
 
+  /// 控制栏（顶部栏 + 底部栏）可见状态通知器
+  ///
+  /// 由 [AliPlayerWidget] 根据共享动画管理器实时同步，自定义插槽可通过监听
+  /// 此通知器实现与控制栏同步的显示/隐藏效果。
+  final SafeValueNotifier<bool> controlBarVisibleNotifier =
+      SafeValueNotifier<bool>(false);
+
   /// 当前下载状态
   SafeValueNotifier<DownloadState> get downloadStateNotifier =>
       _downloadManager.stateNotifier;
 
   /// 下载保存路径
   String? get downloadSavePath => _downloadManager.savePath;
+
   set downloadSavePath(String? path) => _downloadManager.savePath = path;
 
   /// 当前加载状态
-  ///
-  ///
   final SafeValueNotifier<bool> isLoadingStateNotifier =
       SafeValueNotifier(false);
 
-  /// 设置面板显示请求通知器
+  /// 是否正在拖拽进度条
+  /// Whether the user is dragging the seek bar
+  final SafeValueNotifier<bool> isDraggingNotifier = SafeValueNotifier(false);
+
+  /// 拖拽过程中的当前 seek 时间
+  /// Current seek time during drag operation
+  final SafeValueNotifier<Duration> currentSeekTimeNotifier =
+      SafeValueNotifier(Duration.zero);
+
+  /// 当前中心展示内容类型（音量/亮度/倍速指示器）
+  /// Current center display content type (volume/brightness/speed indicator)
+  final SafeValueNotifier<ContentViewType> contentViewTypeNotifier =
+      SafeValueNotifier(ContentViewType.none);
+
+  /// 设置面板显示请求通知器（事件计数器模式）
   ///
   /// **仅用于自定义 settingMenu slotBuilder 场景。**
   ///
   /// 当用户通过 [AliPlayerWidget.slotBuilders] 自定义 `SlotType.settingMenu` 插槽时，
   /// 应监听此 notifier 来触发自定义面板的显示。
   ///
-  /// 使用流程：
-  /// 1. 用户传入 `slotBuilders: { SlotType.settingMenu: (ctx) => MyCustomPanel() }`
-  /// 2. 点击顶部栏设置按钮时，此 notifier 值变为 `true`
-  /// 3. 自定义插槽构建器检测到此变化，显示自定义面板
-  /// 4. 面板关闭后，用户应将此值重置为 `false`
+  /// 每次请求时计数器递增，监听者检测到值变化即可响应。
+  /// 推荐使用 [requestSettingPanel] 方法触发请求。
   ///
-  /// **注意：**
-  /// - 如果使用默认设置面板（未自定义 settingMenu），此 notifier 不会被使用
-  /// - 面板关闭后必须重置为 `false`，否则下次点击无法再次触发
-  ///
-  /// Settings panel display request notifier.
+  /// Settings panel display request notifier (event counter pattern).
   ///
   /// **Only used when customizing settingMenu slotBuilder.**
   ///
   /// When customizing `SlotType.settingMenu` via [AliPlayerWidget.slotBuilders],
   /// listen to this notifier to trigger custom panel display.
   ///
-  /// Usage flow:
-  /// 1. User passes `slotBuilders: { SlotType.settingMenu: (ctx) => MyCustomPanel() }`
-  /// 2. On settings button click, this notifier value becomes `true`
-  /// 3. Custom slot builder detects this change and shows custom panel
-  /// 4. After panel closes, user should reset this value to `false`
+  /// Each request increments the counter; listeners respond on value change.
+  /// Use [requestSettingPanel] to trigger a request.
+  final SafeValueNotifier<int> settingPanelRequestNotifier =
+      SafeValueNotifier(0);
+
+  /// 请求显示设置面板
   ///
-  /// **Note:**
-  /// - If using default settings panel (no custom settingMenu), this notifier is unused
-  /// - Must reset to `false` after panel closes for subsequent clicks to trigger
-  final SafeValueNotifier<bool> settingsPanelRequestNotifier =
-      SafeValueNotifier(false);
+  /// Request to show the settings panel.
+  ///
+  /// 递增内部计数器以触发监听者响应。
+  /// Increments the internal counter to notify listeners.
+  void requestSettingPanel() {
+    settingPanelRequestNotifier.value++;
+  }
 
   /// 缩略图是否获取成功
   bool _thumbnailSuccess = false;
@@ -289,20 +329,19 @@ class AliPlayerWidgetController {
   /// 播放器组件控制器构造函数，用于创建 [AliPlayerWidgetController] 实例。
   ///
   /// Constructor to create an instance of [AliPlayerWidgetController].
-  ///
-  /// [context] 参数已废弃，无需传入。Context 现由 [AliPlayerWidgetState] 自动注入。
-  ///
-  /// The [context] parameter is deprecated and no longer needed.
-  /// Context is now automatically provided by [AliPlayerWidgetState].
-  AliPlayerWidgetController([
-    @Deprecated('BuildContext parameter is no longer needed. '
-        'Context is now automatically provided by AliPlayerWidgetState. '
-        'Use AliPlayerWidgetController() instead.')
-    BuildContext? context,
-  ]) {
+  AliPlayerWidgetController() {
     logi("[lifecycle] construct", tag: _logTag);
     _init();
   }
+
+  /// 是否已销毁，防止重复 dispose
+  bool _isDestroyed = false;
+
+  /// 是否因应用进入后台而暂停播放
+  bool _pausedByBackground = false;
+
+  /// 应用生命周期监听器
+  late final AppLifecycleListener _lifecycleListener;
 
   /// 初始化操作
   void _init() {
@@ -314,18 +353,58 @@ class AliPlayerWidgetController {
 
     _initializeDownloader();
 
+    // 注册应用生命周期监听
+    _lifecycleListener = AppLifecycleListener(
+      onResume: _handleAppResumed,
+      onPause: _handleAppPaused,
+      onDetach: () {
+        logi('App detached');
+        _pausedByBackground = false;
+      },
+    );
+
     // 设置默认值
     _batchLoadDefaultValues();
+  }
+
+  /// 应用恢复前台时的处理逻辑
+  void _handleAppResumed() {
+    logi('App resumed');
+    if (_pausedByBackground) {
+      _pausedByBackground = false;
+      // 仅在播放器处于暂停状态时恢复播放，避免在 error/completed 等异常状态下强制 play。
+      // Only resume playback if the player is in paused state,
+      // avoiding forced play in error/completed states.
+      if (playStateNotifier.value == FlutterAvpdef.paused) {
+        play();
+      }
+    }
+  }
+
+  /// 应用进入后台时的处理逻辑
+  void _handleAppPaused() {
+    logi('App paused');
+    final pauseOnBg = _widgetData?.pauseOnBackground ?? true;
+    if (pauseOnBg && playStateNotifier.value == FlutterAvpdef.started) {
+      _pausedByBackground = true;
+      pause();
+    }
   }
 
   /// 销毁播放控制器
   ///
   /// Destroy the player controller
   void destroy() {
+    if (_isDestroyed) return;
+    _isDestroyed = true;
+
     // The next line disables the wakelock again.
     if (_widgetData?.allowedScreenSleep == false) {
       WakelockPlus.disable();
     }
+
+    // 取消应用生命周期监听
+    _lifecycleListener.dispose();
 
     // 停止并销毁策略系统
     strategyManager.dispose();
@@ -389,6 +468,9 @@ class AliPlayerWidgetController {
 
       // 更新准备状态
       isPreparedNotifier.value = true;
+
+      // 创建视频信息
+      Future.microtask(() => _createVideoInfoWhenPrepared());
 
       // 创建外挂字幕（方式1）
       Future.microtask(() => _createExternalSubtitleWhenPrepared());
@@ -456,6 +538,8 @@ class AliPlayerWidgetController {
       // 更新视频尺寸
       _updateVideoSize();
 
+      Future.microtask(() => _createVideoInfoWhenTrackReady());
+
       // 创建清晰度信息
       Future.microtask(() => _createTrackInfoWhenPrepared());
 
@@ -465,10 +549,11 @@ class AliPlayerWidgetController {
 
     // 设置track切换完成回调
     _aliPlayer.setOnTrackChanged((dynamic value, String playerId) {
+      final map = Map<String, dynamic>.from(value as Map);
       final trackInfoList = trackInfoListNotifier.value;
       final selectedTrackInfo = TrackInfoUtil.getTrackInfoByIndex(
         trackInfoList,
-        value["trackIndex"],
+        map["trackIndex"],
       );
 
       // 如果没有找到对应的清晰度信息，则不处理
@@ -590,9 +675,7 @@ class AliPlayerWidgetController {
 
     /// 截图代理回调
     _aliPlayer.setOnSnapShot((path, playerId) {
-      _showSuccess(PlayerI18n.t(
-        PlayerI18nKeys.statusSnapSaved,
-      ));
+      _showSuccess(PlayerI18n.t(PlayerI18nKeys.statusSnapSaved));
       snapFileStateNotifier.value = path;
     });
 
@@ -672,6 +755,10 @@ class AliPlayerWidgetController {
     rotateModeNotifier.dispose();
     scaleModeNotifier.dispose();
 
+    coverURLNotifier.dispose();
+    videoTitleNotifier.dispose();
+    sceneTypeNotifier.dispose();
+
     currentTrackInfoNotifier.dispose();
     trackInfoListNotifier.dispose();
 
@@ -686,9 +773,15 @@ class AliPlayerWidgetController {
 
     isFullScreenNotifier.dispose();
 
+    controlBarVisibleNotifier.dispose();
+
     isLoadingStateNotifier.dispose();
 
-    settingsPanelRequestNotifier.dispose();
+    isDraggingNotifier.dispose();
+    currentSeekTimeNotifier.dispose();
+    contentViewTypeNotifier.dispose();
+
+    settingPanelRequestNotifier.dispose();
   }
 
   void _initializeDownloader() {
@@ -751,6 +844,26 @@ class AliPlayerWidgetController {
     _configureAllowPreRender();
   }
 
+  /// 竖屏视图 ID，供 State 退出全屏时使用。
+  ///
+  /// Portrait view ID for State to re-bind after exiting fullscreen.
+  int? get portraitViewId => _portraitViewId;
+
+  /// 设置播放器渲染视图（公开 API）。
+  ///
+  /// Sets the rendering view for the player.
+  /// Called by the player surface slot when the native view is created.
+  ///
+  /// [viewId] The ID of the newly created platform view.
+  /// [isPortrait] 为 true 时同时记录为竖屏视图 ID，
+  /// 退出全屏时将使用此 ID 重绑定，避免使用已销毁的全屏视图 ID。
+  void setPlayerView(int viewId, {bool isPortrait = false}) {
+    if (isPortrait) {
+      _portraitViewId = viewId;
+    }
+    _setPlayerView(viewId);
+  }
+
   /// 配置播放控制器
   ///
   /// Configure the player controller with the given data.
@@ -760,6 +873,9 @@ class AliPlayerWidgetController {
     logi("[api][configure]: $data");
 
     _widgetData = data;
+
+    // 同步场景类型通知器，确保 AliPlayerWidget 在异步 configure 后仍能拿到最新场景
+    sceneTypeNotifier.value = data.sceneType;
 
     // 初始化/重启策略系统
     strategyManager.initialize(this);
@@ -807,10 +923,11 @@ class AliPlayerWidgetController {
 
     if (!videoSource.validate()) {
       loge(
-          "VideoSource validation failed (${videoSource.sourceType}). "
-          "Player will not be configured. "
-          "Please check your video source parameters and re-configure.",
-          tag: _logTag);
+        "VideoSource validation failed (${videoSource.sourceType}). "
+        "Player will not be configured. "
+        "Please check your video source parameters and re-configure.",
+        tag: _logTag,
+      );
       return;
     }
 
@@ -1130,7 +1247,8 @@ class AliPlayerWidgetController {
   /// Retrieve and update the track information when the player is prepared.
   Future<void> _createTrackInfoWhenPrepared() async {
     // update track info list when player is prepared
-    var mediaInfo = await _aliPlayer.getMediaInfo();
+    final mediaInfo =
+        Map<String, dynamic>.from(await _aliPlayer.getMediaInfo() as Map);
     var tracks = mediaInfo["tracks"];
 
     // 过滤出视频清晰度信息
@@ -1180,12 +1298,66 @@ class AliPlayerWidgetController {
       // 如果外部配置了缩略图地址，则使用方式1创建缩略图
       return;
     }
-    _aliPlayer.getMediaInfo().then((value) {
-      final thumbnails = value['thumbnails'];
+    _aliPlayer.getMediaInfo().then((result) {
+      if (_isDestroyed) return;
+
+      final map = Map<String, dynamic>.from(result as Map);
+      final thumbnails = map['thumbnails'] as List<dynamic>?;
       if (thumbnails?.isNotEmpty ?? false) {
-        _aliPlayer.createThumbnailHelper(thumbnails[0]['url']);
+        final thumb = Map<String, dynamic>.from(thumbnails![0] as Map);
+        final url = thumb['url'] as String?;
+        if (url != null && url.isNotEmpty) {
+          _aliPlayer.createThumbnailHelper(url);
+        }
       } else {
         _thumbnailSuccess = false;
+      }
+    });
+  }
+
+  /// 创建视频信息（方式1）
+  ///
+  /// Create video info using method 1 (widget data).
+  void _createVideoInfoWhenPrepared() {
+    final widgetData = _widgetData;
+    if (widgetData == null) return;
+
+    if (widgetData.videoTitle.isNotEmpty) {
+      videoTitleNotifier.value = widgetData.videoTitle;
+    }
+
+    if (widgetData.coverUrl.isNotEmpty) {
+      coverURLNotifier.value = widgetData.coverUrl;
+    }
+  }
+
+  /// 创建视频信息（方式2）
+  ///
+  /// Create video info using method 2 (media info).
+  void _createVideoInfoWhenTrackReady() {
+    final widgetData = _widgetData;
+    if (widgetData == null) return;
+
+    final needTitle = widgetData.videoTitle.isEmpty;
+    final needCover = widgetData.coverUrl.isEmpty;
+    if (!needTitle && !needCover) return;
+
+    _aliPlayer.getMediaInfo().then((result) {
+      if (_isDestroyed) return;
+
+      final map = Map<String, dynamic>.from(result as Map);
+      if (needTitle) {
+        final videoTitle = map['title'] as String?;
+        if (videoTitle?.isNotEmpty ?? false) {
+          videoTitleNotifier.value = videoTitle;
+        }
+      }
+
+      if (needCover) {
+        final coverURL = map['cover'] as String?;
+        if (coverURL?.isNotEmpty ?? false) {
+          coverURLNotifier.value = coverURL;
+        }
       }
     });
   }
@@ -1316,13 +1488,6 @@ class AliPlayerWidgetController {
     if (ctx != null && ctx.mounted) {
       PlayStateShowUtil.error(ctx, message: message);
     }
-  }
-
-  /// 判断视频源是否为 VID
-  bool isVideoSourceVid() {
-    var videoSource = _widgetData?.videoSource;
-    return videoSource is VidStsVideoSource ||
-        videoSource is VidAuthVideoSource;
   }
 
   /// 进入全屏模式

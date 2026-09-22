@@ -24,7 +24,7 @@ class SettingConstants {
   /// - 1.5: 快速 / Fast.
   /// - 2.0: 更快速 / Faster.
   /// - 3.0: 极快速 / Very fast.
-  static final List<double> speedOptions = [
+  static const List<double> speedOptions = [
     0.3,
     0.5,
     1.0,
@@ -66,7 +66,7 @@ class SettingConstants {
   /// 可选的镜像模式
   ///
   /// Available mirror mode options.
-  static final List<int> mirrorModeOptions = [
+  static const List<int> mirrorModeOptions = [
     MirrorMode.MIRROR_MODE_NONE,
     MirrorMode.MIRROR_MODE_HORIZONTAL,
     MirrorMode.MIRROR_MODE_VERTICAL,
@@ -75,7 +75,7 @@ class SettingConstants {
   /// 可选的旋转角度
   ///
   /// Available rotate mode options.
-  static final List<int> rotateModeOptions = [
+  static const List<int> rotateModeOptions = [
     RotateMode.ROTATE_0,
     RotateMode.ROTATE_90,
     RotateMode.ROTATE_180,
@@ -90,7 +90,7 @@ class SettingConstants {
   /// 可选的渲染填充模式
   ///
   /// Available scale mode options.
-  static final List<int> scaleModeOptions = [
+  static const List<int> scaleModeOptions = [
     ScaleMode.SCALE_TO_FILL,
     ScaleMode.SCALE_ASPECT_FIT,
     ScaleMode.SCALE_ASPECT_FILL,
@@ -100,4 +100,9 @@ class SettingConstants {
   ///
   /// Default scale mode.
   static const int defaultScaleMode = ScaleMode.SCALE_ASPECT_FIT;
+
+  /// 播放控件自动隐藏时间的默认值
+  ///
+  /// Default value for auto-hide controls duration.
+  static const Duration defaultAutoHideControlsDuration = Duration(seconds: 3);
 }

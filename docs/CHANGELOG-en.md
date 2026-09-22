@@ -2,53 +2,45 @@
 
 > Language: [中文](./CHANGELOG.md) | English
 
-## **[7.15.0] - Privacy Enhancement, Bug Fixes & Performance Improvements**
+## **[7.18.0] - AI Education Scenario Solution & VID All-in-One Playback**
 
-### **SDK Update**
+### **New Features**
 
-- **Upgraded core SDK (`flutter_aliplayer`) to v7.15.0**
-
-### **Bug Fixes**
-
-- **Privacy**
-  - Added `PrivacyUtil` to sanitize `VideoSource.toString()` output, preventing credentials and URLs from being exposed in logs or debug output.
-- **Navigation**
-  - Guarded `Navigator.pop()` with `canPop()` check to prevent popping on an empty navigation stack.
-- **Wakelock**
-  - Corrected inverted `allowedScreenSleep` logic that caused the wakelock to behave oppositely to its intended setting.
-- **Memory & Lifecycle**
-  - Replaced cached `BuildContext` with a context provider to eliminate stale-context crashes.
-  - Ensured correct destroy sequence to prevent notifier safety violations during disposal.
-  - Prevented fullscreen dispose from incorrectly unbinding the portrait context.
-  - Closed `StreamController` after download completion to eliminate resource leaks.
-  - Improved `SafeNotifier` dispose safety with additional debug-mode assertions.
-- **Download**
-  - Improved download error handling and subscription safety to prevent double-cancel errors.
-- **Type Safety**
-  - Made `videoSource` non-nullable and removed related dead code.
-  - Narrowed `isSubtitleVisibleNotifier` type to non-nullable for stronger type guarantees.
-
-### **Performance**
-
-- Replaced `vibrate()` with `selectionFeedback()` during drag updates for platform-appropriate haptic feedback.
-- Cached `_resolveSlotOrder` result to avoid redundant sorting on every build cycle.
+- **VID All-in-One Playback**: Leveraging the synergy between AliPlayerWidget and Alibaba Cloud VOD, the business side only needs to pass in the video VID to automatically obtain playback resources and associated media information such as video title, cover image, and thumbnail, reducing playback URL retrieval, media information passing, and client-side parameter configuration to simplify playback integration
+- **Video Chapter Segmentation**: Intelligently splits long videos into multiple chapter segments based on content structure, helping users quickly locate key content through progress bar markers and chapter panel
+- **AI Education Scenario**:
+  - Added an AI education video solution for online education, knowledge courses, and other scenarios, providing smart chapters, content summaries, knowledge points, and image-text analysis capabilities to help users quickly locate key content and improve video learning and content understanding efficiency
+  - Added `aiVod` scene type, supporting chapter segmentation, chapter navigation, and chapter information display during Seek on top of standard VOD playback capabilities
+- **Playback Control Extensions**: Added `pauseOnBackground` for background pause/resume, `playbackSpeeds` for custom speed list, and `autoHideControlsDuration` for control bar auto-hide duration configuration
 
 ### **Improvements**
 
-- Extracted download logic into a dedicated `DownloadManager` for better separation of concerns.
-- Extracted player notification logic and download preparation into focused helpers.
-- Marked immutable fields as `final` in `AliPlayerWidgetData` to communicate intent and enable compiler optimizations.
-- Merged duplicate vertical dimension utility methods and improved naming consistency.
+- **Download Management**: Extracted download logic from `Controller` into an independent `DownloadManager`, enhanced error code classification and subscription lifecycle management
+- **Settings Panel**: Migrated to registry-driven architecture, supporting per-item visibility resolution
+- **Slot System**: Migrated Builder to factory pattern, cached sort results to avoid repeated computation on every build
+- **Data Security**: Introduced `PrivacyUtil` to sanitize credential fields in `VidSts` / `VidAuth` / `Url` video sources
+- **Type Safety**: Tightened `videoSource` to non-nullable `final`, changed `isSubtitleVisibleNotifier` to non-nullable `bool` type, removed unreachable null branches
+- **Module Reorganization**: Reorganized data and download modules into subdirectory structure, unified barrel file exports
+- **Kernel SDK upgraded to v7.18.0**
 
-### **Example Updates**
+### **Bug Fixes**
 
-The example app has undergone a targeted quality pass to close the gap between demo code and production code. The fixes address three categories of issues that erode developer trust when using the example as a reference.
+- Fixed `ContextProvider` of portrait instance being incorrectly cleared on fullscreen exit, causing screenshot/Toast failures
+- Fixed inverted `allowedScreenSleep` semantics — `true` should allow sleep, not keep screen awake
+- Fixed resource accumulation leak from `StreamController` not being closed on download completion/destroy
+- Fixed duplicate Seek caused by progress bar `onTapDown` conflicting with drag gesture
+- Fixed `SafeNotifier` remaining writable after dispose and destroy sequence race condition
+- Fixed `Navigator.pop()` crash on root route with no route to pop
 
-- **Startup & Lifecycle Correctness**: Global settings initialization is now properly awaited before `runApp`, eliminating a startup race condition. The `WidgetsBindingObserver` is now removed symmetrically and guarded, preventing dangling listener callbacks. The keyboard-height calculation in `LivePage` now correctly converts physical pixels to logical pixels via `devicePixelRatio`.
-- **Null Safety & State Isolation**: `videoInfoList` is initialized to `[]` at declaration, removing a guaranteed `LateInitializationError` on load failure. A file-scope mutable integer (`_selectIndex`) has been moved into its owning `State` class, eliminating hidden cross-instance state pollution.
-- **Async & Resource Safety**: `precacheImage` calls are now guarded with `context.mounted` to prevent callbacks on unmounted widgets. `FutureBuilder` futures in `SettingsPage` are cached across rebuilds to prevent redundant network requests on every `setState`. `SPManager` initialization adopts a `Completer`-based pattern, replacing a callback queue with a cleaner async contract. Animation concurrency in `LikeOverlayWidget` is capped to prevent unbounded list growth.
+### **Breaking Changes**
 
-> **Productization Assessment**: The example now demonstrates correct Flutter idioms across the full widget lifecycle — startup, async init, observer registration, context safety, and disposal. It can be used as a reliable reference implementation, not just a functional demo. The previous version contained several patterns that, if copied verbatim by developers, would have introduced production bugs (startup race, stale context, physical-pixel mismatch). These are now resolved.
+- Removed deprecated `BuildContext` parameter from Controller constructor, now automatically injected by `AliPlayerWidgetState`
+- Removed `SlotWidgetBuilderWithController` type, unified to `SlotWidgetBuilder`
+
+### **Documentation**
+
+- Added [AI Education Scenario](./scene/AiEducation-en.md) solution documentation
+- Added [chewie migration guide](./migration/migrate-from-chewie-en.md)
 
 ---
 

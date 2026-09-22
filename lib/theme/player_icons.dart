@@ -69,4 +69,7 @@ abstract final class PlayerIcons {
 
   /// 播放器状态 成功
   static const String statusSuccess = 'ic_success.png';
+
+  /// 章节选中
+  static const String chapterArrow = 'ic_arrow_chapter.png';
 }

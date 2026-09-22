@@ -34,7 +34,7 @@ class AliPlayerWidgetGlobalSetting {
   /// Flutter Widget version
   ///
   /// Flutter Widget 版本号
-  static const String kWidgetVersion = '7.15.0';
+  static const String kWidgetVersion = '7.18.0';
 
   /// whether to enable local cache
   ///
@@ -182,7 +182,8 @@ class AliPlayerWidgetGlobalSetting {
 
     if (cacheDir == null) {
       logw(
-          'Warning: No cache directory available, media loader config not set');
+        'Warning: No cache directory available, media loader config not set',
+      );
       return;
     }
 

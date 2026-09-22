@@ -57,7 +57,6 @@ class _VideoPlayerPageState extends State<VideoPlayerPage> {
     // 配置播放器组件数据
     final data = AliPlayerWidgetData(
       videoSource: videoSource,
-      videoTitle: "<your-video-title>",
     );
 
     // 初始化播放器组件控制器

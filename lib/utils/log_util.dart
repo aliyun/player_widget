@@ -1,8 +1,8 @@
-// Created with Android Studio
-// User：keria
-// Date：2021/6/29
-// Email：runchen.brc@alibaba-inc.com
-// Reference：A utility class for logging messages with different levels.
+// Copyright © 2025 Alibaba Cloud. All rights reserved.
+//
+// Author: keria
+// Date: 2021/6/29
+// Brief: A utility class for logging messages with different levels.
 
 import 'package:flutter/foundation.dart';
 

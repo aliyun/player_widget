@@ -77,6 +77,13 @@ class PlayerTranslationsZh with PlayerTranslationsMixin {
             'subtitleOn': '字幕功能：开',
             'subtitleOff': '字幕功能：关',
           },
+          'chapter': {
+            'titleFormat': '章节{index}：{title}',
+            'nextChapter': '下一章',
+            'panelTitle': '章节',
+            'panelCountFormat': '共{count}段',
+            'panelSubtitle': '内容由AI生成',
+          },
         },
       };
 }

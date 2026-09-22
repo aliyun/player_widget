@@ -2,9 +2,33 @@ include: package:flutter_lints/flutter.yaml
 
 linter:
   rules:
-    test_types_in_equals: true
+    # Existing rules (preserved)
     throw_in_finally: true
     unnecessary_statements: true
+
+    # Type safety
+    avoid_dynamic_calls: true
+
+    # Code quality
+    prefer_const_constructors: true
+    #    prefer_const_declarations: true
+    #    prefer_final_locals: true
+    #    cascade_invocations: true
+    avoid_redundant_argument_values: true
+
+    # Formatting consistency
+    require_trailing_commas: true
+
+analyzer:
+  errors:
+    # MUST level: treat as error
+    avoid_dynamic_calls: error
+    # SHOULD level: treat as warning (check_quality.sh uses --no-fatal-warnings)
+    prefer_const_constructors: warning
+    require_trailing_commas: warning
+    prefer_const_declarations: warning
+    # MAY level: treat as info (check_quality.sh uses --no-fatal-infos)
+    cascade_invocations: info
 
 # Additional information about this file can be found at
 # https://dart.dev/guides/language/analysis-options

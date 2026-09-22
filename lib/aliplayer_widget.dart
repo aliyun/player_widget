@@ -13,23 +13,6 @@ part of 'aliplayer_widget_lib.dart';
 /// [context] 构建上下文
 typedef SlotWidgetBuilder = Widget Function(BuildContext context);
 
-/// 插槽构建器类型定义（带控制器，已废弃）
-///
-/// Slot builder type definition with controller (deprecated)
-///
-/// **已废弃**: 全屏模式已升级为单 Controller 共享，controller 参数不再有信息增益，
-/// 请使用 [SlotWidgetBuilder] 替代。
-///
-/// **Deprecated**: Since fullscreen now shares a single controller,
-/// the controller parameter is no longer needed. Use [SlotWidgetBuilder] instead.
-@Deprecated('Use SlotWidgetBuilder instead. '
-    'Since fullscreen now shares a single controller, '
-    'the controller parameter is no longer needed.')
-typedef SlotWidgetBuilderWithController = Widget Function(
-  BuildContext context,
-  AliPlayerWidgetController controller,
-);
-
 /// 返回键回调类型定义
 ///
 /// Return button callback type definition
@@ -199,7 +182,7 @@ class AliPlayerWidget extends StatefulWidget {
 ///
 /// Player Widget State
 class AliPlayerWidgetState extends State<AliPlayerWidget>
-    with WidgetsBindingObserver, TickerProviderStateMixin {
+    with WidgetsBindingObserver, SingleTickerProviderStateMixin {
   /// 播放组件控制器
   late AliPlayerWidgetController _playController;
 
@@ -210,7 +193,10 @@ class AliPlayerWidgetState extends State<AliPlayerWidget>
   late SharedAnimationManager _animationManager;
 
   /// 当前播放场景类型
-  late SceneType _sceneType;
+  ///
+  /// 从控制器的 [sceneTypeNotifier] 实时读取，避免在 initState 中缓存
+  /// 导致异步 configure 后场景类型无法更新的问题。
+  SceneType get _sceneType => _playController.sceneTypeNotifier.value;
 
   /// 缓存的插槽渲染顺序，在 initState 计算，slotBuilders 变化时刷新
   late List<SlotType> _resolvedSlotOrder;
@@ -218,34 +204,19 @@ class AliPlayerWidgetState extends State<AliPlayerWidget>
   /// 当前是否处于全屏状态（用于防止重复 push）
   bool _isFullScreen = false;
 
-  /// 当前竖屏 AliPlayerView 的 viewId，用于全屏返回后重新绑定原生渲染面
-  int? _currentViewId;
+  /// 本实例是否位于全屏路由内部（在 initState 依据 isFullScreenNotifier 捕获）
+  ///
+  /// 用于设置面板请求的身份匹配：全屏激活时仅全屏实例响应，竖屏激活时仅竖屏
+  /// 实例响应。与 [_isFullScreen]（竖屏实例是否已 push 全屏路由）语义不同，
+  /// 不可混用——竖屏实例在 push 全屏期间 [_isFullScreen] 为 true 但仍位于
+  /// 全屏路由之外。
+  bool _isInsideFullScreenRoute = false;
+
+  /// 设置面板是否正在展示（防重入保护，避免快速多次点击叠加面板）
+  bool _isSettingPanelShowing = false;
 
   /// 是否注册了全屏监听器（全屏上下文中的实例不注册，防止重复 push）
   bool _hasFullScreenListener = false;
-
-  /// 播放状态显示视图的内容类型，默认为 none 不显示
-  final SafeValueNotifier<ContentViewType> _contentViewTypeNotifier =
-      SafeValueNotifier(ContentViewType.none);
-
-  /// 是否正在拖动进度条
-  final SafeValueNotifier<bool> _isDraggingNotifier = SafeValueNotifier(false);
-
-  /// 设置面板显示请求（内部状态）
-  ///
-  /// 点击设置按钮时变为 true，弹窗关闭后重置为 false。
-  final SafeValueNotifier<bool> _settingsPanelRequestNotifier =
-      SafeValueNotifier(false);
-
-  /// 上一次设置面板请求的值，用于边缘触发检测
-  bool _previousSettingsPanelRequestValue = false;
-
-  /// 拖拽开始的位置
-  Duration? _dragStartPosition;
-
-  /// 当前拖动进度条的时间
-  final SafeValueNotifier<Duration> _currentSeekTimeNotifier =
-      SafeValueNotifier(Duration.zero);
 
   /// 构建播放器视图
   ///
@@ -259,6 +230,7 @@ class AliPlayerWidgetState extends State<AliPlayerWidget>
         return PlayerAssetsScope(
           assetsPath: widget.assetsPath,
           child: PopScope(
+            canPop: false,
             onPopInvoked: (bool didPop) {
               if (didPop) return; // 如果已经处理了返回操作，则直接返回
               _handleBackPress();
@@ -272,10 +244,18 @@ class AliPlayerWidgetState extends State<AliPlayerWidget>
 
   /// 构建主体内容
   Widget _buildContentBody() {
-    // 根据视频尺寸计算渲染尺寸
-    return ValueListenableBuilder(
-      valueListenable: _playController.videoSizeNotifier,
-      builder: (context, videoSize, __) {
+    // 监听 场景类别、视频大小、全屏状态
+    Listenable listenable = Listenable.merge([
+      _playController.videoSizeNotifier,
+      _playController.sceneTypeNotifier,
+      _playController.isFullScreenNotifier,
+    ]);
+
+    // 根据视频尺寸计算渲染尺寸，同时监听场景类型变化以刷新场景相关 UI
+    return ListenableBuilder(
+      listenable: listenable,
+      builder: (context, __) {
+        final videoSize = _playController.videoSizeNotifier.value;
         // 如果视频尺寸为空，则不渲染
         if (videoSize == Size.zero) {
           return const SizedBox.shrink();
@@ -314,16 +294,18 @@ class AliPlayerWidgetState extends State<AliPlayerWidget>
     for (final entry in sortedSlots) {
       // overlays 插槽可返回多个 Widget，单独处理
       if (entry == SlotType.overlays) {
-        slots.addAll(SlotManager.buildOverlaysSlot(
-          widget: widget,
-          context: context,
-          defaultBuilder: (context) => const SizedBox.shrink(),
-        ));
+        slots.addAll(
+          SlotManager.buildOverlaysSlot(
+            widget: widget,
+            context: context,
+            defaultBuilder: (context) => const SizedBox.shrink(),
+          ),
+        );
         continue;
       }
 
       // 内置插槽：检查场景可见性 + 自定义构建器
-      final defaultBuilder = _slotContentBuilders[entry.key];
+      final defaultBuilder = _slotBuilders[entry];
       if (defaultBuilder != null) {
         // 内置插槽
         if (_shouldShowSlot(entry)) {
@@ -364,22 +346,14 @@ class AliPlayerWidgetState extends State<AliPlayerWidget>
     return allSlots;
   }
 
-  /// 内置插槽构建器映射（替代 switch 语句）
+  /// 插槽构建依赖上下文。
+  /// Slot build dependency context.
+  late SlotBuildContext _slotBuildContext;
+
+  /// 内置插槽构建器映射（由 [DefaultSlotFactory] 创建）。
   ///
-  /// Built-in slot content builder map (replaces switch statement)
-  late final Map<String, Widget Function(double width, double height)>
-      _slotContentBuilders = {
-    SlotType.playerSurface.key: (w, h) => _buildPlaySurfaceView(w, h),
-    SlotType.coverImage.key: (w, h) => _buildPlayCoverView(w, h),
-    SlotType.playControl.key: (w, h) => _buildPlayControlView(),
-    SlotType.topBar.key: (w, h) => _buildTopBarWidget(),
-    SlotType.bottomBar.key: (w, h) => _buildBottomBarWidget(),
-    SlotType.seekThumbnail.key: (w, h) => _buildSeekThumbnailWidget(),
-    SlotType.centerDisplay.key: (w, h) => _buildCenterDisplayWidget(),
-    SlotType.playState.key: (w, h) => _buildPlayStateView(),
-    SlotType.settingMenu.key: (w, h) => _buildSettingsPanelSlot(),
-    SlotType.subtitle.key: (w, h) => _buildSubtitleWidget(),
-  };
+  /// Built-in slot content builder map (created by [DefaultSlotFactory]).
+  late Map<SlotType, SlotBuilder> _slotBuilders;
 
   /// 构建插槽或默认组件
   ///
@@ -414,194 +388,58 @@ class AliPlayerWidgetState extends State<AliPlayerWidget>
     return true;
   }
 
-  /// 构建播放器视图
+  /// 创建插槽构建依赖上下文。
+  /// Creates the slot build dependency context.
   ///
-  /// build player view
-  Widget _buildPlaySurfaceView(double width, double height) {
-    return AliPlayerView(
-      onCreated: (int viewId) {
-        _currentViewId = viewId;
-        _playController._setPlayerView(viewId);
-      },
-      x: 0,
-      y: 0,
-      width: width,
-      height: height,
-      aliPlayerViewType: (_playController._widgetData?.androidViewType ??
-              AndroidViewType.defaultValue)
-          .toPlayerViewType(),
+  /// 将 State 内部字段和回调打包为 [SlotBuildContext]，
+  /// 供插槽构建函数通过显式参数访问。
+  ///
+  /// Bundles State-internal fields and callbacks into a [SlotBuildContext]
+  /// so slot builder functions access dependencies via an explicit parameter.
+  SlotBuildContext _createSlotBuildContext() {
+    return SlotBuildContext(
+      controller: _playController,
+      animationManager: _animationManager,
+      hiddenSlotElements: widget.hiddenSlotElements,
+      onBackPress: () => _handleBackPress(),
     );
   }
 
-  /// 构建封面视图
+  /// 处理设置面板请求
   ///
-  /// build cover view
-  Widget _buildPlayCoverView(double width, double height) {
-    // 获取封面图片的 URL
-    final coverUrl = _playController._widgetData?.coverUrl;
-    // 如果没有封面图片，则不显示
-    if (coverUrl == null || coverUrl.isEmpty) {
-      return const SizedBox.shrink();
+  /// 监听 [settingPanelRequestNotifier] 计数器变化时触发弹窗。
+  void _handleSettingPanelRequest() {
+    if (!mounted) return;
+
+    // 仅当本实例的身份（竖屏/全屏）与当前全屏状态匹配时才响应：
+    // 全屏激活时仅全屏路由内的实例响应，竖屏时仅竖屏实例响应。
+    if (_playController.isFullScreenNotifier.value !=
+        _isInsideFullScreenRoute) {
+      return;
     }
 
-    // 监听播放器是否渲染完成，如果没有渲染完成，则显示封面图片
-    return ValueListenableBuilder(
-      valueListenable: _playController.isRenderedNotifier,
-      builder: (context, isRendered, __) {
-        // 如果播放器已经渲染完成，则不显示封面图片
-        if (isRendered) {
-          return const SizedBox.shrink();
-        }
+    if (_isSettingPanelShowing) return;
+    _isSettingPanelShowing = true;
 
-        return AliPlayerCoverImageWidget(
-          imageUrl: coverUrl,
-          width: width,
-          height: height,
-          fit: BoxFit.cover,
-        );
-      },
-    );
-  }
-
-  /// 构建播放控制视图
-  Widget _buildPlayControlView() {
-    // 双击控制（场景限制）
-    bool enableDoubleTap = isNotSceneType(_sceneType, [
-      SceneType.live,
-    ]);
-    // 长按控制（场景限制）
-    bool enableLongPress = isNotSceneType(_sceneType, [
-      SceneType.live,
-      SceneType.restricted,
-    ]);
-    // 水平拖动控制（场景限制）
-    bool enableDrag = isNotSceneType(_sceneType, [
-      SceneType.live,
-      SceneType.restricted,
-    ]);
-    // 竖向手势控制（场景限制）
-    bool enableVerticalGestures = isNotSceneType(_sceneType, [
-      SceneType.listPlayer,
-    ]);
-    return AliPlayerPlayControlWidget(
-      autoHide: true,
-      onVisibilityChanged: (bool isVisible) {
-        _togglePlayControlVisibility(forceHide: !isVisible);
-      },
-      onDoubleTap: enableDoubleTap ? _onPlayerViewDoubleTap : null,
-      onLongPressStart: enableLongPress ? _onPlayerViewLongPress : null,
-      onLongPressEnd: enableLongPress ? _onPlayerViewLongPressEnd : null,
-      onHorizontalDragUpdate:
-          enableDrag ? _onPlayerViewHorizontalDragUpdate : null,
-      onHorizontalDragEnd: enableDrag ? _onPlayerViewHorizontalDragEnd : null,
-      onLeftVerticalDragUpdate:
-          enableVerticalGestures ? _onPlayerViewLeftVerticalDragUpdate : null,
-      onLeftVerticalDragEnd:
-          enableVerticalGestures ? _onPlayerViewLeftVerticalDragEnd : null,
-      onRightVerticalDragUpdate:
-          enableVerticalGestures ? _onPlayerViewRightVerticalDragUpdate : null,
-      onRightVerticalDragEnd:
-          enableVerticalGestures ? _onPlayerViewRightVerticalDragEnd : null,
-    );
-  }
-
-  /// 切换播放控制视图的可见性
-  void _togglePlayControlVisibility({bool forceHide = false}) {
-    if (forceHide) {
-      // 强制隐藏时，如果正在拖拽则不执行
-      if (_isDraggingNotifier.value) {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) {
+        _isSettingPanelShowing = false;
         return;
       }
-      _animationManager.hide();
-    } else {
-      // 切换显示/隐藏
-      if (_animationManager.isVisible) {
-        _animationManager.hide();
-      } else {
-        _animationManager.show();
-      }
-    }
-  }
 
-  /// 构建顶部栏控件
-  Widget _buildTopBarWidget() {
-    // 启用下载功能
-    bool enableDownloadPress = _isDownloadEnable();
-
-    // 检查是否有自定义 settingMenu slotBuilder
-    final hasCustomSettingMenu =
-        widget.slotBuilders.containsKey(SlotType.settingMenu);
-
-    Listenable listenable = Listenable.merge([
-      _playController.downloadStateNotifier,
-    ]);
-    return ListenableBuilder(
-      listenable: listenable,
-      builder: (context, _) {
-        final downloadState = _playController.downloadStateNotifier.value;
-        return AliPlayerTopBarWidget(
-          animationManager: _animationManager,
-          title: _playController._widgetData?.videoTitle ?? "",
-          onBackPressed: _handleBackPress,
-          onSettingsPressed: () {
-            // 统一通过 notifier 触发，slot 系统负责处理
-            if (hasCustomSettingMenu) {
-              // 自定义实现：通知用户监听的 notifier
-              _playController.settingsPanelRequestNotifier.value = true;
-            } else {
-              // 默认实现：通知内部 notifier，由 _buildSettingsPanelSlot 处理
-              _settingsPanelRequestNotifier.value = true;
-            }
-          },
-          isDownload: downloadState is DownloadCompletedState,
-          onDownloadPressed: enableDownloadPress ? _onDownloadPressed : null,
-          onSnapshotPressed: _onSnapshotPressed,
-          onPIPPressed: null, // TODO: 暂不支持
-        );
-      },
-    );
-  }
-
-  /// 构建设置面板插槽
-  ///
-  /// 设置面板的显示由边缘触发监听器 [_handleSettingsPanelRequestEdge] 处理，
-  /// SettingsPanel 是"事件",与其他 UI模型不同
-  /// 此插槽仅作为占位组件存在。
-  Widget _buildSettingsPanelSlot() {
-    return const SizedBox.shrink();
-  }
-
-  /// 处理设置面板请求的边缘触发
-  ///
-  /// 仅在 _settingsPanelRequestNotifier 从 false 变为 true 时触发弹窗，
-  /// 避免 Widget 重建时因状态丢失而重复弹窗。
-  void _handleSettingsPanelRequestEdge() {
-    final currentValue = _settingsPanelRequestNotifier.value;
-
-    // 边缘触发：仅当值从 false 变为 true 时执行
-    if (currentValue && !_previousSettingsPanelRequestValue) {
-      _previousSettingsPanelRequestValue = true;
-
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        // 检查 mounted 确保组件仍然存在
-        if (!mounted) return;
-
-        AliPlayerSettingsPanelManager.showSettingsPanel(
-          context: context,
-          controller: _playController,
-          sceneType: _sceneType,
-          hiddenSlotElements: widget.hiddenSlotElements,
-          isShowExternalSubtitle: _playController.showExternalSubtitleNotifier,
-        ).whenComplete(() {
-          // 弹窗关闭后重置状态，确保下次点击能再次触发
-          _previousSettingsPanelRequestValue = false;
-          _settingsPanelRequestNotifier.value = false;
-        });
-      });
-    }
+      SettingPanelManager.showSettingPanel(
+        context: context,
+        controller: _playController,
+        sceneType: _sceneType,
+        hiddenSlotElements: widget.hiddenSlotElements,
+      ).whenComplete(() => _isSettingPanelShowing = false);
+    });
   }
 
   /// 返回事件处理
+  ///
+  /// 涉及 Navigator、widget.onBackPressed 和全屏状态的三重交互，
+  /// 无法在单一插槽中独立实现，因此保留在 State 中。
   bool _handleBackPress() {
     // 如果当前是全屏模式，先退出全屏
     if (_playController.isFullScreenNotifier.value) {
@@ -625,517 +463,6 @@ class AliPlayerWidgetState extends State<AliPlayerWidget>
     return true;
   }
 
-  /// 下载按钮点击回调
-  void _onDownloadPressed(bool value) {
-    _playController.startVideoDownload();
-  }
-
-  /// 截图按钮点击回调
-  void _onSnapshotPressed() {
-    // 获取截图文件名
-    String snapshotFileName = "${DateTime.now().millisecondsSinceEpoch}.png";
-    if (Platform.isIOS) {
-      _playController.snapshot(snapshotFileName);
-    } else if (Platform.isAndroid) {
-      // android needs absolute path
-      final filePath =
-          FileManager.getDownloadFilePath(snapshotFileName) ?? snapshotFileName;
-      _playController.snapshot(filePath);
-    }
-  }
-
-  /// 检测是否支持下载
-  bool _isDownloadEnable() {
-    // 直播场景不支持下载
-    if (isSceneType(_sceneType, [
-      SceneType.live,
-    ])) {
-      return false;
-    }
-
-    // 仅 VID 视频源支持下载
-    return _playController.isVideoSourceVid();
-  }
-
-  /// 构建底部栏控件
-  Widget _buildBottomBarWidget() {
-    // 拖动控制
-    bool enableDrag = isNotSceneType(_sceneType, [
-      SceneType.live,
-      SceneType.restricted,
-    ]);
-    // seek 控制
-    bool enableSeek = isNotSceneType(_sceneType, [
-      SceneType.live,
-      SceneType.restricted,
-    ]);
-    // 监听播放状态、当前播放位置、缓冲位置、总时长等
-    Listenable listenable = Listenable.merge([
-      _playController.playStateNotifier,
-      _playController.currentPositionNotifier,
-      _playController.bufferedPositionNotifier,
-      _playController.totalDurationNotifier,
-      _playController.externalSubtitleAvailableNotifier,
-    ]);
-    return ListenableBuilder(
-      listenable: listenable,
-      builder: (context, _) {
-        // 获取播放状态
-        final playState = _playController.playStateNotifier.value;
-        // 获取当前播放位置、缓冲位置、总时长
-        final currentPosition = _playController.currentPositionNotifier.value;
-        final bufferedPosition = _playController.bufferedPositionNotifier.value;
-        final totalDuration = _playController.totalDurationNotifier.value;
-        return AliPlayerBottomBarWidget(
-          animationManager: _animationManager,
-          controller: _playController,
-          sceneType: _sceneType,
-          orientation: MediaQuery.of(context).orientation,
-          isPlaying: playState == FlutterAvpdef.started,
-          currentPosition: currentPosition,
-          bufferedPosition: bufferedPosition,
-          totalDuration: totalDuration,
-          onPlayIconPressed: _onPlayerViewTap,
-          onReplayIconPressed: _onReplayIconTap,
-          onFullScreenPressed: _onFullScreenPressed,
-          onSubtitlePressed: _toggleSubtitleShow,
-          onDragUpdate: enableDrag ? _onDragUpdate : null,
-          onDragEnd: enableDrag ? _onDragEnd : null,
-          onSeekEnd: enableSeek ? _onSeekEnd : null,
-          isShowExternalSubtitle:
-              _playController.showExternalSubtitleNotifier.value,
-          isShowExternalSubtitleBtn:
-              _playController.externalSubtitleAvailableNotifier.value,
-        );
-      },
-    );
-  }
-
-  /// 外挂字幕显示
-  Future<void> _toggleSubtitleShow() async {
-    _playController.showExternalSubtitleNotifier.value =
-        !_playController.showExternalSubtitleNotifier.value;
-
-    PlayStateShowUtil.show(
-      context,
-      widgetStatus: PlayStatus.info,
-      statusMessage: PlayerI18n.t(
-        _playController.showExternalSubtitleNotifier.value
-            ? PlayerI18nKeys.subtitleOn
-            : PlayerI18nKeys.subtitleOff,
-      ),
-    );
-  }
-
-  /// 全屏状态切换
-  ///
-  /// 进入和退出全屏均通过 toggleFullscreen 触发 _fullScreenListener 统一处理。
-  void _onFullScreenPressed() {
-    _playController.toggleFullscreen();
-  }
-
-  /// 拖拽进度更新回调
-  void _onDragUpdate(Duration duration) {
-    _playController.requestThumbnailBitmap(duration);
-
-    // 记录拖拽开始位置
-    _dragStartPosition ??= _playController.currentPositionNotifier.value;
-
-    _isDraggingNotifier.value = true;
-    _currentSeekTimeNotifier.value = duration;
-  }
-
-  /// 拖拽进度结束回调
-  void _onDragEnd(Duration duration) {
-    final startPosition = _dragStartPosition ?? Duration.zero;
-    final dragDistance = (duration - startPosition).abs();
-
-    _isDraggingNotifier.value = false;
-    _currentSeekTimeNotifier.value = Duration.zero;
-    _dragStartPosition = null;
-
-    // 只有拖拽距离超过阈值时间, 才认为是真正的拖拽操作
-    const threshold = Duration(seconds: 1);
-    if (dragDistance > threshold && _animationManager.isVisible) {
-      // 延迟隐藏，给用户查看时间
-      Future.delayed(const Duration(seconds: 2), () {
-        if (!_isDraggingNotifier.value && _animationManager.isVisible) {
-          _animationManager.hide();
-        }
-      });
-    }
-  }
-
-  /// 拖拽进度结束回调
-  void _onSeekEnd(Duration duration) {
-    _playController.seek(duration);
-  }
-
-  /// 构建 seek 缩略图控件
-  Widget _buildSeekThumbnailWidget() {
-    // 监听播放进度、总时长、是否正在拖拽、当前拖拽进度等
-    Listenable listener = Listenable.merge([
-      _playController.totalDurationNotifier,
-      _playController.thumbnailNotifier,
-      _isDraggingNotifier,
-      _currentSeekTimeNotifier,
-      _playController.videoSizeNotifier,
-    ]);
-    return ListenableBuilder(
-      listenable: listener,
-      builder: (context, _) {
-        final totalDuration = _playController.totalDurationNotifier.value;
-        final thumbnail = _playController.thumbnailNotifier.value;
-        final isDragging = _isDraggingNotifier.value;
-        final currentSeekTime = _currentSeekTimeNotifier.value;
-        final videoWidthHeight = _playController.videoSizeNotifier.value;
-
-        return AliPlayerSeekThumbnailWidget(
-          isVisible: isDragging,
-          currentSeekTime: currentSeekTime,
-          totalDuration: totalDuration,
-          thumbnail: thumbnail,
-          orientation: MediaQuery.of(context).orientation,
-          videoSize: videoWidthHeight,
-          hasBottomMargin: _animationManager.isVisible,
-        );
-      },
-    );
-  }
-
-  /// 构建外挂字幕组件
-  Widget _buildSubtitleWidget() {
-    return ValueListenableBuilder<bool>(
-      valueListenable: _playController.showExternalSubtitleNotifier,
-      builder: (context, show, _) {
-        if (!show) {
-          return const SizedBox.shrink();
-        }
-
-        return _buildSubtitleContent();
-      },
-    );
-  }
-
-  /// 外挂字幕内容
-  Widget _buildSubtitleContent() {
-    // 监听播放进度、总时长、是否正在拖拽、当前拖拽进度等
-    Listenable listener = Listenable.merge([
-      _playController.subtitleNotifier,
-      _playController.subtitleTrackIndexNotifier,
-      _playController.isSubtitleVisibleNotifier,
-      _currentSeekTimeNotifier,
-    ]);
-    return ListenableBuilder(
-      listenable: listener,
-      builder: (context, _) {
-        Subtitles? subtitles = _playController.subtitleNotifier.value;
-        int? trackIndex = _playController.subtitleTrackIndexNotifier.value;
-        final isSubtitleVisible =
-            _playController.isSubtitleVisibleNotifier.value;
-        return AliPlayerSubtitleWidget(
-          subtitleOn: isSubtitleVisible,
-          subtitles: subtitles,
-          trackIndex: trackIndex,
-          subtitleBuilder: _playController.subtitleBuilder,
-          config: _playController.subtitleConfig,
-        );
-      },
-    );
-  }
-
-  /// 构建播放速度显示视图
-  Widget _buildSpeedDisplayView() {
-    return SizedBox(
-      height: PlayerStyles.kControlWidgetHeight,
-      child: Padding(
-        padding: const EdgeInsets.symmetric(
-          vertical: PlayerStyles.kControlVerticalInsets,
-          horizontal: PlayerStyles.kControlHorizontalInsets,
-        ),
-        child: Row(
-          children: [
-            const CustomIconButton(
-              iconName: PlayerIcons.speedControl,
-              iconSize: Size.square(PlayerStyles.iconSizeTopBar),
-            ),
-            const SizedBox(
-              width: PlayerStyles.kSpeedDisplayIconTextSpacing,
-            ),
-            Text(
-              PlayerI18n.t(PlayerI18nKeys.speedFastForward),
-              style: const TextStyle(
-                color: Colors.white,
-                fontSize: PlayerStyles.kSpeedDisplayFontSize,
-              ),
-              textAlign: TextAlign.center,
-            )
-          ],
-        ),
-      ),
-    );
-  }
-
-  /// 构建声音滑块控件
-  Widget _buildVolumeSlider() {
-    // 监听音量状态
-    return ValueListenableBuilder(
-      valueListenable: _playController.volumeNotifier,
-      builder: (builder, volume, __) {
-        return AliPlayerControlSliderWidget(
-          text: PlayerI18n.t(PlayerI18nKeys.volume),
-          startIconName: PlayerIcons.volume,
-          initialValue: volume,
-          isInteractive: false,
-        );
-      },
-    );
-  }
-
-  /// 构建亮度滑块控件
-  Widget _buildBrightnessSlider() {
-    // 监听亮度状态
-    return ValueListenableBuilder(
-      valueListenable: _playController.brightnessNotifier,
-      builder: (context, brightness, __) {
-        return AliPlayerControlSliderWidget(
-          text: PlayerI18n.t(PlayerI18nKeys.brightness),
-          startIconName: PlayerIcons.brightness,
-          initialValue: brightness,
-          isInteractive: false,
-        );
-      },
-    );
-  }
-
-  /// 构建中心显示控件
-  Widget _buildCenterDisplayWidget() {
-    // 获取 centerDisplay 插槽的隐藏元素配置
-    final hiddenElements = widget.hiddenSlotElements[SlotType.centerDisplay];
-
-    // 监听播放状态显示视图的内容类型
-    return ValueListenableBuilder(
-      valueListenable: _contentViewTypeNotifier,
-      builder: (context, contentViewType, __) {
-        // 如果不显示任何内容，则返回空组件
-        if (contentViewType == ContentViewType.none) {
-          return const SizedBox.shrink();
-        }
-
-        // 检查当前内容类型是否被隐藏
-        final contentWidget = _buildCenterDisplayContentWidget(
-          contentViewType,
-          hiddenElements,
-        );
-
-        // 如果内容被隐藏，返回空组件
-        if (contentWidget == null) {
-          return const SizedBox.shrink();
-        }
-
-        return AliPlayerCenterDisplayWidget(
-          contentWidget: contentWidget,
-        );
-      },
-    );
-  }
-
-  /// 根据 _centerDisplayViewContentType 获取对应的内容组件
-  ///
-  /// [hiddenElements] 为需要隐藏的元素 key 集合，若当前类型被隐藏则返回 null
-  Widget? _buildCenterDisplayContentWidget(
-    ContentViewType contentViewType,
-    Set<String>? hiddenElements,
-  ) {
-    switch (contentViewType) {
-      // TODO 亮度组件，使用时自行开启
-      case ContentViewType.brightness:
-        return hiddenElements.isElementVisible(CenterDisplayElements.brightness)
-            ? _buildBrightnessSlider()
-            : null;
-      case ContentViewType.volume:
-        return hiddenElements.isElementVisible(CenterDisplayElements.volume)
-            ? _buildVolumeSlider()
-            : null;
-      case ContentViewType.speed:
-        return hiddenElements.isElementVisible(CenterDisplayElements.speed)
-            ? _buildSpeedDisplayView()
-            : null;
-      default:
-        return null;
-    }
-  }
-
-  /// 切换显示内容类型
-  void _toggleCenterDisplayContentType(ContentViewType contentType) {
-    _contentViewTypeNotifier.value = contentType;
-  }
-
-  /// 播放器视图点击回调
-  void _onPlayerViewTap() {
-    // 如果正在拖拽，则不处理点击事件
-    if (_isDraggingNotifier.value) {
-      return;
-    }
-
-    // 切换控制面板显示状态
-    _togglePlayControlVisibility();
-    _playController.togglePlayState();
-  }
-
-  /// 刷新按钮点击回调
-  void _onReplayIconTap() {
-    _playController.replay();
-  }
-
-  /// 播放器视图双击回调
-  void _onPlayerViewDoubleTap() {
-    _playController.togglePlayState();
-  }
-
-  /// 播放器视图长按回调
-  void _onPlayerViewLongPress() {
-    // 触发设备振动
-    VibrationUtil.vibrate(duration: 100);
-
-    // 设置显示内容类型为倍速
-    _toggleCenterDisplayContentType(ContentViewType.speed);
-
-    _playController.setSpeed(speed: 2.0);
-  }
-
-  /// 播放器视图长按结束回调
-  void _onPlayerViewLongPressEnd() {
-    // 触发设备振动
-    VibrationUtil.vibrate(duration: 50);
-
-    // 设置显示内容类型为空
-    _toggleCenterDisplayContentType(ContentViewType.none);
-
-    _playController.setSpeed();
-  }
-
-  /// 播放器视图水平拖动回调
-  void _onPlayerViewHorizontalDragUpdate(double delta) {
-    // 轻量级触觉反馈，避免高频 drag update 产生 Future 积压
-    VibrationUtil.selectionFeedback();
-
-    // Update dragging state.
-    _isDraggingNotifier.value = true;
-
-    // Calculate based on delta and total duration.
-    final totalDuration = _playController.totalDurationNotifier.value;
-    final currentPosition = _playController.currentPositionNotifier.value;
-    Duration seekDuration = currentPosition + totalDuration * delta;
-    // Clamp the value within valid range.
-    int seekMills = seekDuration.inMilliseconds.clamp(
-      0,
-      totalDuration.inMilliseconds,
-    );
-
-    // Update current seek time.
-    var seekTimeDuration = Duration(milliseconds: seekMills);
-    _currentSeekTimeNotifier.value = seekTimeDuration;
-
-    // Request thumbnail update.
-    _playController.requestThumbnailBitmap(seekTimeDuration);
-  }
-
-  /// 播放器视图水平拖动结束回调
-  void _onPlayerViewHorizontalDragEnd(double delta) {
-    // 触发设备振动
-    VibrationUtil.vibrate(duration: 100);
-
-    // Seek to the current seek time.
-    final currentSeekTime = _currentSeekTimeNotifier.value;
-    _playController.seek(currentSeekTime);
-
-    // Reset dragging state.
-    _isDraggingNotifier.value = false;
-    _currentSeekTimeNotifier.value = Duration.zero;
-  }
-
-  /// 播放器视图左垂直拖动回调
-  void _onPlayerViewLeftVerticalDragUpdate(double delta) {
-    // 触发设备振动
-    VibrationUtil.vibrate(duration: 50);
-
-    // 设置显示内容类型为亮度
-    _toggleCenterDisplayContentType(ContentViewType.brightness);
-
-    _playController.setBrightnessWithDelta(delta);
-  }
-
-  /// 播放器视图左垂直拖动结束回调
-  void _onPlayerViewLeftVerticalDragEnd(double delta) {
-    // 触发设备振动
-    VibrationUtil.vibrate(duration: 100);
-
-    // 设置显示内容类型为空
-    _toggleCenterDisplayContentType(ContentViewType.none);
-  }
-
-  /// 播放器视图右垂直拖动回调
-  void _onPlayerViewRightVerticalDragUpdate(double delta) {
-    // 触发设备振动
-    VibrationUtil.vibrate(duration: 50);
-
-    // 设置显示内容类型为声音
-    _toggleCenterDisplayContentType(ContentViewType.volume);
-
-    _playController.setVolumeWithDelta(delta);
-  }
-
-  /// 播放器视图右垂直拖动结束回调
-  void _onPlayerViewRightVerticalDragEnd(double delta) {
-    // 触发设备振动
-    VibrationUtil.vibrate(duration: 100);
-
-    // 设置显示内容类型为空
-    _toggleCenterDisplayContentType(ContentViewType.none);
-  }
-
-  /// 构建播放状态视图
-  Widget _buildPlayStateView() {
-    // 监听播放状态、错误码、错误信息等变化
-    Listenable listenable = Listenable.merge([
-      _playController.playStateNotifier,
-      _playController.playErrorNotifier,
-      _playController.isLoadingStateNotifier,
-    ]);
-    return ListenableBuilder(
-      listenable: listenable,
-      builder: (context, _) {
-        // 获取播放状态
-        final playState = _playController.playStateNotifier.value;
-        final isLoadingState = _playController.isLoadingStateNotifier.value;
-
-        if (!playState.shouldBuildErrorWidget) {
-          if (isLoadingState) {
-            return AliPlayerPlayStateWidget(
-              widgetStatus: PlayStatus.loading,
-              statusCode: PlayerI18n.t(PlayerI18nKeys.statusLoading),
-            );
-          } else {
-            // 如果不需要构建播放状态视图，则返回空组件
-            return const SizedBox.shrink();
-          }
-        }
-
-        // 获取错误码和错误信息
-        final playError = _playController.playErrorNotifier.value;
-        final errorCode = playError?.keys.firstOrNull;
-        final errorMsg = playError?.values.firstOrNull;
-
-        return AliPlayerPlayStateWidget(
-          widgetStatus: PlayStatus.error,
-          statusCode: "$errorCode",
-          statusMessage: errorMsg,
-        );
-      },
-    );
-  }
-
   /// 初始化状态
   /// StatefulWidget 的状态类中第一个被调用的方法，用于初始化状态，可以执行一些一次性的初始化工作
   ///
@@ -1153,14 +480,20 @@ class AliPlayerWidgetState extends State<AliPlayerWidget>
     _contextProvider = () => context;
     _playController._bindContext(_contextProvider);
 
+    /// 捕获本实例身份：initState 时若已处于全屏，则本实例位于全屏路由内部
+    _isInsideFullScreenRoute = _playController.isFullScreenNotifier.value;
+
     /// 初始化共享动画管理器
     _animationManager = SharedAnimationManager(this);
 
-    /// 初始化场景类型
-    _sceneType = _playController._widgetData?.sceneType ?? SceneType.vod;
-
-    /// 缓存插槽渲染顺序
+    /// 缓存插槽渲染顺序（与场景类型无关）
     _resolvedSlotOrder = _resolveSlotOrder();
+
+    /// 创建插槽构建依赖上下文与构建器映射
+    _slotBuildContext = _createSlotBuildContext();
+
+    /// 创建默认插槽构建器映射
+    _slotBuilders = DefaultSlotFactory.createDefaultBuilders(_slotBuildContext);
 
     /// 添加观察者
     WidgetsBinding.instance.addObserver(this);
@@ -1171,8 +504,14 @@ class AliPlayerWidgetState extends State<AliPlayerWidget>
       _hasFullScreenListener = true;
     }
 
-    /// 监听设置面板请求的边缘触发（false → true）
-    _settingsPanelRequestNotifier.addListener(_handleSettingsPanelRequestEdge);
+    /// 监听设置面板请求
+    /// 仅在未自定义 settingMenu 时监听，否则由用户的自定义插槽处理。
+    /// 每个 State 实例（竖屏/全屏）各自注册，
+    /// 由 [_handleSettingPanelRequest] 内的全屏身份匹配守卫决定谁响应。
+    if (!widget.slotBuilders.containsKey(SlotType.settingMenu)) {
+      _playController.settingPanelRequestNotifier
+          .addListener(_handleSettingPanelRequest);
+    }
   }
 
   /// 全屏状态监听器
@@ -1196,7 +535,7 @@ class AliPlayerWidgetState extends State<AliPlayerWidget>
 
     final route = PageRouteBuilder<void>(
       pageBuilder: (context, animation, secondaryAnimation) {
-        return AliPlayerFullScreenWidget(
+        return FullScreenWidget(
           controller: _playController,
           child: AliPlayerWidget(
             _playController,
@@ -1220,11 +559,12 @@ class AliPlayerWidgetState extends State<AliPlayerWidget>
     }
 
     // Note keria:
-    // 坑点：由于 Flutter SDK 内部实现限制，需重新绑定原生播放器到竖屏的 AliPlayerView
-    // 全屏期间，全屏的 AliPlayerView 调用了 _setPlayerView(fullscreenViewId)，覆盖了竖屏的绑定
-    // 全屏 pop 后，全屏的 PlatformView 被销毁，需要将原生播放器重新指向竖屏仍然存活的 PlatformView
-    if (mounted && _currentViewId != null) {
-      _playController._setPlayerView(_currentViewId!);
+    // 坑点：由于 Flutter SDK 内部实现限制，需重新绑定原生播放器到端屏的 AliPlayerView
+    // 全屏期间，全屏的 AliPlayerView 调用了 _setPlayerView(fullscreenViewId)，覆盖了端屏的绑定
+    // 全屏 pop 后，全屏的 PlatformView 被销毁，需要将原生播放器重新指向端屏仍然存活的 PlatformView
+    final portraitViewId = _playController.portraitViewId;
+    if (mounted && portraitViewId != null) {
+      _playController._setPlayerView(portraitViewId);
     }
   }
 
@@ -1239,13 +579,14 @@ class AliPlayerWidgetState extends State<AliPlayerWidget>
     // 解绑 context provider（仅解绑自己绑定的）
     _playController._unbindContext(_contextProvider);
 
-    // 销毁 ValueNotifier
-    _disposeValueNotifiers();
-
     // 移除全屏状态监听（仅在注册过时才移除）
     if (_hasFullScreenListener) {
       _playController.isFullScreenNotifier.removeListener(_fullScreenListener);
     }
+
+    // 安全移除设置面板请求监听（即使未注册也不会报错）
+    _playController.settingPanelRequestNotifier
+        .removeListener(_handleSettingPanelRequest);
 
     // 销毁共享动画管理器
     _animationManager.dispose();
@@ -1254,15 +595,6 @@ class AliPlayerWidgetState extends State<AliPlayerWidget>
     WidgetsBinding.instance.removeObserver(this);
 
     super.dispose();
-  }
-
-  /// 销毁 ValueNotifier
-  void _disposeValueNotifiers() {
-    _contentViewTypeNotifier.dispose();
-
-    _isDraggingNotifier.dispose();
-    _currentSeekTimeNotifier.dispose();
-    _settingsPanelRequestNotifier.dispose();
   }
 
   /// 状态更新回调
@@ -1275,43 +607,47 @@ class AliPlayerWidgetState extends State<AliPlayerWidget>
 
     logi("[lifecycle] didUpdateWidget");
 
-    // 如果控制器发生变化，则更新内部状态
-    if (widget._controller != oldWidget._controller) {
+    // 检测控制器是否发生变化
+    final controllerChanged = widget._controller != oldWidget._controller;
+    if (controllerChanged) {
+      final oldController = _playController;
+
+      // 从旧控制器解绑监听器和 context
+      oldController._unbindContext(_contextProvider);
+      if (_hasFullScreenListener) {
+        oldController.isFullScreenNotifier.removeListener(_fullScreenListener);
+        _hasFullScreenListener = false;
+      }
+      oldController.settingPanelRequestNotifier
+          .removeListener(_handleSettingPanelRequest);
+
+      // 切换到新控制器
       _playController = widget._controller;
-      setState(() {});
+
+      // 对新控制器绑定 context 和监听器
+      _playController._bindContext(_contextProvider);
+      if (!_playController.isFullScreenNotifier.value) {
+        _playController.isFullScreenNotifier.addListener(_fullScreenListener);
+        _hasFullScreenListener = true;
+      }
+      if (!widget.slotBuilders.containsKey(SlotType.settingMenu)) {
+        _playController.settingPanelRequestNotifier
+            .addListener(_handleSettingPanelRequest);
+      }
     }
 
     // slotBuilders 变化时刷新插槽顺序缓存
     if (widget.slotBuilders != oldWidget.slotBuilders) {
       _resolvedSlotOrder = _resolveSlotOrder();
     }
-  }
 
-  /// 应用程序生命周期变化回调
-  /// 当应用程序生命周期的状态发生变化时（如暂停、恢复），该方法被调用。
-  /// TODO: 当前为日志占位实现，后续可添加实际逻辑（如后台自动暂停、前台自动恢复）
-  ///
-  /// Called when the application's lifecycle state changes (e.g., paused, resumed).
-  /// TODO: Currently a logging placeholder. Add actual logic later (e.g., auto-pause on background).
-  @override
-  void didChangeAppLifecycleState(AppLifecycleState state) {
-    super.didChangeAppLifecycleState(state);
-    switch (state) {
-      case AppLifecycleState.resumed:
-        logi("App resumed");
-        break;
-      case AppLifecycleState.inactive:
-        logi("App inactive");
-        break;
-      case AppLifecycleState.paused:
-        logi("App paused");
-        break;
-      case AppLifecycleState.detached:
-        logi("App detached");
-        break;
-      case AppLifecycleState.hidden:
-        logi("App hidden");
-        break;
+    // 控制器或插槽相关 Widget 参数变化时重建上下文与构建器映射
+    // 控制器变化时必须重建，否则插槽仍引用旧控制器的 Notifier
+    if (controllerChanged ||
+        widget.hiddenSlotElements != oldWidget.hiddenSlotElements) {
+      _slotBuildContext = _createSlotBuildContext();
+      _slotBuilders =
+          DefaultSlotFactory.createDefaultBuilders(_slotBuildContext);
     }
   }
 

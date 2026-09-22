@@ -7,6 +7,7 @@
 import 'dart:io';
 
 import 'package:aliplayer_widget/utils/log_util.dart';
+import 'package:flutter/foundation.dart' show visibleForTesting;
 
 /// 存储类型枚举
 enum StorageType {
@@ -80,8 +81,11 @@ class StorageManager {
   /// 存储路径配置
   static StorageConfig? _storageConfig;
 
+  /// 默认存储类型
+  static const StorageType _kDefaultStorageType = StorageType.files;
+
   /// 默认使用的存储类型
-  static StorageType _defaultStorageType = StorageType.files;
+  static StorageType _defaultStorageType = _kDefaultStorageType;
 
   /// 处理路径：拼接子目录并创建目录
   static String? _processPath(String? basePath) {
@@ -210,6 +214,15 @@ class StorageManager {
     return getBasePath(type);
   }
 
+  /// Reset all static state for testing.
+  ///
+  /// Only available in tests.
+  @visibleForTesting
+  static void resetForTesting() {
+    _storageConfig = null;
+    _defaultStorageType = _kDefaultStorageType;
+  }
+
   /// Check if storage is configured
   ///
   /// 检查存储是否已配置
@@ -222,8 +235,9 @@ class StorageManager {
   /// [type] 要验证的存储类型，如果为null则验证默认类型
   ///
   /// 返回验证结果和错误信息
-  static (bool isValid, String? errorMessage) validateStorage(
-      [StorageType? type]) {
+  static (bool isValid, String? errorMessage) validateStorage([
+    StorageType? type,
+  ]) {
     if (_storageConfig == null) {
       const msg = 'Storage configuration is not set';
       loge('validateStorage failed: $msg');

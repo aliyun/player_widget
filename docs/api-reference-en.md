@@ -8,9 +8,10 @@ AliPlayerWidget provides a rich set of API interfaces that allow developers to d
 
 | Interface Name | Function Description                              |
 | -------------- | ------------------------------------------------- |
-| `configure`    | Configures the player data source and initializes the player |
-| `prepare`      | Manually triggers the preparation process of the player |
-| `destroy`      | Destroys the player instance and releases resources |
+| `configure`     | Configures the player data source and initializes the player                                                     |
+| `prepare`       | Manually triggers the preparation process of the player                                                          |
+| `setPlayerView` | Binds the native player rendering view; optional `isPortrait` parameter marks it as portrait view (auto-rebinds on fullscreen exit) |
+| `destroy`       | Destroys the player instance and releases resources                                                              |
 
 ### **Playback Control**
 
@@ -50,6 +51,12 @@ AliPlayerWidget provides a rich set of API interfaces that allow developers to d
 | ----------------------- | --------------------------------- |
 | `requestThumbnailBitmap`| Requests thumbnails at specified time points |
 
+### **Settings Panel**
+
+| Interface Name        | Function Description     |
+| --------------------- | ------------------------ |
+| `requestSettingPanel` | Requests to open the settings panel |
+
 ### **Other Functions**
 
 > The following APIs have been moved to `AliPlayerWidgetGlobalSetting`:
@@ -75,6 +82,8 @@ AliPlayerWidget provides a rich set of API interfaces that allow developers to d
 | `currentPositionNotifier`| Updates current playback progress in real-time (unit: milliseconds). |
 | `bufferedPositionNotifier`| Tracks video buffering progress, helping users understand cached content ranges. |
 | `totalDurationNotifier`  | Provides total video duration information for calculating playback percentage or displaying total duration. |
+| `isDraggingNotifier`     | Monitors whether the user is dragging the seek bar.                 |
+| `currentSeekTimeNotifier`| Monitors the current seek time during a drag operation.             |
 
 ### **Volume and Brightness Control**
 
@@ -114,9 +123,11 @@ AliPlayerWidget provides a rich set of API interfaces that allow developers to d
 
 | Notifier               | Function Description                                           |
 | ---------------------- | -------------------------------------------------------------- |
-| `videoSizeNotifier`    | Monitors changes in video dimensions.                          |
-| `snapFileStateNotifier`| Monitors changes in screenshot file state.                     |
-| `downloadStateNotifier`| Monitors changes in download state.                            |
+| `videoSizeNotifier`           | Monitors changes in video dimensions.                                                                    |
+| `snapFileStateNotifier`       | Monitors changes in screenshot file state.                                                               |
+| `downloadStateNotifier`       | Monitors changes in download state.                                                                      |
+| `contentViewTypeNotifier`     | Monitors changes in center display content type (volume/brightness/speed indicator).                     |
+| `settingPanelRequestNotifier` | Monitors settings panel open requests (event counter pattern); only for custom settingMenu slot scenarios. |
 
 ### **Usage Method**
 

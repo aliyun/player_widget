@@ -74,6 +74,83 @@ abstract final class PlayerStyles {
   /// 进度条时间显示阴影颜色
   static const Color kColorProgressBarTimeShadow = Color(0x80616060);
 
+  /// 章节标记点颜色
+  static const Color kChapterMarkerColor = Color(0xFFFFFFFF);
+
+  /// 章节标记点宽度
+  static const double kChapterMarkerWidth = 2.0;
+
+  /// 章节标记点击命中半径
+  static const double kChapterMarkerHitRadius = 10.0;
+
+  /// 进度条轨道圆角
+  static const Radius kSliderTrackBorderRadius = Radius.circular(2.0);
+
+  /// 竖屏进度条 Thumb 半径
+  static const double kSliderPortraitThumbRadius = 5.0;
+
+  /// 横屏进度条 Thumb 半径
+  static const double kSliderLandscapeThumbRadius = 7.0;
+
+  /// 进度条时间文本阴影模糊半径
+  static const double kProgressBarTimeShadowBlurRadius = 1.0;
+
+  /// 章节 Chip 列表高度
+  static const double kChapterChipListHeight = 32.0;
+
+  /// 章节 Chip 水平间距
+  static const double kChapterChipSpacing = 8.0;
+
+  /// 章节 Chip 水平内边距
+  static const double kChapterChipHorizontalPadding = 16.0;
+
+  /// 章节 Chip 最大宽度
+  static const double kChapterChipMaxWidth = 160.0;
+
+  /// 章节 Chip 圆角半径
+  static const double kChapterChipBorderRadius = 8.0;
+
+  /// 章节 Chip 选中背景色
+  static const Color kChapterChipSelectedBackground = Color(0x33FFFFFF);
+
+  /// 章节 Chip 未选中背景色
+  static const Color kChapterChipUnselectedBackground = Color(0x1AFFFFFF);
+
+  /// 章节 Chip 选中文字颜色
+  static const Color kChapterChipSelectedTextColor = Color(0xFFFFFFFF);
+
+  /// 章节列表项背景色
+  static const Color kChaptersPanelItemBackground = Colors.transparent;
+
+  /// 章节列表项选中背景色
+  static const Color kChaptersPanelItemSelectedBackground = Color(0x33FFFFFF);
+
+  /// 横屏章节标题最大宽度
+  static const double kLandscapeChapterTitleMaxWidth = 200.0;
+
+  /// 横屏章节提示字体颜色
+  static const Color kLandscapeChapterHintColor = Color(0x4DFFFFFF);
+
+  /// 章节面板毛玻璃遮罩顶部颜色
+  static const Color kChaptersPanelOverlayTopColor = Color(0x6B000000);
+
+  /// 章节面板毛玻璃遮罩底部颜色
+  static const Color kChaptersPanelOverlayBottomColor = Color(0x9E000000);
+
+  /// 章节面板辅助文本颜色
+  static const Color kChaptersPanelSecondaryTextColor = Colors.white70;
+
+  /// 章节面板缩略图占位背景色
+  static const Color kChaptersPanelThumbnailPlaceholderBackground =
+      Colors.white12;
+
+  /// 章节面板缩略图占位图标颜色
+  static const Color kChaptersPanelThumbnailPlaceholderIconColor =
+      Colors.white38;
+
+  /// 章节面板关闭按钮背景色
+  static const Color kChaptersPanelCloseButtonBackground = Colors.white12;
+
   // =========================== 尺寸常量 ===========================
 
   // ---------- 通用/基础 ----------
@@ -206,6 +283,63 @@ abstract final class PlayerStyles {
 
   /// 右侧滚轮设置面板宽度
   static const double kRightWheelPanelWidth = 207.0;
+
+  /// 章节列表面板宽度
+  static const double kChaptersPanelWidth = 375.0;
+
+  /// 章节列表面板毛玻璃模糊半径
+  static const double kChaptersPanelBlurSigma = 24.0;
+
+  /// 章节列表面板头部高度
+  static const double kChaptersPanelHeaderHeight = 56.0;
+
+  /// 章节列表面板内边距
+  static const double kChaptersPanelPadding = 20.0;
+
+  /// 章节列表面板头部元素间距
+  static const double kChaptersPanelHeaderItemSpacing = 8.0;
+
+  /// 章节列表关闭按钮尺寸
+  static const double kChaptersPanelCloseButtonSize = 32.0;
+
+  /// 章节列表关闭图标尺寸
+  static const double kChaptersPanelCloseIconSize = 18.0;
+
+  /// 章节列表项高度
+  static const double kChaptersPanelItemHeight = 72.0;
+
+  /// 章节列表项圆角
+  static const double kChaptersPanelItemBorderRadius = 8.0;
+
+  /// 章节列表项内边距
+  static const EdgeInsets kChaptersPanelItemPadding = EdgeInsets.all(8.0);
+
+  /// 章节列表项缩略图与内容间距
+  static const double kChaptersPanelItemContentSpacing = 12.0;
+
+  /// 章节列表项标题与时间间距
+  static const double kChaptersPanelItemTitleTimeSpacing = 4.0;
+
+  /// 章节列表项间距
+  static const double kChaptersPanelItemSpacing = 8.0;
+
+  /// 章节列表缩略图宽度
+  static const double kChaptersPanelThumbnailWidth = 96.0;
+
+  /// 章节列表缩略图圆角
+  static const double kChaptersPanelThumbnailBorderRadius = 4.0;
+
+  /// 章节列表缩略图占位图标尺寸
+  static const double kChaptersPanelThumbnailPlaceholderIconSize = 24.0;
+
+  /// 章节箭头图标尺寸
+  static const Size kChapterArrowIconSize = Size(16.0, 16.0);
+
+  /// 横屏章节信息元素间距
+  static const double kLandscapeChapterInfoSpacing = 8.0;
+
+  /// 横屏章节标题与箭头间距
+  static const double kLandscapeChapterTitleIconSpacing = 4.0;
 
   /// 内边距布局
   static const double kSettingPanelPaddingAll = 20.0;

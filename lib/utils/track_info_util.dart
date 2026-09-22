@@ -29,16 +29,28 @@ class TrackInfoUtil {
     "4320P": [4320, 7680],
   };
 
+  /// 自动清晰度标识 key
+  ///
+  /// Quality key representing automatic quality selection.
+  static const String autoQualityKey = 'AUTO';
+
+  /// 未知清晰度标识 key
+  ///
+  /// Quality key representing unknown quality.
+  static const String unknownQualityKey = 'unknown';
+
   /// 定义多清晰度可支持的类型
   static final _validTrackTypes = {
     FlutterAvpdef.AVPTRACK_TYPE_VIDEO,
     FlutterAvpdef.AVPTRACK_TYPE_SAAS_VOD,
   };
 
-  /// 自定义清晰度描述
-  static Map<String, String> qualityDescriptions = {
-    "AUTO": "自动", // Auto
-    "unknown": "未知", // Unknown
+  /// 清晰度标识映射
+  ///
+  /// UI 层负责将 [autoQualityKey] 和 [unknownQualityKey] 转换为本地化文案。
+  static const Map<String, String> qualityDescriptions = {
+    autoQualityKey: autoQualityKey,
+    unknownQualityKey: unknownQualityKey,
   };
 
   /// 过滤视频清晰度轨
@@ -88,12 +100,12 @@ class TrackInfoUtil {
   static String getQuality(AVPTrackInfo? trackInfo) {
     return trackInfo != null
         ? findResolution(trackInfo)
-        : qualityDescriptions["AUTO"]!;
+        : qualityDescriptions[autoQualityKey]!;
   }
 
   /// 遍历最接近的清晰度
   static String findResolution(AVPTrackInfo? trackInfo) {
-    String nearestResolution = qualityDescriptions["unknown"]!;
+    String nearestResolution = qualityDescriptions[unknownQualityKey]!;
     if (trackInfo == null || !_validTrackTypes.contains(trackInfo.trackType)) {
       return nearestResolution;
     }

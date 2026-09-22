@@ -86,7 +86,6 @@ Pass the callback via the `onPlayerConfig` parameter when constructing `AliPlaye
 ```dart
 final data = AliPlayerWidgetData(
   videoSource: videoSource,
-  videoTitle: "Video Title",
   onPlayerConfig: (player) async {
     // Example 1: Custom buffering strategy and Referer
     var config = await player.getPlayConfig();

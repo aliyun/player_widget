@@ -58,7 +58,6 @@ class _VideoPlayerPageState extends State<VideoPlayerPage> {
     // Configure player component data
     final data = AliPlayerWidgetData(
       videoSource: videoSource,
-      videoTitle: "<your-video-title>",
     );
 
     // Initialize player component controller

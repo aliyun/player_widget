@@ -165,6 +165,10 @@ Strategies subscribe to ValueNotifiers on the Controller via the `listen()` meth
 | `currentPositionNotifier` | `Duration` | Current playback position |
 | `totalDurationNotifier` | `Duration` | Total video duration |
 | `isLoadingStateNotifier` | `bool` | Loading state |
+| `isDraggingNotifier` | `bool` | Whether the user is dragging the seek bar |
+| `currentSeekTimeNotifier` | `Duration` | Current seek time during drag operation |
+| `contentViewTypeNotifier` | `ContentViewType` | Center display content type (volume/brightness/speed indicator) |
+| `settingPanelRequestNotifier` | `int` | Settings panel open request counter |
 
 > **Design Principle**: Strategies only observe player state and do not directly control playback behavior.
 

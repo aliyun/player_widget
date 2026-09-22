@@ -65,7 +65,6 @@ final videoSource = VideoSourceFactory.createVidAuthSource(
 // 2. Configure player component data
 final data = AliPlayerWidgetData(
   videoSource: videoSource,
-  videoTitle: "<your-video-title>",
 );
 
 // 3. Initialize player component controller

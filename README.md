@@ -4,7 +4,7 @@ Language: 中文简体 | [English](README-EN.md)
 
 # **aliplayer_widget**
 
-[![pub package](https://img.shields.io/pub/v/aliplayer_widget.svg)](https://pub.dev/packages/aliplayer_widget) [![platform](https://img.shields.io/badge/-Flutter-02569B?logo=flutter&logoColor=white)](https://flutter.dev/) [![language](https://img.shields.io/badge/-Dart-0175C2?logo=dart&logoColor=white)](https://dart.dev/) [![website](https://img.shields.io/badge/Product-VOD-FF6A00)](https://www.aliyun.com/product/vod)
+[![pub package](https://img.shields.io/pub/v/aliplayer_widget.svg)](https://pub.dev/packages/aliplayer_widget) [![platform](https://img.shields.io/badge/-Flutter-02569B?logo=flutter&logoColor=white)](https://flutter.dev/) [![language](https://img.shields.io/badge/-Dart-0175C2?logo=dart&logoColor=white)](https://dart.dev/) [![platforms](https://img.shields.io/badge/platform-Android%20%7C%20iOS-blue.svg)](https://pub.dev/packages/aliplayer_widget) [![website](https://img.shields.io/badge/Product-VOD-FF6A00)](https://www.aliyun.com/product/vod)
 
 ## **一、概述**
 
@@ -176,21 +176,22 @@ AliPlayerWidget 提供了统一的 UI 设计规范，支持快速替换播放器
 
 ---
 
-## **九、相关产品**
+## **九、端云协同**
 
-AliPlayerWidget 基于阿里云音视频能力构建，建议结合以下云产品使用，通过端云结合获得更好的播放能力和视频体验：
+AliPlayerWidget 基于阿里云音视频能力构建，建议结合云产品使用，充分发挥端云协同优势，进一步提升播放能力和视频体验。
 
-- [阿里云视频点播（VOD）](https://www.aliyun.com/product/vod)
-- [阿里云视频直播（Live）](https://www.aliyun.com/product/live)
-- [音视频终端 SDK](https://help.aliyun.com/zh/apsara-video-sdk/)
+| 云产品                                                       | 产品说明                                                 |
+| ------------------------------------------------------------ | -------------------------------------------------------- |
+| [阿里云视频点播（VOD）](https://www.aliyun.com/product/vod)  | 提供视频上传、存储、转码、分发和播放等一站式视频点播服务 |
+| [阿里云视频直播（Live）](https://www.aliyun.com/product/live) | 提供直播推流、转码、分发和播放等端到端视频直播服务       |
 
 ---
 
 ## **十、联系我们**
 
-- 📘 **官方文档**：[播放器帮助中心](https://help.aliyun.com/zh/vod/)
+- 📘 **官方文档**：[播放器含 UI 集成方案](https://help.aliyun.com/zh/vod/developer-reference/flutter-widget-project-introduction)
 - 🔍 **控制台**：[视频点播控制台](https://vod.console.aliyun.com)
 - 📝 **提交工单**：[阿里云官方技术支持](https://smartservice.console.aliyun.com/service/create-ticket)
 - 💬 **GitHub Issues**：[欢迎提交反馈与建议](https://github.com/aliyun/player_widget/issues)
 
-更多关于使用阿里云播放器 SDK 的常见问题及修复建议，请参见[播放器常见问题](https://help.aliyun.com/zh/vod/support/faq-about-apsaravideo-player/)。
+更多关于使用阿里云播放器的常见问题及修复建议，请参见[播放器常见问题](https://help.aliyun.com/zh/vod/support/faq-about-apsaravideo-player/)。

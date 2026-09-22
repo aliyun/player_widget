@@ -291,6 +291,9 @@ Configurations that affect user experience should be set explicitly — do not r
 | `isLive: true`          | `AliPlayerWidgetData(sceneType: SceneType.live)`                   | Direct correspondence                                            |
 | `allowedScreenSleep`    | `AliPlayerWidgetData(allowedScreenSleep: value)`                   | Partial correspondence; chewie defaults to `true`, this component defaults to `false`, and the effective scope differs |
 | `fullScreenByDefault`   | After the Widget is mounted, call `controller.enterFullScreen()` when playback first starts | No configuration item of the same name; control the trigger timing yourself |
+| `playbackSpeeds`        | `AliPlayerWidgetData(playbackSpeeds: [...])`                 | Direct correspondence; configure custom playback speed options |
+| `hideControlsTimer`     | `AliPlayerWidgetData(autoHideControlsDuration: ...)`         | Direct correspondence; configure the auto-hide duration for playback controls |
+| `chapters`              | `AliPlayerWidgetData(sceneType: SceneType.aiVod, chapters: [...])`  | chewie uses `ChewieChapter(title, start)`; aliplayer_widget uses `ChapterInfo(startMs, endMs, title)` — the end time must be specified explicitly, and `sceneType` must be `aiVod` |
 
 ### **UI and Customization Configuration**
 
@@ -311,6 +314,7 @@ Therefore, if the original project uses the chewie default UI, **no slot customi
 | `SceneType.listPlayer` | List / feed playback    | No corresponding chewie configuration                        |
 | `SceneType.restricted` | Restricted playback scenarios | No corresponding chewie configuration                  |
 | `SceneType.minimal`    | Minimal UI              | Close to `showControls: false`, but also hides the cover, subtitles, and gestures |
+| `SceneType.aiVod`      | AI-enhanced VOD          | Inherits VOD capabilities with chapter navigation support; a scene-level upgrade for chewie's `chapters` configuration |
 
 The table below shows where each chewie UI configuration item lands in the three-tier customization system:
 
@@ -406,16 +410,14 @@ The following chewie capabilities have no one-to-one configuration in the verifi
 
 | chewie Capability                                              | Status  | Current Recommendation                                       |
 | -------------------------------------------------------------- | ------- | ------------------------------------------------------------ |
-| Custom `playbackSpeeds` option list                            | **TBD** | `setSpeed(speed: value)` can set the current speed, but it is unconfirmed whether the option list in the default settings panel can be configured externally |
 | `draggableProgressBar: false` while still showing the progress bar | **TBD** | You can hide the progress bar or customize the bottom bar; no direct "shown but not draggable" configuration was found |
 | `showPlayButton`                                               | **TBD** | No one-to-one switch for the large play button was found     |
 | `aspectRatio`                                                  | **TBD** | The component computes the display area from the video size; there is no need to force an aspect ratio |
 | `materialProgressColors`, `cupertinoProgressColors`            | **TBD** | No one-to-one parameters for progress bar colors were found; to keep brand styling, use a custom bottom bar and verify it separately |
-| `chapters`                                                     | **TBD** | No one-to-one data entry point for chewie's chapter list was found |
 | `zoomAndPan`, `maxScale`, `transformationController`           | **TBD** | No corresponding zoom and pan configuration was found        |
 | `pauseOnBackgroundTap`                                         | **TBD** | No public configuration of the same name or equivalent was found |
 | `routePageBuilder`, orientation and system-bar configuration around full screen | **TBD** | Full-screen methods are provided, but no one-to-one external configuration was found for these full-screen page details |
-| `hideControlsTimer`, `progressIndicatorDelay`, `controlsSafeAreaMinimum` | **TBD** | No public configuration of the same name or equivalent was found; use custom slots if there is a strong need |
+| `progressIndicatorDelay`, `controlsSafeAreaMinimum`                      | **TBD** | No public configuration of the same name or equivalent was found; use custom slots if there is a strong need |
 | chewie in-memory subtitle list                                 | **TBD** | External subtitle URLs are supported, but it is unconfirmed whether chewie's in-memory subtitle data can be accepted directly |
 | Web and desktop platforms                                      | **TBD** | The current documentation explicitly covers Android and iOS; keep the original implementation on other platforms |
 
@@ -433,7 +435,8 @@ The following features are not supported in chewie and are not prerequisites for
 | Snapshot              | Capture the current video frame              | `controller.snapshot(path)`                                    |
 | Video caching / preloading | Configure local caching; adopt preloading as needed | `AliPlayerWidgetGlobalSetting.setStoragePaths(...)`; for preloading, use `flutter_aliplayer`'s `FlutterAliPlayerMediaLoader` |
 | Video download        | Download VID playback sources locally        | Call `controller.startVideoDownload()` after configuring the storage path |
-| Scene types           | Adjust default UI behavior by scenario       | `SceneType.vod` / `.live` / `.listPlayer` / `.restricted` / `.minimal` |
+| Scene types           | Adjust default UI behavior by scenario       | `SceneType.vod` / `.live` / `.listPlayer` / `.restricted` / `.minimal` / `.aiVod` |
+| Chapter navigation    | Progress-bar chapter markers + chapter Chip list + chapter panel | `AliPlayerWidgetData(sceneType: SceneType.aiVod, chapters: [...])` |
 | Slot UI customization | Multi-level slot system for fine-grained control of each area | `slotBuilders` + `hiddenSlotElements`             |
 | Gesture control       | Long-press for speed, horizontal drag to Seek, vertical drag for volume/brightness | Built in, no extra configuration needed |
 | Thumbnail preview     | Show thumbnails while Seeking                | `AliPlayerWidgetData(thumbnailUrl: ...)` + `thumbnailNotifier` |

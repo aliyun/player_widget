@@ -190,7 +190,8 @@ class PlayerI18n {
   ///
   /// Register multiple external language packs.
   static void registerAllTranslations(
-      List<PlayerTranslations> translationsList) {
+    List<PlayerTranslations> translationsList,
+  ) {
     for (final translations in translationsList) {
       registerTranslations(translations);
     }

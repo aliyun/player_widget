@@ -51,8 +51,10 @@ class FileUtil {
   /// 删除目录
   ///
   /// Deletes a directory
-  static FileResult<void> deleteDirectory(String path,
-      {bool recursive = false}) {
+  static FileResult<void> deleteDirectory(
+    String path, {
+    bool recursive = false,
+  }) {
     try {
       final directory = Directory(path);
       if (directory.existsSync()) {
@@ -208,8 +210,10 @@ class FileUtil {
   /// 列出目录内容
   ///
   /// Lists directory contents
-  static FileResult<List<FileSystemEntity>> listDirectory(String path,
-      {bool recursive = false}) {
+  static FileResult<List<FileSystemEntity>> listDirectory(
+    String path, {
+    bool recursive = false,
+  }) {
     try {
       final directory = Directory(path);
       if (!directory.existsSync()) {

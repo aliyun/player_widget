@@ -57,6 +57,7 @@ class ScenarioManager {
       SceneType.listPlayer => 'list-player',
       SceneType.restricted => 'restricted',
       SceneType.minimal => 'minimal',
+      SceneType.aiVod => 'ai-vod',
     };
   }
 

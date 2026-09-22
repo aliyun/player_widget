@@ -7,6 +7,7 @@
 import 'package:aliplayer_widget/manager/storage_path_manager.dart';
 import 'package:aliplayer_widget/utils/file_util.dart';
 import 'package:aliplayer_widget/utils/log_util.dart';
+import 'package:flutter/foundation.dart' show visibleForTesting;
 
 /// 文件夹类型枚举，用于标识不同用途的本地存储目录。
 ///
@@ -48,19 +49,22 @@ class FileManager {
   // 私有构造函数，防止实例化
   FileManager._();
 
-  // 文件夹路径缓存
-  static final Map<FolderType, String> _folderCache = {};
+  // 文件夹路径缓存，按文件夹类型和实际存储类型隔离。
+  static final Map<(FolderType, StorageType), String> _folderCache = {};
 
   /// 获取指定类型的文件夹路径（带缓存）
   ///
   /// Gets the folder path for the specified type (with caching).
   static String? getFolderPath(FolderType type, [StorageType? storageType]) {
+    final targetStorageType = storageType ?? StorageManager.defaultStorageType;
+    final cacheKey = (type, targetStorageType);
+
     // 先检查缓存
-    if (_folderCache.containsKey(type)) {
-      return _folderCache[type];
+    if (_folderCache.containsKey(cacheKey)) {
+      return _folderCache[cacheKey];
     }
 
-    final basePath = StorageManager.getBasePath(storageType);
+    final basePath = StorageManager.getBasePath(targetStorageType);
     if (basePath == null) {
       loge('getFolderPath: base path is null for $type');
       return null;
@@ -71,7 +75,7 @@ class FileManager {
     // 尝试创建文件夹
     final result = FileUtil.createDirectory(folderPath);
     if (result.success) {
-      _folderCache[type] = folderPath;
+      _folderCache[cacheKey] = folderPath;
       return folderPath;
     } else {
       loge('Failed to create folder $folderPath: ${result.error}');
@@ -82,8 +86,11 @@ class FileManager {
   /// 根据文件夹类型和文件名获取完整文件路径
   ///
   /// Gets the full file path based on folder type and file name.
-  static String? getFilePath(FolderType type, String fileName,
-      [StorageType? storageType]) {
+  static String? getFilePath(
+    FolderType type,
+    String fileName, [
+    StorageType? storageType,
+  ]) {
     final folderPath = getFolderPath(type, storageType);
     if (folderPath == null) {
       loge('getFilePath: folder path is null for $type');
@@ -96,8 +103,10 @@ class FileManager {
   /// 确保指定类型的文件夹存在，若不存在则尝试创建
   ///
   /// Ensures the folder of the specified type exists; creates it if it doesn't.
-  static FileResult<String> ensureFolder(FolderType type,
-      [StorageType? storageType]) {
+  static FileResult<String> ensureFolder(
+    FolderType type, [
+    StorageType? storageType,
+  ]) {
     final folderPath = getFolderPath(type, storageType);
     if (folderPath == null) {
       return const FileResult.failure('Failed to get or create folder path');
@@ -109,8 +118,10 @@ class FileManager {
   /// 清空指定类型的文件夹内容（不删除文件夹本身）
   ///
   /// Clears the contents of the specified folder (without deleting the folder itself).
-  static FileResult<void> clearFolder(FolderType type,
-      [StorageType? storageType]) {
+  static FileResult<void> clearFolder(
+    FolderType type, [
+    StorageType? storageType,
+  ]) {
     final folderPath = getFolderPath(type, storageType);
     if (folderPath == null) {
       return const FileResult.failure('Folder path not found');
@@ -122,8 +133,10 @@ class FileManager {
   /// 删除指定类型的文件夹及其所有内容
   ///
   /// Deletes the specified folder and all its contents.
-  static FileResult<void> deleteFolder(FolderType type,
-      [StorageType? storageType]) {
+  static FileResult<void> deleteFolder(
+    FolderType type, [
+    StorageType? storageType,
+  ]) {
     final folderPath = getFolderPath(type, storageType);
     if (folderPath == null) {
       return const FileResult.failure('Folder path not found');
@@ -131,7 +144,9 @@ class FileManager {
 
     final result = FileUtil.deleteDirectory(folderPath, recursive: true);
     if (result.success) {
-      _folderCache.remove(type);
+      final targetStorageType =
+          storageType ?? StorageManager.defaultStorageType;
+      _folderCache.remove((type, targetStorageType));
     }
 
     return result;
@@ -161,8 +176,9 @@ class FileManager {
   /// 初始化所有预定义类型的文件夹
   ///
   /// Initializes all predefined folder types.
-  static FileResult<Map<FolderType, String>> initializeAllFolders(
-      [StorageType? storageType]) {
+  static FileResult<Map<FolderType, String>> initializeAllFolders([
+    StorageType? storageType,
+  ]) {
     final Map<FolderType, String> results = {};
     final List<String> errors = [];
 
@@ -233,4 +249,12 @@ class FileManager {
   /// Gets the full path of a log file.
   static String? getLogFilePath(String fileName) =>
       getFilePath(FolderType.logs, fileName);
+
+  /// Reset all static state for testing.
+  ///
+  /// Only available in tests.
+  @visibleForTesting
+  static void resetForTesting() {
+    _folderCache.clear();
+  }
 }

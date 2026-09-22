@@ -6,9 +6,6 @@
 
 import 'package:aliplayer_widget/aliplayer_widget_lib.dart';
 
-import 'slot_config.dart';
-import 'slot_elements.dart';
-
 /// 插槽常量定义类。
 ///
 /// Defines constants for all player UI slots and their configurations.
@@ -142,45 +139,6 @@ class SlotConstants {
     SlotType.subtitle: SlotConfig(
       excludedScenes: {
         SceneType.minimal,
-      },
-    ),
-  };
-
-  /// 设置菜单元素级别的场景配置映射。
-  ///
-  /// Setting menu element-level scene configuration map.
-  ///
-  /// Key 为 [SettingMenuElements] 常量，Value 为该元素的 [SlotConfig]。
-  /// 用于定义设置面板中各设置项在不同播放场景下的可见性，
-  /// 与插槽级别的 [slotConfigs] 保持一致的配置模式。
-  ///
-  /// The key is a [SettingMenuElements] constant, and the value is the
-  /// corresponding [SlotConfig]. Used to define visibility of individual
-  /// setting items under different playback scenes.
-  static const Map<String, SlotConfig> settingElementConfigs =
-      <String, SlotConfig>{
-    /// 倍速：直播和受限场景不可用
-    /// Speed: unavailable in live and restricted scenes
-    SettingMenuElements.speed: SlotConfig(
-      excludedScenes: {
-        SceneType.live,
-        SceneType.restricted,
-      },
-    ),
-
-    /// 循环播放：直播场景不可用
-    /// Loop: unavailable in live scene
-    SettingMenuElements.loop: SlotConfig(
-      excludedScenes: {
-        SceneType.live,
-      },
-    ),
-
-    /// 字幕开关：直播场景不可用
-    /// Subtitle: unavailable in live scene
-    SettingMenuElements.subtitle: SlotConfig(
-      excludedScenes: {
-        SceneType.live,
       },
     ),
   };

@@ -4,8 +4,6 @@
 // Date: 2026/5/18
 // Brief: 隐私保护工具类
 
-part of 'package:aliplayer_widget/aliplayer_widget_lib.dart';
-
 /// 隐私保护工具类
 ///
 /// 提供隐私信息处理相关的工具方法，包括 URL 鉴权参数移除、字符串模糊化等功能。

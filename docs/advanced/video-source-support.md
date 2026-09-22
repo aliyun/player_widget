@@ -65,7 +65,6 @@ final videoSource = VideoSourceFactory.createVidAuthSource(
 // 2. 配置播放器组件数据
 final data = AliPlayerWidgetData(
   videoSource: videoSource,
-  videoTitle: "<your-video-title>",
 );
 
 // 3. 初始化播放器组件控制器

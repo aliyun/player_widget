@@ -2,53 +2,45 @@
 
 > Language: 中文简体 | [English](./CHANGELOG-en.md)
 
-## **[7.15.0] - 隐私增强、Bug 修复与性能优化**
+## **[7.18.0] - AI 教育场景化解决方案 & VID All-in-One 播放**
 
-### **版本更新**
+### **新功能**
 
-- **内核 SDK（`flutter_aliplayer`）升级至 v7.15.0**
-
-### **Bug 修复**
-
-- **隐私**
-  - 新增 `PrivacyUtil`，对 `VideoSource.toString()` 输出进行脱敏处理，防止凭证和 URL 信息泄露到日志或调试输出中。
-- **导航**
-  - 在调用 `Navigator.pop()` 前增加 `canPop()` 判断，防止在空路由栈上执行 pop 操作导致崩溃。
-- **唤醒锁**
-  - 修复 `allowedScreenSleep` 逻辑反转问题，此前唤醒锁行为与预期设置相反。
-- **内存与生命周期**
-  - 将缓存的 `BuildContext` 替换为 context provider，消除因持有过期 context 导致的崩溃。
-  - 修正对象销毁顺序，防止 dispose 阶段出现 notifier 安全性违规。
-  - 防止全屏 dispose 错误地解绑竖屏 context。
-  - 下载完成后正确关闭 `StreamController`，消除资源泄漏。
-  - 增强 `SafeNotifier` 的 dispose 安全性，并在调试模式下添加断言。
-- **下载**
-  - 改进下载错误处理与订阅安全性，防止重复取消时报错。
-- **类型安全**
-  - 将 `videoSource` 改为非空类型并移除相关死代码。
-  - 将 `isSubtitleVisibleNotifier` 类型收窄为非空，提供更严格的类型保证。
-
-### **性能**
-
-- 将拖动更新时的 `vibrate()` 替换为 `selectionFeedback()`，提供更符合平台规范的触觉反馈。
-- 缓存 `_resolveSlotOrder` 的排序结果，避免每次构建时重复执行排序。
+- **VID All-in-One 播放体验**：依托 AliPlayerWidget 与阿里云视频点播 VOD 的协同能力，业务侧仅需传入视频 VID，即可自动获取播放资源，以及关联的视频标题、封面图和缩略图等媒资信息，减少播放地址获取、媒资信息传递及端侧参数配置，简化播放接入
+- **视频拆条**：将长视频按内容结构智能拆分为多个章节片段，通过进度条标记和章节面板帮助用户快速定位重点内容
+- **AI 教育场景**：
+  - 新增面向在线教育、知识课程等场景的 AI 教育视频解决方案，提供智能章节、内容摘要、知识点及图文解析能力，帮助用户快速定位重点内容，提升视频学习与内容理解效率
+  - 新增 `aiVod` 场景类型，在标准 VOD 播放能力基础上，支持章节拆条、章节导航及 Seek 过程中的章节信息展示
+- **播放控制扩展**：新增后台播放暂停恢复 `pauseOnBackground`、自定义倍速列表 `playbackSpeeds` 及控制栏自动隐藏时长 `autoHideControlsDuration` 等配置项
 
 ### **优化**
 
-- 将下载逻辑提取至独立的 `DownloadManager`，实现关注点分离。
-- 将播放器通知逻辑与下载准备逻辑提取为独立辅助方法。
-- 将 `AliPlayerWidgetData` 中不可变字段标记为 `final`，明确意图并支持编译器优化。
-- 合并重复的垂直方向尺寸工具方法，优化命名一致性。
+- **下载管理**：将下载逻辑从 `Controller` 抽取为独立 `DownloadManager`，增强错误码分级与订阅生命周期管理
+- **设置面板**：迁移至注册表驱动架构，支持设置项逐项可见性解析
+- **插槽系统**：`Builder` 迁移至工厂模式，缓存排序结果避免每次 build 重复计算
+- **数据安全**：引入 `PrivacyUtil`，对 `VidSts` / `VidAuth` / `Url` 视频源的凭证字段进行脱敏
+- **类型强化**：`videoSource` 收紧为非空 `final`，`isSubtitleVisibleNotifier` 改为非空 `bool` 类型，移除不可达空值分支
+- **模块整理**：数据与下载模块重组为子目录结构，统一 barrel 文件导出
+- **内核 SDK 升级至 v7.18.0**
 
-### **示例更新**
+### **Bug 修复**
 
-本次对 Example 工程进行了一轮针对性质量治理，目标是将示例代码的可信度与可参考性提升至生产级别。问题集中在三个维度：
+- 修复全屏退出时误清竖屏实例 `ContextProvider` 导致截图/Toast 失效
+- 修复 `allowedScreenSleep` 语义反转，true 应允许休眠而非保持常亮
+- 修复下载 `StreamController` 未在完成/销毁时关闭导致的资源累积泄漏
+- 修复进度条 `onTapDown` 与拖拽手势冲突导致的重复 Seek
+- 修复 `SafeNotifier` dispose 后仍可写入及销毁时序竞态问题
+- 修复 `Navigator.pop()` 在根路由无栈可弹时的崩溃
 
-- **启动与生命周期正确性**：全局设置初始化现已在 `runApp` 前完成 `await`，消除启动阶段的竞态条件。`WidgetsBindingObserver` 的注册与注销现在对称执行且带保护标志，防止回调残留。`LivePage` 的键盘高度计算已修正为逻辑像素（除以 `devicePixelRatio`），修复此前因物理像素直接用于布局导致的数值偏差。
-- **空安全与状态隔离**：`videoInfoList` 在声明处初始化为 `[]`，根除加载失败时的 `LateInitializationError` 崩溃。文件级全局可变变量 `_selectIndex` 已移入所属 `State` 类，消除实例间的隐式状态污染。
-- **异步与资源安全**：`precacheImage` 调用加入 `context.mounted` 守卫，防止在已销毁的 Widget 上触发回调。`SettingsPage` 的 `FutureBuilder` Future 跨重建缓存，避免每次 `setState` 重复发起网络请求。`SPManager` 初始化改用 `Completer` 模式，以更清晰的异步契约替代回调队列。`LikeOverlayWidget` 的动画并发数上限修复，防止列表无限增长。
+### **不兼容变更**
 
-> **产品化评估**：经本次治理，示例工程已能正确示范 Flutter Widget 全生命周期的惯用写法——包括启动时序、异步初始化、Observer 注册、context 安全访问与 dispose 管理。开发者可将其作为可信的参考实现，而非仅作为功能验证 Demo。此前版本存在若干「照抄即引入生产 Bug」的反模式（启动竞态、过期 context、物理像素误用），现已全部修正。
+- Controller 构造函数移除已废弃的 `BuildContext` 参数，由 `AliPlayerWidgetState` 自动注入
+- `SlotWidgetBuilderWithController` 类型移除，统一为 `SlotWidgetBuilder`
+
+### **文档**
+
+- 新增 [AI 教育场景](./scene/AiEducation.md) 场景方案文档
+- 新增 [chewie 迁移指南](./migration/migrate-from-chewie.md)
 
 ---
 

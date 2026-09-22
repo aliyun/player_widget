@@ -8,9 +8,10 @@ AliPlayerWidget 提供了丰富的 API 接口，方便开发者直接控制播�
 
 | 接口名称    | 功能描述                           |
 | ----------- | ---------------------------------- |
-| `configure` | 配置播放器数据源并初始化播放器     |
-| `prepare`   | 准备播放器（手动调用准备流程）     |
-| `destroy`   | 销毁播放器实例，释放资源           |
+| `configure`     | 配置播放器数据源并初始化播放器                                                       |
+| `prepare`       | 准备播放器（手动调用准备流程）                                                       |
+| `setPlayerView` | 绑定原生播放器渲染视图，可选 `isPortrait` 参数标记为竖屏视图（退出全屏时自动重绑定） |
+| `destroy`       | 销毁播放器实例，释放资源                                                             |
 
 ### **播放控制**
 
@@ -50,6 +51,12 @@ AliPlayerWidget 提供了丰富的 API 接口，方便开发者直接控制播�
 | ----------------------- | ------------------------ |
 | `requestThumbnailBitmap`| 请求指定时间点的缩略图   |
 
+### **设置面板**
+
+| 接口名称              | 功能描述         |
+| --------------------- | ---------------- |
+| `requestSettingPanel` | 请求打开设置面板 |
+
 ### **其他功能**
 
 > 以下接口已迁移至 `AliPlayerWidgetGlobalSetting`，请直接使用：
@@ -75,6 +82,8 @@ AliPlayerWidget 提供了丰富的 API 接口，方便开发者直接控制播�
 | `currentPositionNotifier` | 实时更新当前播放进度（单位：毫秒）。                       |
 | `bufferedPositionNotifier`| 跟踪视频的缓冲进度，帮助用户了解已缓存的内容范围。         |
 | `totalDurationNotifier`   | 提供视频的总时长信息，便于计算播放进度百分比或显示总时长。 |
+| `isDraggingNotifier`      | 监听用户是否正在拖拽进度条。                               |
+| `currentSeekTimeNotifier` | 监听拖拽过程中的当前 seek 时间。                           |
 
 ### **音量与亮度控制**
 
@@ -114,9 +123,11 @@ AliPlayerWidget 提供了丰富的 API 接口，方便开发者直接控制播�
 
 | Notifier               | 功能描述                                                 |
 | ---------------------- | -------------------------------------------------------- |
-| `videoSizeNotifier`    | 监听视频尺寸的变化。                                     |
-| `snapFileStateNotifier`| 监听截图文件状态的变化。                                 |
-| `downloadStateNotifier`| 监听下载状态的变化。                                     |
+| `videoSizeNotifier`           | 监听视频尺寸的变化。                                                           |
+| `snapFileStateNotifier`       | 监听截图文件状态的变化。                                                       |
+| `downloadStateNotifier`       | 监听下载状态的变化。                                                           |
+| `contentViewTypeNotifier`     | 监听当前中心展示内容类型的变化（音量/亮度/倍速指示器）。                       |
+| `settingPanelRequestNotifier` | 监听设置面板打开请求（事件计数器模式），仅用于自定义 settingMenu 插槽场景。     |
 
 ### **使用方法**
 

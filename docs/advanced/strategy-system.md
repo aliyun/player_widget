@@ -165,6 +165,10 @@ class ResumePlayStrategy extends BasePlayerStrategy {
 | `currentPositionNotifier` | `Duration` | 当前播放位置 |
 | `totalDurationNotifier` | `Duration` | 视频总时长 |
 | `isLoadingStateNotifier` | `bool` | 加载状态 |
+| `isDraggingNotifier` | `bool` | 是否正在拖拽进度条 |
+| `currentSeekTimeNotifier` | `Duration` | 拖拽过程中的当前 seek 时间 |
+| `contentViewTypeNotifier` | `ContentViewType` | 当前中心展示内容类型（音量/亮度/倍速指示器） |
+| `settingPanelRequestNotifier` | `int` | 设置面板打开请求计数器 |
 
 > **设计原则**：策略只观察播放器状态，不直接控制播放行为。
 

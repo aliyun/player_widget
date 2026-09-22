@@ -150,4 +150,21 @@ class PlayerI18nKeys {
 
   /// 播放器状态 字幕关 / subtitle off
   static const String subtitleOff = 'player.status.subtitleOff';
+
+  // ==================== 章节 Chapter ====================
+  /// 章节标题格式 / Chapter title format
+  static const String chapterTitleFormat = 'player.chapter.titleFormat';
+
+  /// 下一章 / Next chapter
+  static const String nextChapter = 'player.chapter.nextChapter';
+
+  /// 章节列表面板标题 / Chapters panel title
+  static const String chaptersPanelTitle = 'player.chapter.panelTitle';
+
+  /// 章节数量格式 / Chapters count format
+  static const String chaptersPanelCountFormat =
+      'player.chapter.panelCountFormat';
+
+  /// 章节列表面板副标题 / Chapters panel subtitle
+  static const String chaptersPanelSubtitle = 'player.chapter.panelSubtitle';
 }

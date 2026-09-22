@@ -14,6 +14,8 @@
   - [Custom Config](./advanced/custom-config-en.md)
   - [UI Theme](./advanced/ui-theme-en.md)
   - [Internationalization (i18n)](./advanced/i18n-en.md)
+- **Scenario Solutions**
+  - [AI Education Scene](./scene/AiEducation-EN.md)
 - **Migration**
   - [Migrating from chewie](./migration/migrate-from-chewie-en.md)
 - [Changelog](./CHANGELOG-en.md)
