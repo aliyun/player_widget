@@ -159,14 +159,14 @@ class BottomBarWidget extends SharedAnimationWidget {
 
   /// 构建章节 Chip 列表
   Widget _buildChapterChipList() {
-    final chapters = _effectiveChapters;
-    if (chapters == null || chapters.isEmpty) {
+    if (!isSceneType(sceneType, [SceneType.vod, SceneType.aiVod]) ||
+        chapterInfoList.length < 2) {
       return const SizedBox.shrink();
     }
 
     return ChapterChipListWidget(
-      chapters: chapters,
-      currentIndex: _currentChapterIndex,
+      chapters: chapterInfoList,
+      currentIndex: _currentChapterIndexForChips,
       onChapterSelected: _onChapterSelected,
     );
   }
@@ -198,7 +198,7 @@ class BottomBarWidget extends SharedAnimationWidget {
 
   /// 构建横屏信息行（有章节数据时显示章节信息，否则非直播场景显示时间，直播不显示）
   Widget _buildLandscapeInfoRow(BuildContext context) {
-    final bool showChapterInfo = chapterInfoList.length >= 2;
+    final bool showChapterInfo = _effectiveChapters != null;
     final Widget child;
     if (showChapterInfo) {
       child = _buildLandscapeChapterInfoRow(context);
@@ -370,9 +370,23 @@ class BottomBarWidget extends SharedAnimationWidget {
         : const Expanded(child: SizedBox.shrink());
   }
 
-  /// 当前有效的章节数据（章节数需 >= 2）
+  /// 当前有效的章节数据（仅 AI_VOD 场景且章节数 >= 2）
+  ///
+  /// 用于横屏章节信息行、进度条章节标记点、下一章节跳转和章节列表面板。
   List<ChapterInfo>? get _effectiveChapters {
+    if (sceneType != SceneType.aiVod) return null;
     return chapterInfoList.length >= 2 ? chapterInfoList : null;
+  }
+
+  /// 当前播放位置在 Chip 列表中对应的章节索引
+  int get _currentChapterIndexForChips {
+    final positionMs = currentPosition.inMilliseconds;
+    if (!isSceneType(sceneType, [SceneType.vod, SceneType.aiVod]) ||
+        chapterInfoList.length < 2 ||
+        positionMs < 0) {
+      return -1;
+    }
+    return ChapterInfo.findIndexByPosition(chapterInfoList, positionMs);
   }
 
   /// 计算章节标记点在进度条上的归一化位置
@@ -397,9 +411,8 @@ class BottomBarWidget extends SharedAnimationWidget {
 
   /// 章节 Chip 点击处理
   void _onChapterSelected(int index) {
-    final chapters = _effectiveChapters;
-    if (chapters == null || index < 0 || index >= chapters.length) return;
-    onSeekEnd?.call(Duration(milliseconds: chapters[index].startMs));
+    if (index < 0 || index >= chapterInfoList.length) return;
+    onSeekEnd?.call(Duration(milliseconds: chapterInfoList[index].startMs));
   }
 
   /// 进度条章节标记点击处理

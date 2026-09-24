@@ -83,26 +83,41 @@ class ChapterPanelWidget extends StatelessWidget {
         ),
         child: Row(
           children: [
-            Text(
-              PlayerI18n.t(PlayerI18nKeys.chaptersPanelTitle),
-              style: const TextStyle(
-                color: PlayerStyles.colorOnPrimary,
-                fontSize: PlayerStyles.fontSizeTitle,
-                fontWeight: PlayerStyles.fontWeightTitle,
-              ),
-            ),
-            const SizedBox(
-              width: PlayerStyles.kChaptersPanelHeaderItemSpacing,
-            ),
-            Text(
-              PlayerI18n.t(
-                PlayerI18nKeys.chaptersPanelCountFormat,
-                {'count': chapters.length},
-              ),
-              style: const TextStyle(
-                color: PlayerStyles.colorOnPrimary,
-                fontSize: PlayerStyles.commonTextSize,
-                fontWeight: PlayerStyles.fontWeightTitle,
+            Flexible(
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Flexible(
+                    child: Text(
+                      PlayerI18n.t(PlayerI18nKeys.chaptersPanelTitle),
+                      style: const TextStyle(
+                        color: PlayerStyles.colorOnPrimary,
+                        fontSize: PlayerStyles.fontSizeTitle,
+                        fontWeight: PlayerStyles.fontWeightTitle,
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                  const SizedBox(
+                    width: PlayerStyles.kChaptersPanelHeaderItemSpacing,
+                  ),
+                  Flexible(
+                    child: Text(
+                      PlayerI18n.t(
+                        PlayerI18nKeys.chaptersPanelCountFormat,
+                        {'count': chapters.length},
+                      ),
+                      style: const TextStyle(
+                        color: PlayerStyles.colorOnPrimary,
+                        fontSize: PlayerStyles.commonTextSize,
+                        fontWeight: PlayerStyles.fontWeightTitle,
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                ],
               ),
             ),
             const SizedBox(
