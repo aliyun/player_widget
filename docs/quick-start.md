@@ -6,7 +6,7 @@
 
 ## **1. 接入流程概览**
 
-![Integration](https://alivc-demo-cms.alicdn.com/versionProduct/installPackage/aliplayer_widget/Integration.png)
+![Integration](./_media/Integration.png)
 
 ## **2. 快速开始示例**
 

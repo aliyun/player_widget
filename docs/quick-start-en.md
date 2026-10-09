@@ -6,7 +6,7 @@ In just a few steps, you can easily implement video playback functionality! **Al
 
 ## **1. Integration Flow Overview**
 
-![Integration_en](https://alivc-demo-cms.alicdn.com/versionProduct/installPackage/aliplayer_widget/Integration_en.png)
+![Integration_en](./_media/Integration_en.png)
 
 ## **2. Quick Start Example**
 

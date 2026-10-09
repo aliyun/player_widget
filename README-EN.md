@@ -1,6 +1,6 @@
 Language: [Simplified Chinese](README.md) | English
 
-![alibaba_cloud_logo](https://alivc-demo-cms.alicdn.com/versionProduct/installPackage/aliplayer_widget/AlibabaCloud.svg)
+![alibaba_cloud_logo](./docs/_media/AlibabaCloud.svg)
 
 # **aliplayer_widget**
 
@@ -12,7 +12,7 @@ Language: [Simplified Chinese](README.md) | English
 
 <p align="center">
   <img
-    src="https://alivc-demo-cms.alicdn.com/versionProduct/installPackage/AliPlayerKit/playerkit-ui-preview.png"
+    src="./docs/_media/playerkit-ui-preview.png"
     alt="AliPlayerKit UI preview"
     width="100%"
   />
@@ -92,7 +92,7 @@ For detailed information about prerequisites, please refer to [Integration Guide
 
 In just a few steps, you can easily implement video playback functionality! **AliPlayerWidget** offers a minimalist API design to help you rapidly integrate video playback features with minimal coding.
 
-![Integration_en](https://alivc-demo-cms.alicdn.com/versionProduct/installPackage/aliplayer_widget/Integration_en.png)
+![Integration_en](./docs/_media/Integration_en.png)
 
 For more usage and code examples, please refer to the [Quick Start Guide](./docs/quick-start-en.md).
 
@@ -149,7 +149,7 @@ To help developers quickly experience the functionalities of **AliPlayerWidget**
 
 Scan the QR code below with your mobile phone to quickly download and install the demo package:
 
-![Demo QR Code](https://alivc-demo-cms.alicdn.com/versionProduct/installPackage/aliplayer_widget/demo-qr-code_en.png)
+![Demo QR Code](./docs/_media/demo-qr-code_en.png)
 
 > **Note**: The QR code links to the latest version of the demo package. Ensure that your device allows the installation of third-party applications.
 

@@ -17,7 +17,7 @@ On the Flutter side, the AI Education Scene has the following differentiated adv
 - **Declarative UI and slot extension**: register custom slots such as the chapter button through `AliPlayerWidget.slotBuilders`, and independently invoke the built-in chapter list panel through `ChaptersPanelManager.showChaptersPanel`, which fits the Flutter development style.
 - **Hot-reload friendly**: panel styles and data assembly logic are all in Dart, so you can adjust them directly via Flutter hot reload during development.
 
-![AiEducation](https://alivc-demo-cms.alicdn.com/versionProduct/resources/ai_education/ai-education-ui-preview.png)
+![AiEducation](../_media/ai-education-ui-preview.png)
 
 ---
 
@@ -116,7 +116,7 @@ The global business flow describes the complete pipeline from production, storag
 
 VOD is responsible for unified storage of media assets and AI analysis results; ICE / AI workflow handles content understanding and structured analysis; App Server encapsulates server-side capabilities and provides a unified interface to the client.
 
-![ProductArchitecture](https://alivc-demo-cms.alicdn.com/versionProduct/resources/ai_education/ProductArchitecture-EN.png)
+![ProductArchitecture](../_media/ProductArchitecture-EN.png)
 
 ### **5.2 Client Layered Architecture**
 
@@ -124,7 +124,7 @@ The client adopts a layered design consisting of the scene example layer (`examp
 
 The data and control flow on the Flutter side is shown below:
 
-![LayeredArchitecture](https://alivc-demo-cms.alicdn.com/versionProduct/resources/ai_education/LayeredArchitecture-Flutter-EN.png)
+![LayeredArchitecture](../_media/LayeredArchitecture-Flutter-EN.png)
 
 ---
 

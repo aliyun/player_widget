@@ -17,7 +17,7 @@
 - **声明式 UI 与插槽扩展**：通过 `AliPlayerWidget.slotBuilders` 注册章节按钮等自定义插槽，通过 `ChaptersPanelManager.showChaptersPanel` 独立唤起内置章节列表面板，集成方式符合 Flutter 开发习惯。
 - **热重载友好**：面板样式、数据组装逻辑均在 Dart 层，开发阶段可直接通过 Flutter hot reload 调整。
 
-![AiEducation](https://alivc-demo-cms.alicdn.com/versionProduct/resources/ai_education/ai-education-ui-preview.png)
+![AiEducation](../_media/ai-education-ui-preview.png)
 
 ---
 
@@ -116,7 +116,7 @@ AI 教育场景由端侧、App Server、ICE / AI 工作流与视频点播 VOD �
 
 VOD 负责媒体资产与 AI 分析结果的统一存储；ICE / AI 工作流负责内容理解与结构化分析；App Server 封装服务端能力，向端侧提供统一接口。
 
-![ProductArchitecture](https://alivc-demo-cms.alicdn.com/versionProduct/resources/ai_education/ProductArchitecture.png)
+![ProductArchitecture](../_media/ProductArchitecture.png)
 
 ### **5.2 端侧分层架构**
 
@@ -124,7 +124,7 @@ VOD 负责媒体资产与 AI 分析结果的统一存储；ICE / AI 工作流负
 
 数据与控制在 Flutter 端的分层关系如下图所示：
 
-![LayeredArchitecture](https://alivc-demo-cms.alicdn.com/versionProduct/resources/ai_education/LayeredArchitecture-Flutter.png)
+![LayeredArchitecture](../_media/LayeredArchitecture-Flutter.png)
 
 ---
 

@@ -1,6 +1,6 @@
 Language: 中文简体 | [English](README-EN.md)
 
-![alibaba_cloud_logo](https://alivc-demo-cms.alicdn.com/versionProduct/installPackage/aliplayer_widget/AlibabaCloud.svg)
+![alibaba_cloud_logo](./docs/_media/AlibabaCloud.svg)
 
 # **aliplayer_widget**
 
@@ -12,7 +12,7 @@ Language: 中文简体 | [English](README-EN.md)
 
 <p align="center">
   <img
-    src="https://alivc-demo-cms.alicdn.com/versionProduct/installPackage/AliPlayerKit/playerkit-ui-preview.png"
+    src="./docs/_media/playerkit-ui-preview.png"
     alt="AliPlayerKit UI 组件预览"
     width="100%"
   />
@@ -93,7 +93,7 @@ Language: 中文简体 | [English](README-EN.md)
 
 只需几步，您就可以轻松实现视频播放功能！**AliPlayerWidget** 提供了极简的 API 设计，帮助您以低代码的方式快速集成视频播放功能。
 
-![Integration](https://alivc-demo-cms.alicdn.com/versionProduct/installPackage/aliplayer_widget/Integration.png)
+![Integration](./docs/_media/Integration.png)
 
 更多用法与代码示例，请查看 [快速开始指南](./docs/quick-start.md)。
 
@@ -147,7 +147,7 @@ AliPlayerWidget 提供了统一的 UI 设计规范，支持快速替换播放器
 #### **获取方式**
 使用手机扫描以下二维码，即可快速下载并安装演示包：
 
-![Demo QR Code](https://alivc-demo-cms.alicdn.com/versionProduct/installPackage/aliplayer_widget/demo-qr-code.png)  
+![Demo QR Code](./docs/_media/demo-qr-code.png)  
 > **注意**：二维码链接指向最新版本的演示包，请确保您的设备已开启允许安装第三方应用的权限。
 
 ---
