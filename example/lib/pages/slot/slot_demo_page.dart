@@ -111,7 +111,9 @@ class _SlotDemoPageState extends State<SlotDemoPage>
   Widget _buildBody() {
     return Column(
       children: [
-        _buildPlayerWidgetByStyle(),
+        Flexible(
+          child: _buildPlayerWidgetByStyle(),
+        ),
         Expanded(
           flex: 1,
           child: _buildControlPanel(),

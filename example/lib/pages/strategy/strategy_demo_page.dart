@@ -101,7 +101,9 @@ class _StrategyDemoPageState extends State<StrategyDemoPage> {
       body: Column(
         children: [
           // 播放器
-          AliPlayerWidget(_controller),
+          Flexible(
+            child: AliPlayerWidget(_controller),
+          ),
           // 策略数据展示
           Expanded(
             child: _buildStrategyInfoPanel(),

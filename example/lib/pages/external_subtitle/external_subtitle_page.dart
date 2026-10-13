@@ -38,7 +38,9 @@ class _ExternalSubtitlePage extends State<ExternalSubtitlePage> {
       body: Column(
         children: [
           // 播放器区域
-          _buildPlayWidget(),
+          Flexible(
+            child: _buildPlayWidget(),
+          ),
           // 控制按钮区域
           Container(
             padding: const EdgeInsets.all(16),

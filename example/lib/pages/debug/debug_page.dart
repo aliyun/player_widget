@@ -45,7 +45,9 @@ class _DebugPageState extends State<DebugPage> with WidgetsBindingObserver {
       body: Column(
         children: [
           _buildDescriptionText(),
-          _buildPlayWidget(),
+          Flexible(
+            child: _buildPlayWidget(),
+          ),
           _buildBottomContainer(),
         ],
       ),
