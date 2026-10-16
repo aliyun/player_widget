@@ -159,8 +159,7 @@ class BottomBarWidget extends SharedAnimationWidget {
 
   /// 构建章节 Chip 列表
   Widget _buildChapterChipList() {
-    if (!isSceneType(sceneType, [SceneType.vod, SceneType.aiVod]) ||
-        chapterInfoList.length < 2) {
+    if (!isChapterAvailable()) {
       return const SizedBox.shrink();
     }
 
@@ -370,20 +369,32 @@ class BottomBarWidget extends SharedAnimationWidget {
         : const Expanded(child: SizedBox.shrink());
   }
 
-  /// 当前有效的章节数据（仅 AI_VOD 场景且章节数 >= 2）
+  /// 当前有效的章节数据（非 live/minimal 场景且章节数据非空）
   ///
   /// 用于横屏章节信息行、进度条章节标记点、下一章节跳转和章节列表面板。
   List<ChapterInfo>? get _effectiveChapters {
-    if (sceneType != SceneType.aiVod) return null;
-    return chapterInfoList.length >= 2 ? chapterInfoList : null;
+    return isChapterAvailable() ? chapterInfoList : null;
+  }
+
+  /// 章节能力是否可用
+  ///
+  /// 判断规则：
+  /// 1. 非 live/minimal 场景
+  /// 2. 章节数据非空
+  bool isChapterAvailable() {
+    if (sceneType == SceneType.live || sceneType == SceneType.minimal) {
+      return false;
+    }
+    if (chapterInfoList.isNotEmpty) {
+      return true;
+    }
+    return false;
   }
 
   /// 当前播放位置在 Chip 列表中对应的章节索引
   int get _currentChapterIndexForChips {
     final positionMs = currentPosition.inMilliseconds;
-    if (!isSceneType(sceneType, [SceneType.vod, SceneType.aiVod]) ||
-        chapterInfoList.length < 2 ||
-        positionMs < 0) {
+    if (!isChapterAvailable() || positionMs < 0) {
       return -1;
     }
     return ChapterInfo.findIndexByPosition(chapterInfoList, positionMs);
@@ -696,10 +707,9 @@ Widget buildBottomBarSlot(
       final currentPosition = ctx.controller.currentPositionNotifier.value;
       final bufferedPosition = ctx.controller.bufferedPositionNotifier.value;
       final totalDuration = ctx.controller.totalDurationNotifier.value;
-      // 初始化章节信息（章节数需 >= 2 才展示）
+      // 初始化章节信息
       final chapters = ctx.controller.widgetData?.chapters ?? const [];
-      final chapterInfoList =
-          chapters.length >= 2 ? chapters : const <ChapterInfo>[];
+      final chapterInfoList = chapters;
 
       return BottomBarWidget(
         animationManager: ctx.animationManager,
