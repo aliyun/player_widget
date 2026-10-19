@@ -175,7 +175,7 @@ class BottomBarWidget extends SharedAnimationWidget {
     Set<String> hiddenElements,
   ) {
     return SafeArea(
-      bottom: false, // tips: 防止 iOS 端侧底部出现额外边距
+      bottom: false, // tips: 防止 iOS 设备底部出现额外边距
       child: SizedBox(
         height: PlayerStyles.kLandscapeBottomBarHeight,
         child: Padding(
@@ -310,7 +310,7 @@ class BottomBarWidget extends SharedAnimationWidget {
         ),
         const SizedBox(width: PlayerStyles.kLandscapeChapterInfoSpacing),
         GestureDetector(
-          onTap: _seekToNextChapter,
+          onTap: () => _seekToNextChapter(context),
           child: Text(
             PlayerI18n.t(PlayerI18nKeys.nextChapter),
             style: const TextStyle(
@@ -324,12 +324,25 @@ class BottomBarWidget extends SharedAnimationWidget {
   }
 
   /// 跳转到下一章节
-  void _seekToNextChapter() {
+  ///
+  /// 目标索引顺延：未定位过（位于首个章节开始之前）时跳转第一章；
+  /// 已处于最后章节时提示「已定位至最后章节」，不发 Seek。连击推进
+  /// 由点击后位置更新索引天然保证，无需手动维护位置字段。
+  void _seekToNextChapter(BuildContext context) {
+    if (!isChapterSeekEnabled()) return;
     final chapters = _effectiveChapters;
+    if (chapters == null || chapters.isEmpty) return;
     final currentIndex = _currentChapterIndex;
-    if (chapters == null || currentIndex < 0) return;
-    if (currentIndex >= chapters.length - 1) return;
-    onSeekEnd?.call(Duration(milliseconds: chapters[currentIndex + 1].startMs));
+    final nextIndex = currentIndex < 0 ? 0 : currentIndex + 1;
+    if (nextIndex >= chapters.length) {
+      PlayStateShowUtil.show(
+        context,
+        widgetStatus: PlayStatus.info,
+        statusMessage: PlayerI18n.t(PlayerI18nKeys.lastChapterReached),
+      );
+      return;
+    }
+    onSeekEnd?.call(Duration(milliseconds: chapters[nextIndex].startMs));
   }
 
   /// 显示章节列表面板
@@ -391,6 +404,22 @@ class BottomBarWidget extends SharedAnimationWidget {
     return false;
   }
 
+  /// 章节跳转交互是否允许
+  ///
+  /// 判断规则：非 live/restricted 场景。live/restricted 下章节 UI 只读：
+  /// Chip 点击、标记点点击、下一章三个跳转入口点击完全静默——不发 Seek、
+  /// 不更新高亮。与命令层 seek() 的场景门卫形成双层防护（交互层不发，
+  /// 命令层兜底）。
+  ///
+  /// Whether chapter seek interaction is allowed.
+  ///
+  /// Chapter UI is read-only in live and restricted scenes; all three seek
+  /// entries (chip tap, marker tap, next chapter) stay silent. This works
+  /// with the command-level scene gate in seek() as a double safeguard.
+  bool isChapterSeekEnabled() {
+    return isNotSceneType(sceneType, [SceneType.live, SceneType.restricted]);
+  }
+
   /// 当前播放位置在 Chip 列表中对应的章节索引
   int get _currentChapterIndexForChips {
     final positionMs = currentPosition.inMilliseconds;
@@ -413,15 +442,27 @@ class BottomBarWidget extends SharedAnimationWidget {
   }
 
   /// 当前播放位置对应的章节索引
+  ///
+  /// 位置命中章节区间时返回该索引；落入章节空隙或超出末章时，返回
+  /// startMs 不大于当前位置的最近章节索引（「保留最近有效索引」语义，
+  /// 依赖章节按 startMs 升序的前提）；位置在首个章节开始之前时返回 -1。
   int get _currentChapterIndex {
     final chapters = _effectiveChapters;
     final positionMs = currentPosition.inMilliseconds;
     if (chapters == null || positionMs < 0) return -1;
-    return ChapterInfo.findIndexByPosition(chapters, positionMs);
+    final index = ChapterInfo.findIndexByPosition(chapters, positionMs);
+    if (index >= 0) return index;
+    var lastPassed = -1;
+    for (final chapter in chapters) {
+      if (chapter.startMs > positionMs) break;
+      lastPassed++;
+    }
+    return lastPassed;
   }
 
   /// 章节 Chip 点击处理
   void _onChapterSelected(int index) {
+    if (!isChapterSeekEnabled()) return;
     if (index < 0 || index >= chapterInfoList.length) return;
     onSeekEnd?.call(Duration(milliseconds: chapterInfoList[index].startMs));
   }
@@ -430,6 +471,7 @@ class BottomBarWidget extends SharedAnimationWidget {
   ///
   /// [normalizedPosition] 归一化位置 (0.0 ~ 1.0)
   void _onMarkerTap(double normalizedPosition) {
+    if (!isChapterSeekEnabled()) return;
     final totalMs = totalDuration.inMilliseconds;
     if (totalMs <= 0) return;
     final seekTimeMs = (normalizedPosition * totalMs).toInt();

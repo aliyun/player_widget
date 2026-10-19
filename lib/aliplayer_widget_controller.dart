@@ -1053,16 +1053,51 @@ class AliPlayerWidgetController {
 
   /// 跳转播放位置
   ///
+  /// 直播与受限场景下禁用 Seek：作为全部 Seek 请求的命令层唯一消费点，
+  /// 对外部与自定义 UI 的直接调用统一拦截；起播起始时间走 prepare 路径，
+  /// 不经过本方法，不受拦截影响。
+  ///
   /// Seek to a specific position in the video.
+  ///
+  /// Seeking is disabled in live and restricted scenes. As the single
+  /// command-level entry for all seek requests, direct calls from external
+  /// or custom UI are intercepted here. The start time for playback goes
+  /// through the prepare path and is not affected.
   ///
   /// [position] The target playback position.
   void seek(Duration position) {
+    // 场景门卫：live/restricted 场景记日志并直接返回，不更新进度、不下发 seekTo
+    // Scene gate: log and return in live/restricted scenes without seekTo.
+    if (_isSeekDisabledScene()) {
+      logi(
+        'Seek blocked in ${sceneTypeNotifier.value.name} scene',
+        tag: _logTag,
+      );
+      return;
+    }
+
     currentPositionNotifier.value = position;
 
     _aliPlayer.seekTo(
       position.inMilliseconds,
       _widgetData?.seekMode ?? FlutterAvpdef.ACCURATE,
     );
+  }
+
+  /// 当前场景是否禁用 Seek
+  ///
+  /// 判断规则：
+  /// 1. live 场景：直播不支持时间轴操作
+  /// 2. restricted 场景：播放能力受限，禁止快进/快退
+  ///
+  /// minimal 场景无 UI 不产生 Seek 命令，无需拦截；其余场景正常放行。
+  ///
+  /// Whether seeking is disabled in the current scene.
+  bool _isSeekDisabledScene() {
+    return isSceneType(sceneTypeNotifier.value, [
+      SceneType.live,
+      SceneType.restricted,
+    ]);
   }
 
   /// 设置播放速度

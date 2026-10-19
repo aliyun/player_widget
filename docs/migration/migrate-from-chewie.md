@@ -293,7 +293,7 @@ flutter pub remove video_player
 | `fullScreenByDefault`   | Widget 挂载后，在首次播放开始时调用 `controller.enterFullScreen()` | 无同名配置项，需自行控制触发时机                             |
 | `playbackSpeeds`        | `AliPlayerWidgetData(playbackSpeeds: [...])`                 | 直接对应；通过配置自定义可选播放速度列表                     |
 | `hideControlsTimer`     | `AliPlayerWidgetData(autoHideControlsDuration: ...)`         | 直接对应；配置播放控件自动隐藏时间                           |
-| `chapters`              | `AliPlayerWidgetData(sceneType: SceneType.aiVod, chapters: [...])`  | chewie 使用 `ChewieChapter(title, start)`；aliplayer_widget 使用 `ChapterInfo(startMs, endMs, title)`，需显式传入结束时间，且 `sceneType` 须为 `aiVod` |
+| `chapters`              | `AliPlayerWidgetData(chapters: [...])`                       | chewie 使用 `ChewieChapter(title, start)`；aliplayer_widget 使用 `ChapterInfo(startMs, endMs, title)`，需显式传入结束时间；章节能力为通用能力，非 live/minimal 场景即可生效 |
 
 ### **UI 与自定义配置**
 
@@ -314,7 +314,7 @@ flutter pub remove video_player
 | `SceneType.listPlayer` | 列表 / 信息流播放 | chewie 无对应配置                                      |
 | `SceneType.restricted` | 播放能力受限场景  | chewie 无对应配置                                      |
 | `SceneType.minimal`    | 极简 UI           | 接近 `showControls: false`，但还会隐藏封面、字幕和手势 |
-| `SceneType.aiVod`      | AI 增强点播        | 继承 VOD 能力并支持章节导航；对应 chewie `chapters` 配置的场景升级 |
+| `SceneType.aiVod`      | AI 增强点播        | 继承 VOD 能力；章节能力为通用能力，不绑定此场景               |
 
 下表列出 chewie 各 UI 配置项在三级定制体系中的落点：
 
@@ -436,7 +436,7 @@ UI 禁用需求往往不是几个按钮，而是**一整套业务规则**。动�
 | 视频缓存/预加载     | 配置本地缓存；按需接入预加载               | `AliPlayerWidgetGlobalSetting.setStoragePaths(...)`；预加载使用 `flutter_aliplayer` 的 `FlutterAliPlayerMediaLoader` |
 | 视频下载            | 将 VID 播放源下载到本地                    | 配置存储路径后调用 `controller.startVideoDownload()`         |
 | 场景类型            | 按场景调整默认 UI 行为                     | `SceneType.vod` / `.live` / `.listPlayer` / `.restricted` / `.minimal` / `.aiVod` |
-| 章节导航            | 进度条章节标记 + 章节 Chip 列表 + 章节面板 | `AliPlayerWidgetData(sceneType: SceneType.aiVod, chapters: [...])` |
+| 章节导航            | 进度条章节标记 + 章节 Chip 列表 + 章节面板 | `AliPlayerWidgetData(chapters: [...])`，非 live/minimal 场景生效；restricted 场景章节 UI 只读 |
 | 插槽 UI 定制        | 多层级插槽系统，精细控制各区域             | `slotBuilders` + `hiddenSlotElements`                        |
 | 手势控制            | 长按倍速、水平拖动 Seek、垂直拖动音量/亮度 | 内置，无需额外配置                                           |
 | 缩略图预览          | Seek 过程中显示缩略图                      | `AliPlayerWidgetData(thumbnailUrl: ...)` + `thumbnailNotifier` |

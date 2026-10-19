@@ -293,7 +293,7 @@ Configurations that affect user experience should be set explicitly — do not r
 | `fullScreenByDefault`   | After the Widget is mounted, call `controller.enterFullScreen()` when playback first starts | No configuration item of the same name; control the trigger timing yourself |
 | `playbackSpeeds`        | `AliPlayerWidgetData(playbackSpeeds: [...])`                 | Direct correspondence; configure custom playback speed options |
 | `hideControlsTimer`     | `AliPlayerWidgetData(autoHideControlsDuration: ...)`         | Direct correspondence; configure the auto-hide duration for playback controls |
-| `chapters`              | `AliPlayerWidgetData(sceneType: SceneType.aiVod, chapters: [...])`  | chewie uses `ChewieChapter(title, start)`; aliplayer_widget uses `ChapterInfo(startMs, endMs, title)` — the end time must be specified explicitly, and `sceneType` must be `aiVod` |
+| `chapters`              | `AliPlayerWidgetData(chapters: [...])`                       | chewie uses `ChewieChapter(title, start)`; aliplayer_widget uses `ChapterInfo(startMs, endMs, title)` — the end time must be specified explicitly. Chapter capability is generic and works in any scene other than live/minimal |
 
 ### **UI and Customization Configuration**
 
@@ -314,7 +314,7 @@ Therefore, if the original project uses the chewie default UI, **no slot customi
 | `SceneType.listPlayer` | List / feed playback    | No corresponding chewie configuration                        |
 | `SceneType.restricted` | Restricted playback scenarios | No corresponding chewie configuration                  |
 | `SceneType.minimal`    | Minimal UI              | Close to `showControls: false`, but also hides the cover, subtitles, and gestures |
-| `SceneType.aiVod`      | AI-enhanced VOD          | Inherits VOD capabilities with chapter navigation support; a scene-level upgrade for chewie's `chapters` configuration |
+| `SceneType.aiVod`      | AI-enhanced VOD          | Inherits VOD capabilities; chapter capability is generic and not bound to this scene |
 
 The table below shows where each chewie UI configuration item lands in the three-tier customization system:
 
@@ -436,7 +436,7 @@ The following features are not supported in chewie and are not prerequisites for
 | Video caching / preloading | Configure local caching; adopt preloading as needed | `AliPlayerWidgetGlobalSetting.setStoragePaths(...)`; for preloading, use `flutter_aliplayer`'s `FlutterAliPlayerMediaLoader` |
 | Video download        | Download VID playback sources locally        | Call `controller.startVideoDownload()` after configuring the storage path |
 | Scene types           | Adjust default UI behavior by scenario       | `SceneType.vod` / `.live` / `.listPlayer` / `.restricted` / `.minimal` / `.aiVod` |
-| Chapter navigation    | Progress-bar chapter markers + chapter Chip list + chapter panel | `AliPlayerWidgetData(sceneType: SceneType.aiVod, chapters: [...])` |
+| Chapter navigation    | Progress-bar chapter markers + chapter Chip list + chapter panel | `AliPlayerWidgetData(chapters: [...])`, effective in scenes other than live/minimal; chapter UI is read-only in the restricted scene |
 | Slot UI customization | Multi-level slot system for fine-grained control of each area | `slotBuilders` + `hiddenSlotElements`             |
 | Gesture control       | Long-press for speed, horizontal drag to Seek, vertical drag for volume/brightness | Built in, no extra configuration needed |
 | Thumbnail preview     | Show thumbnails while Seeking                | `AliPlayerWidgetData(thumbnailUrl: ...)` + `thumbnailNotifier` |
