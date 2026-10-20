@@ -158,6 +158,9 @@ class PlayerI18nKeys {
   /// 下一章 / Next chapter
   static const String nextChapter = 'player.chapter.nextChapter';
 
+  /// 已定位至最后章节 / Already at the last chapter
+  static const String lastChapterReached = 'player.chapter.lastChapterReached';
+
   /// 章节列表面板标题 / Chapters panel title
   static const String chaptersPanelTitle = 'player.chapter.panelTitle';
 

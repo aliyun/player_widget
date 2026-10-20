@@ -80,6 +80,7 @@ class PlayerTranslationsZh with PlayerTranslationsMixin {
           'chapter': {
             'titleFormat': '章节{index}：{title}',
             'nextChapter': '下一章',
+            'lastChapterReached': '已定位至最后章节',
             'panelTitle': '章节',
             'panelCountFormat': '共{count}段',
             'panelSubtitle': '内容由AI生成',
