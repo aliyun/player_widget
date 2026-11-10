@@ -111,6 +111,12 @@ AliPlayerWidget provides a rich set of API interfaces that allow developers to d
 | `trackInfoListNotifier`  | Provides a list of all available video quality information.        |
 | `thumbnailNotifier`      | Monitors thumbnail loading status, ensuring real-time preview when dragging the progress bar. |
 
+### **Chapter Info**
+
+| Notifier              | Description                                              |
+| --------------------- | -------------------------------------------------------- |
+| `chapterInfoNotifier` | Chapter data notifier (`SafeValueNotifier<List<ChapterInfo>>`). Seeded from `AliPlayerWidgetData.chapters` during configuration; write it directly when chapter data becomes available later (e.g. lazy loading). Progress bar chapter markers, the chapter info row, next-chapter seeking and the chapter panel refresh automatically, and no chapter UI is rendered while it is empty. |
+
 ### **Subtitle Related**
 
 | Notifier                  | Function Description                                             |

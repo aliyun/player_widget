@@ -111,6 +111,12 @@ AliPlayerWidget 提供了丰富的 API 接口，方便开发者直接控制播�
 | `trackInfoListNotifier`   | 提供所有可用的视频清晰度信息列表。                       |
 | `thumbnailNotifier`       | 监听缩略图加载状态，确保在拖动进度条时能够实时显示对应的缩略图预览。 |
 
+### **章节信息**
+
+| Notifier              | 功能描述                                                 |
+| --------------------- | -------------------------------------------------------- |
+| `chapterInfoNotifier` | 章节数据通知器（`SafeValueNotifier<List<ChapterInfo>>`）。配置期由 `AliPlayerWidgetData.chapters` 同步；章节数据就绪较晚时（如懒加载）直接写入即可，进度条章节标记点、章节信息行、下一章跳转与章节面板自动刷新；为空时章节 UI 不渲染。 |
+
 ### **字幕相关**
 
 | Notifier                  | 功能描述                                                 |

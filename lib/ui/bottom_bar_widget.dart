@@ -728,6 +728,7 @@ Widget buildBottomBarSlot(
     ctx.controller.externalSubtitleAvailableNotifier,
     ctx.controller.showExternalSubtitleNotifier,
     ctx.controller.sceneTypeNotifier,
+    ctx.controller.chapterInfoNotifier,
   ]);
 
   return ListenableBuilder(
@@ -750,8 +751,7 @@ Widget buildBottomBarSlot(
       final bufferedPosition = ctx.controller.bufferedPositionNotifier.value;
       final totalDuration = ctx.controller.totalDurationNotifier.value;
       // 初始化章节信息
-      final chapters = ctx.controller.widgetData?.chapters ?? const [];
-      final chapterInfoList = chapters;
+      final chapterInfoList = ctx.controller.chapterInfoNotifier.value;
 
       return BottomBarWidget(
         animationManager: ctx.animationManager,

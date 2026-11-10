@@ -209,22 +209,9 @@ class AliPlayerWidgetData {
 
   /// 章节信息列表（可选）
   ///
-  /// 当传入章节数据时使用。
-  /// 章节能力为通用能力，不限定 AI_VOD 场景：非 live/minimal 场景且
-  /// 章节数据非空时，BottomBarSlot 会自动在进度条上绘制章节标记点，
-  /// 并在用户 Seek 时显示当前章节信息；restricted 场景下章节 UI 仅展示、
-  /// 跳转交互被禁用。
-  /// 默认为空列表，表示无章节数据。
+  /// 自定义的章节数据，将在 [AliPlayerWidgetController.configure] 时作为初始值使用。
   ///
-  /// Chapter info list.
-  ///
-  /// Used when chapter data is provided.
-  /// Chapter capability is generic and not bound to the AI_VOD scene: in any
-  /// scene other than live/minimal, BottomBarSlot automatically draws chapter
-  /// markers on the progress bar and displays chapter info during seek once
-  /// non-empty data is provided; in the restricted scene the chapter UI is
-  /// read-only and seeking via chapters is disabled.
-  /// Defaults to an empty list, indicating no chapter data.
+  /// Custom chapter data, used as the initial value during [AliPlayerWidgetController.configure].
   final List<ChapterInfo> chapters;
 
   /// 构造函数，用于创建 [AliPlayerWidgetData] 实例。

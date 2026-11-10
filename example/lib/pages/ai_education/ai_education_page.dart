@@ -16,8 +16,8 @@ import 'package:flutter/material.dart';
 /// AI 教育场景播放示例页面
 ///
 /// 演示如何在 AI 教育场景下使用 AliPlayerWidget 的 AI 章节功能。
-/// 通过 [AiContentLoader] 链式加载 PlayAuth 与 AI 内容分析结果，
-/// 并将章节数据传入 [AliPlayerWidgetData] 驱动底部栏章节标记与列表。
+/// PlayAuth 就绪后立即配置播放器；AI 内容分析返回后再将章节数据写入
+/// [AliPlayerWidgetController.chapterInfoNotifier]，驱动底部栏章节标记与列表。
 class AiEducationPage extends StatefulWidget {
   const AiEducationPage({super.key});
 
@@ -100,6 +100,9 @@ class _AiEducationPageState extends State<AiEducationPage> {
 
       debugPrint('【$_tag】PlayAuth loaded');
 
+      // PlayAuth 就绪即可配置播放器，无需等待 AI 内容
+      _configData(vid, playAuth);
+
       loader.loadAiAnalysis(vid, (response) {
         if (!mounted) return;
 
@@ -111,31 +114,37 @@ class _AiEducationPageState extends State<AiEducationPage> {
         if (response != null) {
           _content = AiContentAssembler.buildViewModel(response);
         }
-        _configData(vid, playAuth);
+        _applyChapters();
       });
     });
   }
 
-  /// 配置播放器（在 PlayAuth 和 AI 内容加载完成后调用）
+  /// 配置播放器（PlayAuth 就绪后立即调用）
+  ///
+  /// 章节数据不随配置对象传入：AI 内容返回后再通过
+  /// [AliPlayerWidgetController.chapterInfoNotifier] 写入。
   void _configData(
     String vid,
     String playAuth,
   ) {
-    final chapters = _content.chapters;
-    debugPrint("[_configData] [${chapters.length}] $chapters");
-
     final source = VideoSourceFactory.createVidAuthSource(
       vid: vid,
       playAuth: playAuth,
     );
 
-    final data = AliPlayerWidgetData(
-      videoSource: source,
-      sceneType: SceneType.aiVod,
-      chapters: chapters,
+    _controller.configure(
+      AliPlayerWidgetData(
+        videoSource: source,
+        sceneType: SceneType.aiVod,
+      ),
     );
+  }
 
-    _controller.configure(data);
+  /// 章节数据就绪后写入通知器，章节 UI 自动渲染，无需重新 configure
+  void _applyChapters() {
+    final chapters = _content.chapters;
+    debugPrint('【$_tag】Chapters loaded [${chapters.length}]');
+    _controller.chapterInfoNotifier.value = chapters;
   }
 
   Widget _buildChapterShowWidget() {

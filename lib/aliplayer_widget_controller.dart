@@ -180,6 +180,12 @@ class AliPlayerWidgetController {
   final SafeValueNotifier<SceneType> sceneTypeNotifier =
       SafeValueNotifier(SceneType.vod);
 
+  /// 章节信息通知器
+  ///
+  /// Value notifier for chapter info.
+  final SafeValueNotifier<List<ChapterInfo>> chapterInfoNotifier =
+      SafeValueNotifier(const <ChapterInfo>[]);
+
   /// 播放清晰度变化通知器
   ///
   /// Value notifier for track info
@@ -758,6 +764,7 @@ class AliPlayerWidgetController {
     coverURLNotifier.dispose();
     videoTitleNotifier.dispose();
     sceneTypeNotifier.dispose();
+    chapterInfoNotifier.dispose();
 
     currentTrackInfoNotifier.dispose();
     trackInfoListNotifier.dispose();
@@ -876,6 +883,9 @@ class AliPlayerWidgetController {
 
     // 同步场景类型通知器，确保 AliPlayerWidget 在异步 configure 后仍能拿到最新场景
     sceneTypeNotifier.value = data.sceneType;
+
+    // 同步章节数据通知器，确保 AliPlayerWidget 在异步 configure 后仍拿到章节数据
+    chapterInfoNotifier.value = data.chapters;
 
     // 初始化/重启策略系统
     strategyManager.initialize(this);

@@ -2,6 +2,12 @@
 
 > Language: 中文简体 | [English](./CHANGELOG-en.md)
 
+## **[7.19.0] - 章节数据运行期更新**
+
+### **新功能**
+
+- **`AliPlayerWidgetController.chapterInfoNotifier`**：新增类型为 `SafeValueNotifier<List<ChapterInfo>>` 的章节数据通知器，用于运行期更新章节数据。业务方在数据就绪时（含异步、懒加载场景）写入即可，进度条章节标记点、章节信息行、下一章跳转与章节面板自动刷新；数据为空时章节 UI 不渲染。该通知器随 `destroy()` 与其他状态通知器一并释放。既有 `AliPlayerWidgetData.chapters` 用法与行为保持不变：`configure()` 会将配置值同步到该通知器。
+
 ## **[7.18.0] - AI 教育场景化解决方案 & VID All-in-One 播放**
 
 ### **新功能**

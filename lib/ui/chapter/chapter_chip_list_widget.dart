@@ -6,6 +6,7 @@
 
 import 'package:aliplayer_widget/aliplayer_widget_lib.dart';
 import 'package:aliplayer_widget/utils/format_util.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
 /// 章节 Chip 列表
@@ -45,7 +46,9 @@ class _ChapterChipListWidgetState extends State<ChapterChipListWidget> {
   @override
   void didUpdateWidget(covariant ChapterChipListWidget oldWidget) {
     super.didUpdateWidget(oldWidget);
-    if (oldWidget.currentIndex != widget.currentIndex) {
+    // 当前章节切换，或章节数据整体替换后，重新定位到当前章节
+    if (oldWidget.currentIndex != widget.currentIndex ||
+        !listEquals(oldWidget.chapters, widget.chapters)) {
       _scrollToCurrentIndex();
     }
   }
@@ -60,6 +63,13 @@ class _ChapterChipListWidgetState extends State<ChapterChipListWidget> {
     if (!mounted) return;
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
+      // 当前位置不在任何章节内时回到列表开头，避免章节替换后残留旧偏移
+      if (widget.currentIndex < 0) {
+        if (_scrollController.hasClients) {
+          _scrollController.jumpTo(0);
+        }
+        return;
+      }
       final context = _currentItemKey.currentContext;
       if (context == null) return;
       Scrollable.ensureVisible(

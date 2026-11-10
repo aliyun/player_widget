@@ -35,7 +35,7 @@ The AI Education Scene provides the following capabilities centered on "**quick 
 | Knowledge Point Extraction | Automatically extracts key knowledge points per chapter, displays them as structured Markdown, and supports seeking to the corresponding segment | Example layer |
 | Orientation Adaptation | Chapter chips above the bottom bar in portrait and a chapter info row in landscape, both driven by the same chapter data | Built-in widget |
 
-> **Note**: Built-in chapter capabilities (progress bar chapter markers, chapter navigation, chapter info row, right-side chapter list panel, etc.) take effect automatically once you pass chapter data via `AliPlayerWidgetData.chapters`. These capabilities are **not strictly bound to `SceneType.aiVod`**; the AI analysis panel (summary and knowledge points) is implemented in the example project and can be copied into your own project as needed. See [Customization & Extension](#8-customization--extension).
+> **Note**: Built-in chapter capabilities (progress bar chapter markers, chapter navigation, chapter info row, right-side chapter list panel, etc.) take effect automatically once you pass chapter data via `AliPlayerWidgetData.chapters`. These capabilities are **not strictly bound to `SceneType.aiVod`**; the AI analysis panel (summary and knowledge points) is implemented in the example project and can be copied into your own project as needed. See [Customization & Extension](#8-customization--extension). When chapter data arrives after configuration (e.g. once AI content finishes loading asynchronously), there is no need to re-configure; just update `controller.chapterInfoNotifier.value`.
 
 ---
 

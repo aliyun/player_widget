@@ -2,6 +2,12 @@
 
 > Language: [Simplified Chinese](docs/CHANGELOG.md) | English
 
+## **[7.19.0] - Runtime Chapter Data Updates**
+
+### **New Features**
+
+- **`AliPlayerWidgetController.chapterInfoNotifier`**: adds a `SafeValueNotifier<List<ChapterInfo>>` holding chapter data for runtime updates. Write it whenever chapter data is ready (async or lazy loading included); progress bar chapter markers, the chapter info row, next-chapter seeking and the chapter panel refresh automatically. Data is not rendered while the list is empty, and the notifier is disposed together with the controller in `destroy()`. The existing `AliPlayerWidgetData.chapters` usage and behavior are unchanged: `configure()` syncs the configured value into this notifier.
+
 ## **[7.18.0] - AI Education Scenario Solution & VID All-in-One Playback**
 
 ### **New Features**
