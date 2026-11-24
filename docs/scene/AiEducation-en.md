@@ -509,7 +509,7 @@ class _AiEducationPageState extends State<AiEducationPage> {
 | Failed to get the play credential | Check whether the App Server address is correct, the network is reachable, and the `videoId` is valid; the example shows a message and exits the page on failure |
 | AI content is empty | Confirm that AI content analysis has been completed for the video; an AI analysis API failure does not affect playback — the client degrades to normal VOD mode (no AI analysis panel) |
 | How to use my own video ID | Modify `AiContentConstants.defaultMediaId`, or pass the media ID dynamically in your business calls |
-| Progress bar chapter markers / chapter chips not showing | Confirm that `AliPlayerWidgetData.chapters` contains at least 2 valid chapter entries. Chapter capabilities are not strictly bound to `sceneType` |
+| Progress bar chapter markers / chapter chips not showing | Confirm that `AliPlayerWidgetData.chapters` or `chapterInfoNotifier` contains valid chapter data (a non-empty list is enough). Chapter capabilities are not strictly bound to `sceneType` |
 | No chapter info row in landscape | The chapter info row is displayed when valid `chapters` data is passed in; it is not strictly bound to `SceneType.aiVod`. Verify that chapter data has been passed in |
 | How to disable a specific AI capability | Simply omit the corresponding `ResultType` from the server response (e.g., return only `Chapter` without `Summary`); the panel Tab structure adjusts automatically based on the data |
 | Widget version requirement | AliPlayerWidget >= 7.18.0; `flutter_aliplayer >= 7.18.0`; underlying native player SDK >= 7.18.0. Chapter UI capabilities are implemented in pure Dart and are not dependent on `SceneType.aiVod` |

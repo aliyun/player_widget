@@ -39,7 +39,7 @@ dependencies:
   # `aliplayer_widget` already depends on `flutter_aliplayer` internally.
   # Only declare `flutter_aliplayer` explicitly when you need direct access to low-level APIs.
   # Advanced API usage: MediaLoader preloading, etc.
-  flutter_aliplayer: ^7.18.0
+  flutter_aliplayer: ^7.19.0
 
   # The following adds the Cupertino Icons font to your application.
   # Use with the CupertinoIcons class for iOS style icons.

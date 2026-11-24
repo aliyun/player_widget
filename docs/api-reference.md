@@ -20,7 +20,7 @@ AliPlayerWidget 提供了丰富的 API 接口，方便开发者直接控制播�
 | `play`            | 开始播放视频                           |
 | `pause`           | 暂停播放                               |
 | `stop`            | 停止播放并重置播放器                   |
-| `seek`            | 跳转到指定的播放位置                   |
+| `seek`            | 跳转到指定的播放位置；`live` / `restricted` 场景下被拦截，详见 [Seek 门禁](./advanced/scene-type.md) |
 | `togglePlayState` | 切换播放状态（播放/暂停）              |
 | `replay`          | 重新播放视频（通常用于播放完成后重新开始） |
 

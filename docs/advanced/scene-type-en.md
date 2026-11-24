@@ -28,6 +28,22 @@ controller.configure(
 | `SceneType.listPlayer` | Feed players, short-video lists | Disable vertical gestures to avoid scroll conflicts; basic controls stay | Same as VOD | Use inside scrolling lists |
 | `SceneType.restricted` | Exams, training, anti-skip playback | Disable seek / fast-forward / speed while keeping other controls | `coverImage`, `seekThumbnail` hidden | Enable when timeline must be locked |
 | `SceneType.minimal` | Background video, custom UI shells, decorative video | Only video surface; no controls, no captions, gestures off | Only `playerSurface` / `overlays` visible | Treat as canvas for external UI |
+| `SceneType.aiVod` | AI education, knowledge videos, content analysis | Inherits all VOD controls plus chapter segmentation, chapter navigation and chapter info on seek | Same as VOD | Enable for AI content analysis |
+
+## **Seek Gating**
+
+Since 7.19.0, `controller.seek()` is the command-level entry that resolves the scene for every seek request, while chapter seek entries stay read-only in the interaction layer. Both layers constrain jumping per scene.
+
+| Scene | `seek()` command layer | Chapter UI | Chapter seeking |
+|-------|------------------------|------------|-----------------|
+| `SceneType.vod` | Allowed | Shown when chapter data is non-empty | Allowed |
+| `SceneType.live` | Blocked (logged and dropped) | Not shown | Blocked (silent) |
+| `SceneType.listPlayer` | Allowed | Shown when chapter data is non-empty | Allowed |
+| `SceneType.restricted` | Blocked (logged and dropped) | Shown (read-only) | Blocked (silent) |
+| `SceneType.minimal` | Allowed (no UI entry) | Not shown | Blocked (no entry) |
+| `SceneType.aiVod` | Allowed | Shown when chapter data is non-empty | Allowed |
+
+> **Note**: The `startTime` passed at startup goes through the prepare path instead of `seek()`, so it is not affected by the gating above.
 
 ## **Scene Details**
 
@@ -55,6 +71,11 @@ controller.configure(
 - **Features**: Renders only the video surface; no UI slots (captions, controls, states) and all gestures disabled.
 - **Use cases**: Background loops, decorative elements, picture-in-picture cores, fully custom shells.
 - **Notes**: Use `SlotType.overlays` or external widgets if you still need custom overlays.
+
+### **SceneType.aiVod**
+- **Features**: Inherits the full VOD control set plus chapter-based progress bar segmentation, chapter navigation, and chapter info while seeking.
+- **Use cases**: AI education courses, knowledge videos, content analysis.
+- **Notes**: Since 7.19.0 chapters are a general capability and no longer require the `aiVod` scene.
 
 ## **Slot & Scene Mapping**
 

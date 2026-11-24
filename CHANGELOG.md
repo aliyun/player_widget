@@ -2,11 +2,23 @@
 
 > Language: [Simplified Chinese](docs/CHANGELOG.md) | English
 
-## **[7.19.0] - Runtime Chapter Data Updates**
+## **[7.19.0] - Generalized Chapter Capability & Runtime Chapter Updates**
 
 ### **New Features**
 
 - **`AliPlayerWidgetController.chapterInfoNotifier`**: adds a `SafeValueNotifier<List<ChapterInfo>>` holding chapter data for runtime updates. Write it whenever chapter data is ready (async or lazy loading included); progress bar chapter markers, the chapter info row, next-chapter seeking and the chapter panel refresh automatically. Data is not rendered while the list is empty, and the notifier is disposed together with the controller in `destroy()`. The existing `AliPlayerWidgetData.chapters` usage and behavior are unchanged: `configure()` syncs the configured value into this notifier.
+
+### **Improvements**
+
+- **Chapters as a General Capability**: chapter markers on the progress bar, the chapter info row, the chapter chip list and the chapter panel are no longer tied to the `aiVod` scene. Any scene other than `live` / `minimal` renders them as soon as chapter data exists, including data loaded lazily or written at runtime through `chapterInfoNotifier`; the previous "at least two chapters" threshold is relaxed to a non-empty list, and chapter highlighting keeps the latest started chapter when the position falls into a gap between chapters or beyond the last chapter
+- **Scene-Aware Seek Gating**: `seek()` now blocks all seek requests in `live` and `restricted` scenes at the command layer, while chapter seek entries stay read-only in these scenes. See the per-scene capability table in the [SceneType guide](docs/advanced/scene-type-en.md)
+- **UI Response Polish**: refined the interaction feedback of the chapter UI and the boundary behaviour of chapter navigation
+- **Kernel SDK**: bumped the `flutter_aliplayer` dependency to `^7.19.0`
+
+### **Bug Fixes**
+
+- Fixed chapter chip list keeping a stale scroll offset after chapter data was replaced: it now re-aligns to the current chapter on data change and scrolls back to the start when the position is outside all chapters
+- Fixed chapter panel header overflow with long titles or localized count text by making the title and count texts flexible with single-line ellipsis
 
 ## **[7.18.0] - AI Education Scenario Solution & VID All-in-One Playback**
 

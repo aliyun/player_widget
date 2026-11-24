@@ -20,7 +20,7 @@ AliPlayerWidget provides a rich set of API interfaces that allow developers to d
 | `play`              | Starts video playback                                    |
 | `pause`             | Pauses playback                                          |
 | `stop`              | Stops playback and resets the player                     |
-| `seek`              | Jumps to the specified playback position                 |
+| `seek`              | Jumps to the specified playback position; blocked in `live` / `restricted` scenes, see [Seek Gating](./advanced/scene-type-en.md) |
 | `togglePlayState`   | Toggles between play and pause states                    |
 | `replay`            | Replays the video (typically used after playback completion) |
 
